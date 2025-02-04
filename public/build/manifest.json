@@ -1,0 +1,22 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-Ct-ImIRQ.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-Cu2_V2l-.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "css": [
+      "assets/app-Ct-ImIRQ.css"
+    ]
+  },
+  "resources/js/task.js": {
+    "file": "assets/task-Be9qPkHY.js",
+    "name": "task",
+    "src": "resources/js/task.js",
+    "isEntry": true
+  }
+}

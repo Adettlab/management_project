@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-white-color: #FAFAFA;
+  --secondary-white-color: #F5F5F5;
+  --black-color: #111111;
+  --gray-color: #616161;
+  --green-color: #7DB546;
+  --orange-color: #FFB42E;
+  --red-color: #EA4949;
+  --sky-blue-color: #6FAEC9;
+  --dark-blue-color: #25345B;
+}
+
+.primary-white {
+  color: var(--primary-white-color);
+}
+
+.bg-primary-white {
+  background-color: var(--primary-white-color);
+}
+
+.secondary-white {
+  color: var(--secondary-white-color);
+}
+
+.bg-secondary-white {
+  background-color: var(--secondary-white-color);
+}
+
+.primary-black {
+  color: var(--black-color);
+}
+
+.bg-primary-black {
+  background-color: var(--black-color);
+}
+
+.primary-gray {
+  color: var(--gray-color);
+}
+
+.bg-primary-gray {
+  background-color: var(--gray-color);
+}
+
+.primary-green {
+  color: var(--green-color);
+}
+
+.bg-primary-green {
+  background-color: var(--green-color);
+}
+
+.primary-orange {
+  color: var(--orange-color);
+}
+
+.bg-primary-orange {
+  background-color: var(--orange-color);
+}
+
+.primary-red {
+  color: var(--red-color);
+}
+
+.bg-primary-red {
+  background-color: var(--red-color);
+}
+
+.sky-blue {
+  color: var(--sky-blue-color);
+}
+
+.bg-sky-blue {
+  background-color: var(--sky-blue-color);
+}
+
+.dark-blue {
+  color: var(--dark-blue-color);
+}
+
+.bg-dark-blue {
+  background-color: var(--dark-blue-color);
+}
