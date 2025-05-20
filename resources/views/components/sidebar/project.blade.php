@@ -1,7 +1,14 @@
-@props(['active'])
-<div class="group flex items-center">
-    <a class="bg-secondary-white p-2 flex items-center justify-center rounded-full cursor-pointer hover:bg-[#6FAEC9] {{ $active === 'projects' ? 'bg-sky-blue' : 'bg-white' }}"
-        href="{{ route('projects.index') }}">
+@props(['active', 'expanded' => false])
+<div class="group flex items-center z-50 cursor-pointer {{ $active === 'projects' ? 'bg-sky-blue' : 'bg-white' }}"
+    :class="{
+        'justify-center rounded-full': !
+            sidebarExpanded,
+        'hover:bg-[#6FAEC9] hover:text-white rounded-full': sidebarExpanded
+    }"
+    onclick="window.location.href='{{ route('projects.index') }}'">
+    <a href="{{ route('projects.index') }}"
+        class="bg-secondary-white p-2 flex items-center justify-center z-50 hover:z-50 rounded-full cursor-pointer group-hover:bg-[#6FAEC9] {{ $active === 'projects' ? 'bg-sky-blue' : 'bg-white' }}"
+        :class="{ 'group-hover:text-white rounded-full': sidebarExpanded, 'rounded-full': !sidebarExpanded }">
         <svg class="size-6" viewBox="0 0 35 35" fill="{{ $active === 'projects' ? '#FFFFFF' : '#616161' }}"
             xmlns="http://www.w3.org/2000/svg">
             <path
@@ -9,8 +16,17 @@
                 class="{{ $active === 'projects' ? 'fill-[#FFFFFF]' : 'fill-[#616161]' }} group-hover:fill-[#FFFFFF]" />
         </svg>
     </a>
-    <div
-        class="hidden group-hover:block text-sm text-white ml-14 text-center w-32 py-[2px] rounded-md absolute bg-sky-blue bg-white group-hover:z-50">
+
+    <!-- Label - Shows when sidebar is expanded or on hover when collapsed -->
+    <a href="{{ route('projects.index') }}" x-show="sidebarExpanded"
+        class="ml-1 pr-2 text-gray-700 text-sm font-medium {{ $active === 'projects' ? 'text-white' : '' }}"
+        :class="{ 'group-hover:text-white': sidebarExpanded }">
+        Project
+    </a>
+
+    <!-- Tooltip - Shows only on hover when sidebar is collapsed -->
+    <div style="z-index: 999;" x-show="!sidebarExpanded"
+        class="hidden group-hover:block text-sm text-white text-center w-32 py-[2px] rounded-md absolute bg-sky-blue left-24">
         Project
     </div>
 </div>

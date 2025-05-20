@@ -2,7 +2,7 @@
     <div class="flex justify-between items-center w-full">
         <div class="flex items-center justify-center">
             <!-- Logo -->
-            {{-- <img src="{{ asset('logo.png') }}" alt="logo" class="w-[160px] ml-3" loading="lazy"> --}}
+            <img src="{{ asset('logo.png') }}" alt="logo" class="w-[150px] ml-3" loading="lazy">
         </div>
         <div class="w-[33%]">
             <div class="flex items-center relative">
@@ -31,26 +31,31 @@
                     <div class="text-[12px]">{{ auth()->user()->role }}</div>
                 </div>
                 <div class="group flex flex-col items-center">
-                    @if(auth()->user()->employee)
-                        <a class="group relative w-12 h-12 overflow-hidden bg-secondary-white border rounded-full hover:bg-blue-300 transition-colors duration-300" href={{route('users.profile')}} :active="$active">
-                    @else
-                        <div class="group relative w-12 h-12 overflow-hidden bg-secondary-white border rounded-full hover:bg-blue-300 transition-colors duration-300">
+                    @if (auth()->user()->employee)
+                        <a class="group relative w-12 h-12 overflow-hidden bg-secondary-white border rounded-full hover:bg-blue-300 transition-colors duration-300"
+                            href={{ route('users.profile') }} :active="$active">
+                        @else
+                            <div
+                                class="group relative w-12 h-12 overflow-hidden bg-secondary-white border rounded-full hover:bg-blue-300 transition-colors duration-300">
                     @endif
                     @if (auth()->user()->employee && auth()->user()->employee->photo)
                         <div class="w-full h-full">
-                            <img src="{{ asset('/storage/' . auth()->user()->employee->photo) }}" alt="Photo" class="w-full h-full object-cover" loading="lazy">
+                            <img src="{{ asset('/storage/' . auth()->user()->employee->photo) }}" alt="Photo"
+                                class="w-full h-full object-cover" loading="lazy">
                         </div>
                     @else
                         <div class="flex items-center justify-center w-full h-full">
-                            <img src="{{ asset('blank_profile.png') }}" alt="Photo" class="w-9 h-9 rounded-full object-cover" loading="lazy">
+                            <img src="{{ asset('blank_profile.png') }}" alt="Photo"
+                                class="w-9 h-9 rounded-full object-cover" loading="lazy">
                         </div>
                     @endif
-                @if(auth()->user()->employee)
-                    </a>
-                @else
-                    </div>
+                    @if (auth()->user()->employee)
+                        </a>
+                    @else
+                </div>
                 @endif
-                <div class="hidden group-hover:block text-sm text-white mt-[60px] px-5 rounded-md absolute bg-sky-blue primary-white">
+                <div
+                    class="hidden group-hover:block text-sm text-white mt-[60px] px-5 rounded-md absolute bg-sky-blue primary-white">
                     Account
                 </div>
             </div>
