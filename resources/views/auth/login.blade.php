@@ -3,7 +3,7 @@
         class="flex justify-center items-center min-h-screen bg-[rgb(242,242,242)] bg-gradient-to-t from-[#f2f2f2] to-[#369acb]">
         <div class="bg-white shadow-lg rounded-xl py-5 px-10 max-w-md w-full bg-opacity-[75%]">
             <div class="flex justify-center mb-14 mt-1">
-                {{-- <img src="{{ asset('logo.png') }}" alt="logo" class="w-40"> --}}
+                <img src="{{ asset('logo.png') }}" alt="logo" class="w-40">
                 
             </div>
             <form method="POST" action="{{ route('authenticate') }}" id="login-form">
