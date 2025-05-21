@@ -6,7 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title }}</title>
+
+    <!-- CSS Dependencies -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <!-- Vite CSS -->
     @vite('resources/css/app.css')
 
     <!-- Prevent FOUC (Flash of Unstyled Content) -->
@@ -32,26 +36,10 @@
             margin-left: 8.5%;
         }
     </style>
-
-    <!-- Alpine.js -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-    <!-- Pre-load sidebar state to avoid content jump -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const isExpanded = localStorage.getItem('sidebarExpanded') === 'false' ? false : true;
-            document.documentElement.classList.add(isExpanded ? 'sidebar-expanded' : 'sidebar-collapsed');
-        });
-    </script>
 </head>
 
-<body x-data="{
-    sidebarExpanded: localStorage.getItem('sidebarExpanded') === 'false' ? false : true,
-    toggleSidebar() {
-        this.sidebarExpanded = !this.sidebarExpanded;
-        localStorage.setItem('sidebarExpanded', this.sidebarExpanded);
-    }
-}" class="bg-primary-white" x-cloak>
+<body x-data="sidebarState()" x-init="initSidebar()" class="bg-primary-white" x-cloak>
+
     {{ $slot }}
 
     {{-- Flash message untuk SweetAlert --}}
@@ -75,9 +63,34 @@
         </script>
     @endif
 
-    {{-- script --}}
+    <!-- Alpine.js -->
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+    <!-- Custom Alpine.js initialization -->
+    <script>
+        function sidebarState() {
+            return {
+                sidebarExpanded: localStorage.getItem('sidebarExpanded') === 'false' ? false : true,
+
+                toggleSidebar() {
+                    this.sidebarExpanded = !this.sidebarExpanded;
+                    localStorage.setItem('sidebarExpanded', this.sidebarExpanded);
+                },
+
+                initSidebar() {
+                    // Ensure Alpine has loaded before manipulating classes
+                    this.$nextTick(() => {
+                        document.documentElement.classList.add(
+                            this.sidebarExpanded ? 'sidebar-expanded' : 'sidebar-collapsed'
+                        );
+                    });
+                }
+            }
+        }
+    </script>
+
+    {{-- Vite JS --}}
     @vite('resources/js/app.js')
-    {{-- script --}}
 </body>
 
 </html>
