@@ -43,7 +43,7 @@ class AdminController extends Controller
         if (!empty($search)) {
             $query->whereHas('user', function ($q) use ($search) {
                 $q->where('name', 'LIKE', '%' . $search . '%') // Filter nama user
-                  ->orWhere('email', 'LIKE', '%' . $search . '%'); // Filter email user
+                    ->orWhere('email', 'LIKE', '%' . $search . '%'); // Filter email user
             });
         }
 
@@ -58,12 +58,12 @@ class AdminController extends Controller
         // Ambil semua role
         $roles = Role::all();
         return view('admin.index', [
-          "title" => "Admin",
-          "active" => "admin",
-          "roles" => $roles,
-          "employees" => $employees,
-          "search" => $search,
-          "roleFilter" => $roleFilter,
+            "title" => "Admin",
+            "active" => "admin",
+            "roles" => $roles,
+            "employees" => $employees,
+            "search" => $search,
+            "roleFilter" => $roleFilter,
         ]);
     }
 
@@ -77,9 +77,9 @@ class AdminController extends Controller
 
         $roles = Role::all();
         return view('admin.create', [
-          "title" => "Create User",
-          "active" => "admin",
-          "roles" => $roles,
+            "title" => "Create User",
+            "active" => "admin",
+            "roles" => $roles,
         ]);
     }
 
@@ -87,22 +87,25 @@ class AdminController extends Controller
     {
         try {
             $validated = $request->validate([
-              'name' => 'required|string|max:255',
-              'email' => 'required|email|unique:users,email',
-              'password' => 'required|min:8|confirmed',
-              'role_id' => 'required|exists:roles,id',
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|min:8|confirmed',
+                'role_id' => 'required|exists:roles,id',
             ]);
 
+            if ($validated['role_id'] == 2) {
+                return redirect()->back()->withInput()->with('error', 'Tidak bisa membuat akun dengan role Project Director dari sini.');
+            }
             $user = User::create([
-              'name' => $validated['name'],
-              'email' => $validated['email'],
+                'name' => $validated['name'],
+                'email' => $validated['email'],
                 'password' => $validated['password'],
-                'role' => $validated['role_id'] == 2 ? 'admin' : 'user',
+                'role' => 'user',
             ]);
 
             Employee::create([
-              'user_id' => $user->id,
-              'role_id' => $validated['role_id'],
+                'user_id' => $user->id,
+                'role_id' => $validated['role_id'],
             ]);
 
             return redirect()->route('admin.index')->with('success', 'User created successfully!');
@@ -120,11 +123,11 @@ class AdminController extends Controller
         $statuses = Employee::getStatuses();
 
         return view('admin.edit', [
-          'title' => 'Edit Employee',
-          'active' => 'admin',
-          'employee' => $employee,
-          'roles' => $roles,
-          'statuses' => $statuses,
+            'title' => 'Edit Employee',
+            'active' => 'admin',
+            'employee' => $employee,
+            'roles' => $roles,
+            'statuses' => $statuses,
         ]);
     }
 
@@ -134,23 +137,23 @@ class AdminController extends Controller
         $employee = Employee::findOrFail($id);
 
         $validated = $request->validate([
-          'work_email' => 'required|email|unique:employees,work_email,' . $employee->id,
-          'photo' => 'nullable|image|max:2048', // Maksimum ukuran 2MB
-          'nik' => 'nullable|string|max:255|unique:employees,nik,' . $employee->id,
-          'status' => 'nullable|in:Kontrak,Freelance,Tetap,Tenaga Ahli',
-          'birth_date' => 'nullable|date',
-          'phone_number' => 'nullable|string|max:15',
-          'telegram_link' => 'nullable|string|max:1000',
-          'address' => 'nullable|string|max:255',
-          'join_date' => 'nullable|date',
-          'education' => 'nullable|string|max:255',
+            'work_email' => 'required|email|unique:employees,work_email,' . $employee->id,
+            'photo' => 'nullable|image|max:2048', // Maksimum ukuran 2MB
+            'nik' => 'nullable|string|max:255|unique:employees,nik,' . $employee->id,
+            'status' => 'nullable|in:Kontrak,Freelance,Tetap,Tenaga Ahli',
+            'birth_date' => 'nullable|date',
+            'phone_number' => 'nullable|string|max:15',
+            'telegram_link' => 'nullable|string|max:1000',
+            'address' => 'nullable|string|max:255',
+            'join_date' => 'nullable|date',
+            'education' => 'nullable|string|max:255',
         ]);
 
         if ($request->hasFile('photo')) {
             if ($request->old_photo) {
                 Storage::delete($request->old_photo);
             }
-            $validated['photo'] = $request->file('photo')->store('users-image', 'public');
+            $validated['photo'] = $request->file('photo')->store( 'users-image','public');
         }
         // Update data employee
         $employee->update($validated);

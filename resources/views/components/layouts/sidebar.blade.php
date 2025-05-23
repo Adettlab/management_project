@@ -12,28 +12,27 @@
     <nav class="pt-8 items-start bg-white flex flex-col space-y-4 h-full px-4">
 
         {{-- dashboard --}}
-        <x-sidebar.dashboard :active="$active" />
+        <x-sidebar.dashboard :active="$active" :expanded="true" />
 
         {{-- project --}}
-        <x-sidebar.project :active="$active" />
+        <x-sidebar.project :active="$active" :expanded="true" />
 
         {{-- tasks --}}
         @if (auth()->user()->employee)
-            <x-sidebar.tasks :active="$active" />
+            <x-sidebar.tasks :active="$active" :expanded="true" />
         @endif
 
         {{-- activity --}}
-        <x-sidebar.activity :active="$active" />
+        <x-sidebar.activity :active="$active" :expanded="true" />
 
         {{-- Administration --}}
-        <x-sidebar.administration :active="$active" />
+        @if (auth()->user()->employee)
+            <x-sidebar.administration :active="$active" :expanded="true" />
+        @endif
 
         {{-- admin --}}
         @if (!auth()->user()->employee)
-            <x-sidebar.admin :active="$active" />
+            <x-sidebar.admin :active="$active" :expanded="true" />
         @endif
     </nav>
 </div>
-
-{{-- <div class="w-[8.5%] h-screen fixed">
-    <nav class="pt-8 items-center bg-white flex flex-col space-y-7 h-full relative border-r relative z-50"> --}}

@@ -1,18 +1,3 @@
-{{-- @props(['active'])
-<div class="group flex items-center">
-    <a class="bg-secondary-white p-2 flex items-center justify-center rounded-full cursor-pointer group hover:bg-[#6FAEC9] {{ $active === 'activity' ? 'bg-sky-blue' : 'bg-white' }}"
-        href="{{ route('activity.index') }}">
-        <svg class="size-6" viewBox="0 0 35 35" fill="{{ $active === 'activity' ? '#FFFFFF' : '#616161' }}"
-            xmlns="http://www.w3.org/2000/svg">
-            <path class="{{ $active === 'activity' ? 'fill-[#FFFFFF]' : 'fill-[#616161]' }} group-hover:fill-[#FFFFFF]"
-        </svg>
-    </a>
-    <div
-        class="hidden group-hover:block text-sm text-white ml-14 text-center w-32 py-[2px] rounded-md absolute bg-sky-blue bg-white z-50">
-        Activity
-    </div>
-</div> --}}
-
 @props(['active'])
 <div class="sidebar-item flex items-center w-full {{ $active === 'activity' ? 'active' : '' }}" data-tooltip="Activity">
     <a href="{{ route('activity.index') }}"

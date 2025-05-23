@@ -1,5 +1,6 @@
 <?php
-
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdministrationController;
@@ -14,12 +15,11 @@ use App\Http\Controllers\TimeManagementController;
 use App\Http\Controllers\UserController;
 use App\Models\ProjectEmployee;
 use Illuminate\Routing\Route as RoutingRoute;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Route;
+
 
 
 Route::get('/storage-link', function () {
-  Artisan::call('storage:link');  
+  Artisan::call('storage:link --force');  
   return 'storage link successfully created';
 });
 
