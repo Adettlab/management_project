@@ -1,18 +1,3 @@
-{{-- @props(['active'])
-<div class="group flex items-center">
-    <a class="bg-secondary-white p-2 flex items-center justify-center rounded-full cursor-pointer group hover:bg-[#6FAEC9] {{ $active === 'administration' ? 'bg-sky-blue' : 'bg-white' }}"
-        href="{{ route('administration.index') }}">
-        <svg class="size-6" viewBox="0 0 35 35" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-                class="{{ $active === 'administration' ? 'fill-[#FFFFFF]' : 'fill-[#616161]' }} group-hover:fill-[#FFFFFF]"
-        </svg>
-    </a>
-    <div
-        class="hidden group-hover:block text-sm text-white ml-14 text-center w-32 py-[2px] rounded-md absolute bg-sky-blue bg-white z-50">
-        Administration
-    </div>
-</div> --}}
-
 @props(['active'])
 <div class="sidebar-item flex items-center w-full {{ $active === 'administration' ? 'active' : '' }}"
     data-tooltip="Administration">
