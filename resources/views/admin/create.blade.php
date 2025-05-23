@@ -66,9 +66,9 @@
                             required>
                             <option value="">Enter division</option>
                             @foreach ($roles as $role)
-                                <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
-                                    {{ $role->name }}
-                                </option>
+                                @if ($role->id != 2)
+                                    <option value="{{ $role->id }}">{{ $role->name }}</option>
+                                @endif
                             @endforeach
                         </select>
                         @error('role_id')

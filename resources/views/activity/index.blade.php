@@ -63,7 +63,7 @@
                                 <div class="relative h-4 bg-gray-200 rounded-full overflow-hidden w-80">
                                     <div class="absolute h-full bg-blue-900 rounded-full" style="width: {{$emp->totalWorkDuration > 100 ? 100 : $emp->totalWorkDuration}}%;"></div>
                                     <div class="absolute inset-0 flex items-center justify-center text-xs font-bold {{$emp->totalWorkDuration > 45 ? 'text-white' : 'text-black'}}">
-                                        {{$emp->totalWorkDuration}}%
+                                        {{$emp->totalWorkDuration}}
                                     </div>
                                 </div>
 

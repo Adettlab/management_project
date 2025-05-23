@@ -36,6 +36,3 @@
         @endif
     </nav>
 </div>
-
-{{-- <div class="w-[8.5%] h-screen fixed">
-    <nav class="pt-8 items-center bg-white flex flex-col space-y-7 h-full relative border-r relative z-50"> --}}
