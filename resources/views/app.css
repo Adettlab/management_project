@@ -117,10 +117,6 @@
   background-color: var(--sky-blue-hover);
 }
 
-#sidebar.collapsed #sidebarToggle:hover {
-  background-color: var(--sky-blue-hover);
-}
-
 /* Toggle button rotation */
 #sidebar.expanded #sidebarToggle svg {
     transform: rotate(180deg);
