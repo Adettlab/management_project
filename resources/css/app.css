@@ -13,7 +13,6 @@
   --orange-color: #FFB42E;
   --red-color: #EA4949;
   --sky-blue-color: #6FAEC9;
-  --sky-blue-hover: #3B82F6;
   --dark-blue-color: #25345B;
 }
 
@@ -81,10 +80,6 @@
   background-color: var(--sky-blue-color);
 }
 
-.bg-sky-blue-hover {
-  background-color: var(--sky-blue-hover);
-}
-
 .dark-blue {
   color: var(--dark-blue-color);
 }
@@ -93,118 +88,25 @@
   background-color: var(--dark-blue-color);
 }
 
-/* Sidebar CSS (resources/css/sidebar.css) */
-
-/* Sidebar States */
-#sidebar.collapsed {
-    width: 5rem; /* ~72px */
-}
-
-#sidebar.expanded {
-    width: 13rem; /* ~256px */
-}
-
-/* Main content adjustment */
-.sidebar-collapsed {
-    margin-left: 4.5rem;
-}
-
-.sidebar-expanded {
-    margin-left: 13rem;
-}
-
-#sidebar.expanded #sidebarToggle:hover {
-  background-color: var(--sky-blue-hover);
-}
-
-#sidebar.collapsed #sidebarToggle:hover {
-  background-color: var(--sky-blue-hover);
-}
-
-/* Toggle button rotation */
-#sidebar.expanded #sidebarToggle svg {
-    transform: rotate(180deg);
-}
-
-#sidebar.expanded .sidebar-item {
-  background-color: var(--secondary-white-color);
-  border-radius: 0.6rem;
-}
-
-#sidebar.expanded .sidebar-item:hover {
-  background-color: var(--sky-blue-color);
-  color: white;
-}
-
-#sidebar.expanded .sidebar-item.active {
-  background-color: var(--sky-blue-color);
-  color: white;
-}
-
-/* Sidebar item styling for expanded and collapsed state */
-#sidebar.expanded .sidebar-item a {
-    border-radius: 0.5rem;
-    padding: 0.75rem;
-    width: 100%;
-    margin-left: 0.6rem;
-    justify-content: left; /* Center the text when expanded */
-}
-
-#sidebar.collapsed .sidebar-item {
-}
-
-#sidebar.collapsed .sidebar-item a {
-    border-radius: 9999px;
-    padding: 1rem;
-    justify-content: center;
-    width: 3rem;
-    height: 3rem;
-    background-color: var(--secondary-white-color);
-}
-
-#sidebar.collapsed .sidebar-item a:hover {
-  background-color: var(--sky-blue-color);
-  fill: white;
-}
-
-#sidebar.collapsed .sidebar-item a .sidebar-icon:hover {
-  fill: white;
-}
-
-#sidebar.collapsed .sidebar-item a.active {
-  background-color: var(--sky-blue-color);
-  fill: white;
-}
-
-#sidebar.collapsed .sidebar-item:hover::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    left: 100%;
-    background-color: var(--sky-blue-color);
-    color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    white-space: nowrap;
-    margin-left: 0.4rem;
-    z-index: 1000;
-    opacity: 0;
-    animation: fadeIn 0.2s forwards;
-}
-
-@keyframes fadeIn {
-    to {
-        opacity: 1;
+@layer utilities {
+    .bg-sky-blue {
+        background-color: var(--sky-blue-color);
     }
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-    #sidebar.expanded {
-        width: 14rem;
+    .fill-[\#151A21] {
+        fill: #151A21;
     }
-    
-    .sidebar-expanded {
-        margin-left: 14rem;
+    .text-sm {
+        font-size: 14px
+    }
+
+    @screen sm {
+        .sm\:bg-sky-blue {
+            background-color: var(--sky-blue-color);
+        }
+    }
+    @screen xs {
+        .xs\:hover\:fill-\[\#6FAEC9\]:hover {
+            fill: var(--sky-blue-color);
+        }
     }
 }

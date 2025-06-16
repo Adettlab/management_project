@@ -1,31 +1,29 @@
 <x-layouts.layout :title="$title" :active="$active">
     <!-- Main Content -->
-    <main class="sm:h-[80vh] xs:h-100 flex sm:flex-row xs:flex-col-reverse">
-        <div class="flex sm:w-7/12 xs:w-[100%] sm:m-0 xs:m-auto">
+    <main class="h-[80vh] flex flex-col sm:flex sm:flex-row">
+        <div class="md:flex w-full md:w-7/12">
             {{-- Status SDM start --}}
-            <div class="sm:border h-full w-full flex flex-col rounded-2xl sm:bg-white xs:bg-primary-white p-4">
-                <div class="flex sm:justify-between xs:justify-between">
+            <div class="border h-full w-full flex flex-col rounded-2xl bg-white p-4">
+                <div class="flex justify-between">
                     <button id="ready-btn"
-                        class="status-btn border text-black sm:py-[3px] xss:py-[7px] xs:py-[6px] xs:text-[9px] xss:text-[11px] sm:text-base font-medium rounded-lg sm:w-[100px] xss:w-[78px] xs:w-[65px] text-center hover:hover:bg-black hover:text-white bg-black text-white"
-                        data-content="Ready" onclick="filterByStatus('ready')" data-status="ready">Ready</button>
+                        class="status-btn border text-black py-[3px] font-medium rounded-lg w-[100px] text-center hover:hover:bg-black hover:text-white bg-black text-white"
+                        data-content="Ready" onclick="filterByStatus('ready')">Ready</button>
                     <button id="standby-btn"
-                        class="status-btn border text-black sm:py-[3px] xss:py-[7px] xs:py-[6px] xs:text-[9px] xss:text-[11px] sm:text-base font-medium rounded-lg sm:w-[100px] xss:w-[78px] xs:w-[65px] text-center hover:bg-black hover:text-white"
-                        data-content="Standby" onclick="filterByStatus('Stand By')" data-status="Stand By">Stand
-                        by</button>
+                        class="status-btn border text-black py-[3px] font-medium rounded-lg w-[100px] text-center hover:bg-black hover:text-white"
+                        data-content="Standby" onclick="filterByStatus('Stand By')">Stand by</button>
                     <button id="not-ready-btn"
-                        class="status-btn border text-black sm:py-[3px] xss:py-[7px] xs:py-[6px] xs:text-[9px] xss:text-[11px] sm:text-base font-medium rounded-lg sm:w-[100px] xss:w-[78px] xs:w-[65px] text-center hover:bg-black hover:text-white"
-                        data-content="Not Ready" onclick="filterByStatus('not ready')" data-status="not ready">Not
+                        class="status-btn border text-black py-[3px] font-medium rounded-lg w-[100px] text-center hover:bg-black hover:text-white"
+                        data-content="Not Ready" onclick="filterByStatus('not ready')">Not
                         Ready</button>
                     <button id="attend-btn"
-                        class="status-btn border text-black sm:py-[3px] xss:py-[7px] xs:py-[6px] xs:text-[9px] xss:text-[11px] sm:text-base font-medium rounded-lg sm:w-[100px] xss:w-[78px] xs:w-[65px] text-center hover:bg-black hover:text-white"
-                        data-content="Attend" onclick="filterByStatus('Completed')"
-                        data-status="Completed">Completed</button>
+                        class="status-btn border text-black py-[3px] font-medium rounded-lg w-[100px] text-center hover:bg-black hover:text-white"
+                        data-content="Attend" onclick="filterByStatus('Completed')">Completed</button>
                     <button id="absent-btn"
-                        class="status-btn border text-black sm:py-[3px] xss:py-[7px] xs:py-[6px] xs:text-[9px] xss:text-[11px] sm:text-base font-medium rounded-lg sm:w-[100px] xss:w-[78px] xs:w-[65px] text-center hover:bg-black hover:text-white"
-                        data-content="Absent" onclick="filterByStatus('absent')" data-status="absent">Absent</button>
+                        class="status-btn border text-black py-[3px] font-medium rounded-lg w-[100px] text-center hover:bg-black hover:text-white"
+                        data-content="Absent" onclick="filterByStatus('absent')">Absent</button>
                 </div>
                 <div class="h-[calc(100vh-200px)] overflow-y-auto mt-2">
-                    <div class="grid sm:grid-cols-3 gap-3 mt-5">
+                    <div class="grid grid-cols-3 gap-3 mt-5">
                         @forelse ($employees as $index => $employee)
                             @if (strtolower($filter) == 'ready' || strtolower($filter) == 'completed')
                                 @php
@@ -38,45 +36,38 @@
                                         })
                                         ->first();
                                 @endphp
-                                <div
-                                    class="border xs:shadow-[0_0_0_0.5px_rgba(0,0,0,0.15)] sm:shadow-none rounded-md sm:p-4 xs:p-3 xs:m-auto sm:m-0 h-fit sm:w-auto xs:w-[100%] max-h-full sm:block xs:grid xs:grid-rows-2 xs:grid-flow-col xs:relative">
-                                    <div class="flex xs:items-center">
+                                <div class="border rounded-md p-4 h-fit max-h-full">
+                                    <div class="flex">
                                         @if ($employee->photo)
                                             <img src="{{ asset('/storage/' . $employee->photo) }}" alt="Photo"
                                                 class="w-12 h-12 rounded-full object-cover" loading="lazy">
                                         @else
                                             <div
-                                                class="sm:w-12 sm:h-12 xs:w-10 xs:h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                                class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
                                                 <img src="{{ asset('blank_profile.png') }}" alt="Photo"
                                                     class="w-9 h-9 rounded-full object-cover" loading="lazy">
                                             </div>
                                         @endif
                                         <div class="flex flex-col justify-center ml-2">
-                                            <p class="font-semibold sm:text-sm xs:text-[12px]">
-                                                {{ $employee->user->name }}</p>
-                                            <p class="sm:text-xs primary-gray xs:text-[11px] xs:-mt-0.5 sm:mt-0">
-                                                {{ $employee->role->name }}</p>
+                                            <p class="font-semibold text-sm">{{ $employee->user->name }}</p>
+                                            <p class="text-xs primary-gray">{{ $employee->role->name }}</p>
                                         </div>
                                     </div>
-                                    <p
-                                        class="sm:text-sm xs:text-[12px] font-black mt-2 sm:static xs:absolute xs:bottom-7 xs:left-[18px]">
-                                        Working on
-                                        {{ $employee->projects->firstWhere('id', $firstTask->project_id)->name }} :
+                                    <p class="text-sm font-black mt-2">Working on
+                                        {{ $employee->projects->firstWhere('id', $firstTask->project_id)?->name }} :
                                     </p>
                                     <div>
                                         @if ($firstTask)
-                                            <div
-                                                class="sm:text-xs xs:text-[11px] primary-gray font-medium mb-8 mt-2 sm:static xs:absolute xs:-bottom-5 xs:left-5">
+                                            <div class="text-xs primary-gray font-medium mb-8 mt-2">
                                                 {{ $firstTask->name }}
                                             </div>
-                                            <div
-                                                class="flex mt-3 gap-x-2 xs:absolute sm:static xs:right-3 xs:top-[3px]">
+                                            <div class="flex mt-3 gap-x-2">
                                                 <p
-                                                    class="px-3 py-1 rounded-md font-medium sm:text-xs xs:text-[10px] {{ strtolower($firstTask->taskStatus->name) === 'completed' ? 'bg-primary-green text-white' : 'bg-secondary-white primary-gray' }}">
+                                                    class="px-3 py-1 rounded-md font-medium text-xs {{ strtolower($firstTask->taskStatus->name) === 'completed' ? 'bg-primary-green text-white' : 'bg-secondary-white primary-gray' }}">
                                                     {{ $firstTask->taskStatus->name }}
                                                 </p>
                                                 <p style="background-color: {{ $firstTask->taskLevel->color }}"
-                                                    class="sm:text-xs xs:text-[10px] px-3 py-1 rounded-md text-white font-medium">
+                                                    class="text-xs px-3 py-1 rounded-md text-white font-medium">
                                                     {{ $firstTask->taskLevel->name }}
                                                 </p>
                                             </div>
@@ -84,59 +75,49 @@
                                     </div>
                                 </div>
                             @elseif (strtolower($filter) == 'absent')
-                                <div
-                                    class="border rounded-md p-4 h-fit max-h-full xs:shadow-[0_0_0_0.5px_rgba(0,0,0,0.15)] sm:shadow-none">
+                                <div class="border rounded-md p-4 h-fit max-h-full">
                                     <div class="flex">
                                         @if ($employee->photo)
                                             <img src="{{ asset('/storage/' . $employee->photo) }}" alt="Photo"
-                                                class="sm:w-12 sm:h-12 xs:w-11 xs:h-11 rounded-full object-cover"
-                                                loading="lazy">
+                                                class="w-12 h-12 rounded-full object-cover" loading="lazy">
                                         @else
                                             <div
                                                 class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
                                                 <img src="{{ asset('blank_profile.png') }}" alt="Photo"
-                                                    class="sm:w-9 sm:h-9 xs:w-8 xs:h-8 rounded-full object-cover"
-                                                    loading="lazy">
+                                                    class="w-9 h-9 rounded-full object-cover" loading="lazy">
                                             </div>
                                         @endif
                                         <div class="flex flex-col justify-center ml-2">
-                                            <p class="font-semibold sm:text-sm xs:text-[12px]">
-                                                {{ $employee->user->name }}</p>
-                                            <p class="sm:text-xs xs:text-[11px] primary-gray">
+                                            <p class="font-semibold text-sm">{{ $employee->user->name }}</p>
+                                            <p class="text-xs primary-gray">
                                                 {{ \Carbon\Carbon::parse($employee->administration->start_date)->diffInDays($employee->administration->end_date) + 1 }}
                                                 day off
                                             </p>
                                         </div>
                                     </div>
-                                    <p class="sm:text-sm xs:text-[12px] font-black mt-2 mb-2">
+                                    <p class="text-sm font-black mt-2 mb-2">
                                         {{ $employee->administration->leavecategory->name }}
                                     </p>
                                     <div>
-                                        <p class="sm:text-xs xs:text-[11px] w-fit">
-                                            {{ $employee->administration->description }}</p>
+                                        <p class="text-xs w-fit">{{ $employee->administration->description }}</p>
                                     </div>
                                 </div>
                             @else
-                                <div
-                                    class="border rounded-md p-2 xs:shadow-[0_0_0_0.5px_rgba(0,0,0,0.15)] sm:shadow-none max-h-full h-fit">
+                                <div class="border rounded-md p-2 max-h-full h-fit">
                                     <div class="flex">
                                         @if ($employee->photo)
                                             <img src="{{ asset('/storage/' . $employee->photo) }}" alt="Photo"
-                                                class="sm:w-12 sm:h-12 xs:w-11 xs:h-11 rounded-full object-cover"
-                                                loading="lazy">
+                                                class="w-12 h-12 rounded-full object-cover" loading="lazy">
                                         @else
                                             <div
-                                                class="sm:w-12 sm:h-12 xs:w-11 xs:h-11 rounded-full bg-gray-100 flex items-center justify-center">
+                                                class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
                                                 <img src="{{ asset('blank_profile.png') }}" alt="Photo"
-                                                    class="sm:w-9 sm:h-9 xs:w-8 xs:h-8 rounded-full object-cover"
-                                                    loading="lazy">
+                                                    class="w-9 h-9 rounded-full object-cover" loading="lazy">
                                             </div>
                                         @endif
                                         <div class="flex flex-col justify-center ml-2">
-                                            <p class="font-semibold sm:text-sm xs:text-[12px]">
-                                                {{ $employee->user->name }}</p>
-                                            <p class="sm:text-xs xs:text-[11px] primary-gray">
-                                                {{ $employee->role->name }}</p>
+                                            <p class="font-semibold text-sm">{{ $employee->user->name }}</p>
+                                            <p class="text-xs primary-gray">{{ $employee->role->name }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -151,14 +132,13 @@
             </div>
             {{-- Status SDM end --}}
         </div>
-        <div class="sm:w-5/12 xs:w-[100%] sm:ml-3 sm:block xs:flex xs:items-center overflow-x-auto">
-            <div class="flex sm:h-3/5 w-auto xs:h-[23vh] space-x-3 xs:px-3 sm:px-0 pb-2">
+        <div class="md:w-5/12 ml-3">
+            <div class="flex h-3/5 space-x-3 pb-2">
                 {{-- Tasks start --}}
-                <div
-                    class="bg-primary-green border rounded-2xl rounded px-3 py-3 primary-white sm:w-1/2 xs:w-[65vw] overflow-x-auto overflow-y-hidden">
-                    <div class="font-medium sm:text-base xs:text-[14px] flex gap-x-1 items-center">
+                <div class="bg-primary-green border rounded-2xl rounded px-3 py-3 primary-white w-1/2">
+                    <div class="font-medium text-base flex gap-x-1 items-center">
                         <div>
-                            <svg class="sm:size-[22px] xs:size-[20px]" viewBox="0 0 35 35" fill="#fcfcfc"
+                            <svg class="size-[22px]" viewBox="0 0 35 35" fill="#fcfcfc"
                                 xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     d="M20.4154 2.9165H8.7487C7.14453 2.9165 5.84661 4.229 5.84661 5.83317L5.83203 29.1665C5.83203 30.7707 7.12995 32.0832 8.73411 32.0832H26.2487C27.8529 32.0832 29.1654 30.7707 29.1654 29.1665V11.6665L20.4154 2.9165ZM15.9529 26.2498L10.7904 21.0873L12.8466 19.0311L15.9383 22.1228L22.1216 15.9394L24.1779 17.9957L15.9529 26.2498ZM18.957 13.1248V5.104L26.9779 13.1248H18.957Z" />
@@ -166,33 +146,30 @@
                         </div>
                         Tasks
                     </div>
-                    <div
-                        class="flex-row space-y-2 mt-2 items-center justify-center h-full max-h-full pb-10 overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    <div class="flex items-center justify-center h-full pb-10">
                         <p>you have 0 tasks</p>
                     </div>
                 </div>
                 {{-- Tasks end --}}
                 {{-- Project start --}}
-                <div
-                    class="bg-primary-orange border rounded-2xl rounded px-3 py-3 primary-white sm:w-1/2 xs:w-[65vw] overflow-x-auto overflow-y-hidden">
+                <div class="bg-primary-orange border rounded-2xl rounded px-3 py-3 primary-white w-1/2">
                     <div class="font-medium text-base flex gap-x-1 items-center">
                         <div>
-                            <svg class="sm:size-[22px] xs:size-[20px]" viewBox="0 0 35 35" fill="#fcfcfc"
+                            <svg class="size-[22px]" viewBox="0 0 35 35" fill="#fcfcfc"
                                 xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     d="M30.0781 3.82812H4.92188C4.31689 3.82812 3.82812 4.31689 3.82812 4.92188V30.0781C3.82812 30.6831 4.31689 31.1719 4.92188 31.1719H30.0781C30.6831 31.1719 31.1719 30.6831 31.1719 30.0781V4.92188C31.1719 4.31689 30.6831 3.82812 30.0781 3.82812ZM12.5781 25.4297C12.5781 25.5801 12.4551 25.7031 12.3047 25.7031H9.57031C9.41992 25.7031 9.29688 25.5801 9.29688 25.4297V9.57031C9.29688 9.41992 9.41992 9.29688 9.57031 9.29688H12.3047C12.4551 9.29688 12.5781 9.41992 12.5781 9.57031V25.4297ZM19.1406 15.8594C19.1406 16.0098 19.0176 16.1328 18.8672 16.1328H16.1328C15.9824 16.1328 15.8594 16.0098 15.8594 15.8594V9.57031C15.8594 9.41992 15.9824 9.29688 16.1328 9.29688H18.8672C19.0176 9.29688 19.1406 9.41992 19.1406 9.57031V15.8594ZM25.7031 18.3203C25.7031 18.4707 25.5801 18.5938 25.4297 18.5938H22.6953C22.5449 18.5938 22.4219 18.4707 22.4219 18.3203V9.57031C22.4219 9.41992 22.5449 9.29688 22.6953 9.29688H25.4297C25.5801 9.29688 25.7031 9.41992 25.7031 9.57031V18.3203Z" />
                             </svg>
                         </div>
-                        projects
+                        Project
                     </div>
-                    <div
-                        class="flex-row sm:space-y-2 xs:space-y-1 mt-2 items-center justify-center h-full max-h-full pb-10 overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    <div class="flex items-center justify-center h-full pb-10">
                         <p>There’s no project</p>
                     </div>
                 </div>
                 {{-- Project end --}}
             </div>
-            <div class="h-2/5 hidden sm:block">
+            <div class="h-2/5">
                 {{-- Activity start --}}
                 <div class="bg-white rounded-2xl rounded border px-3 py-3 h-full">
                     <div class="font-medium text-base items-center flex gap-x-1 primary-gray">
@@ -206,7 +183,7 @@
                         </div>
                         Activity
                     </div>
-                    <div class="flex items-center justify-center h-full pb-8">
+                    <div class="flex items-center justify-center h-full pb-10">
                         <p>There’s no project</p>
                     </div>
                 </div>

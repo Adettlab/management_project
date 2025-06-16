@@ -1,15 +1,12 @@
 <x-layout-app :title="$title">
-    {{-- @vite('resources/css/app.css') --}}
-    <div class="flex flex-col">
+    <div class="flex flex-col min-h-screen">
         <!-- Navbar -->
         <x-layouts.navbar :title="$title" :active="$active ?? ''" />
-
         <div class="flex flex-1">
             <!-- Sidebar -->
             <x-layouts.sidebar :active="$active ?? ''" />
-
             <!-- Main Content -->
-            <main class="flex-1 sm:px-6 py-4 sm:ml-[8%] overflow-hidden xs:pb-[9vh] sm:pb-0">
+            <main id="mainContent" class="flex-1 px-6 py-4 transition-all duration-300 sidebar-collapsed">
                 {{ $slot }}
             </main>
         </div>

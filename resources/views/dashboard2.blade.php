@@ -166,9 +166,36 @@
                         </div>
                         Tasks
                     </div>
-                    <div
-                        class="flex-row space-y-2 mt-2 items-center justify-center h-full max-h-full pb-10 overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                        <p>you have 0 tasks</p>
+                    <div class="flex-row space-y-2 mt-2 items-center justify-center h-full max-h-full pb-10 overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                        id="taskContainer">
+                        @forelse ($tasksnprojects['tasks'] as $task)
+                            <div class="bg-white h-fit w-full border-0 px-3 py-2 rounded-md sm:space-y-4 xs:space-y-2">
+                                <p class="text-black sm:text-sm xs:text-[12px] font-bold">{{ $task->name }}</p>
+
+                                <p class="text-gray-400 sm:text-xs xs:text-[11px]">
+                                    {{ \Carbon\Carbon::parse($task->created_at)->locale('id')->isoFormat('dddd, D MMMM YYYY') }}
+                                </p>
+                                <div class="flex justify-between items-start">
+                                    <p class="sm:text-[10px] xs:text-[8px] font-medium px-2 py-[2px] rounded-md text-white"
+                                        style="background-color: {{ $task->tasklevel->color }}">
+                                        {{ $task->tasklevel->name }}</p>
+                                    @if ($task->accepted)
+                                        <p
+                                            class="sm:text-[10px] xs:text-[8px] font-medium px-2 py-[8px] rounded-md text-black bg-zinc-200 border shadow">
+                                            Accepted</p>
+                                    @else
+                                        <div id="accepted" class="flex items-center">
+                                            <button
+                                                class="sm:text-[10px] xs:text-[8px] font-medium px-2 py-[2px] rounded-md text-white bg-red-500 border shadow"
+                                                onclick="updateAccept({{ $task->id }})">Accept</button>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @empty
+                            <p class="mx-auto h-full flex justify-center items-center" id="notask">you have 0 tasks
+                            </p>
+                        @endforelse
                     </div>
                 </div>
                 {{-- Tasks end --}}
@@ -187,7 +214,24 @@
                     </div>
                     <div
                         class="flex-row sm:space-y-2 xs:space-y-1 mt-2 items-center justify-center h-full max-h-full pb-10 overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                        <p>There’s no project</p>
+                        @forelse ($tasksnprojects['projects'] as $project)
+                            <div class="bg-white mb-2 w-full border-0 px-3 py-2 rounded-md">
+                                <p class="text-black sm:text-sm xs:text-[12px] font-bold">{{ $project->name }}</p>
+                                <p class="text-gray-400 sm:text-xs xs:text-[11px] mt-2">
+                                    {{ \Carbon\Carbon::parse($project->start_date)->locale('id')->isoFormat('D MMMM YYYY') }}
+                                    -
+                                    {{ \Carbon\Carbon::parse($project->end_date)->locale('id')->isoFormat('D MMMM YYYY') }}
+                                </p>
+                                <p class="text-gray-400 text-xs mt-2">{{ $project->description }}</p>
+                                <div class="flex justify-between items-start mt-2">
+                                    <p class="sm:text-[10px] xs:text-[8px] font-medium px-2 py-[2px] rounded-md text-white"
+                                        style="background-color: {{ $project->status->color }}">
+                                        {{ $project->status->name }}</p>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="h-full flex justify-center items-center">There's no project</p>
+                        @endforelse
                     </div>
                 </div>
                 {{-- Project end --}}
@@ -204,10 +248,11 @@
                                     fill="#616161" />
                             </svg>
                         </div>
-                        Activity
+                        {{-- Activity --}}
                     </div>
                     <div class="flex items-center justify-center h-full pb-8">
-                        <p>There’s no project</p>
+                        <canvas id="canvasActivity" class="w-full h-full px-2 text-xl mt-4">
+                        </canvas>
                     </div>
                 </div>
                 {{-- Activity end --}}
@@ -215,35 +260,89 @@
         </div>
     </main>
 </x-layouts.layout>
-
+@vite('resources/js/chart.js')
 <script>
+    const basepath = window.location.pathname.split('/dashboard')[0];
+    const taskContainer = document.getElementById('taskContainer');
+    const employeeId = @js(auth()->user()->employee ? auth()->user()->employee->id : '');
+    window.employeeID = employeeId;
+    const notask = document.getElementById('notask');
+    window.yearActivity = @js($yearActivity);
+    let retryCount = 0;
+    let eventsource = null;
+
     function filterByStatus(status) {
         const url = new URL(window.location.href);
         url.searchParams.set('status', status);
         window.location.href = url.toString();
     }
 
-    // Fungsi untuk mengatur status aktif berdasarkan tombol
+    function appendTaskToDOM(task) {
+        if (notask) {
+            notask.remove();
+        }
+        const taskContainer = document.getElementById('taskContainer');
+
+        // Create the task element
+        const taskElement = document.createElement('div');
+        taskElement.className = 'bg-white h-fit w-full border-0 px-3 py-2 rounded-md space-y-4';
+
+        // Add task name
+        const taskName = document.createElement('p');
+        taskName.className = 'text-black text-sm font-bold';
+        taskName.textContent = task.task.task.name;
+        taskElement.appendChild(taskName);
+        // Add task creation date
+
+        const taskDate = document.createElement('p');
+        taskDate.className = 'text-gray-400 text-xs';
+        taskDate.textContent = new Date(task.task.task.created_at).toLocaleDateString('id-ID', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        taskElement.appendChild(taskDate);
+
+        // Add task level
+        const taskLevel = document.createElement('div');
+        taskLevel.className = 'flex justify-between items-start';
+
+        const levelBadge = document.createElement('p');
+        levelBadge.className = 'text-[10px] font-medium px-2 py-[2px] rounded-md text-white';
+        levelBadge.style.backgroundColor = task.task.task.task_level.color;
+        levelBadge.textContent = task.task.task.task_level.name;
+        taskLevel.appendChild(levelBadge);
+
+        taskElement.appendChild(taskLevel);
+
+        taskContainer.appendChild(taskElement);
+    }
+
     function setActiveStatus(button) {
         const content = document.getElementById('status-content');
         if (content) {
             content.textContent = button.getAttribute('data-content');
         }
-
         // Reset semua tombol ke status default
         document.querySelectorAll('.status-btn').forEach(btn => {
             btn.classList.remove('bg-black', 'text-white');
         });
-
         // Tambahkan class Tailwind ke tombol yang aktif
         button.classList.add('bg-black', 'text-white');
+        const url = new URL(window.location.href);
+        url.searchParams.set('status', button.getAttribute('data-status'));
+        window.history.pushState({}, '', url.toString());
     }
 
     // Inisialisasi default ke tombol "Ready"
     window.addEventListener('DOMContentLoaded', () => {
+        if (employeeId) {
+            //streamTaskNotification();
+        }
         const params = new URLSearchParams(window.location.search);
-        const status = params.get('status') || 'ready';
-        const activeButton = document.querySelector(`[onclick="filterByStatus('${status}')"]`);
+        const stat = params.get('status') || 'ready';
+        const activeButton = document.querySelector(`[data-status="${stat}"]`);
         if (activeButton) {
             setActiveStatus(activeButton);
         }
@@ -255,4 +354,23 @@
             setActiveStatus(this);
         });
     });
+
+    async function updateAccept(id) {
+        console.log('this one is clicked')
+        const accepted = document.getElementById('accepted');
+        const response =
+            `<p class="sm:text-[10px] xs:text-[8px] font-medium px-2 py-[2px] rounded-md text-black bg-zinc-200 border shadow">Accepted</p>`
+        await fetch(`${basepath}/tasks/accepted/${id}`, {
+            method: "POST",
+            headers: {
+                'content-type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            }
+        }).then(res => {
+            if (res.ok) {
+                accepted.removeChild(accepted.firstElementChild);
+                accepted.innerHTML = response;
+            }
+        })
+    }
 </script>

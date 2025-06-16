@@ -1,38 +1,26 @@
-<div id="sidebar" class="h-screen fixed transition-all duration-300 collapsed bg-white border-r z-50">
-    <!-- Toggle Button -->
-    <button id="sidebarToggle"
-        class="absolute -right-3 top-1 bg-sky-blue text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-[#6FAEC9] transition-colors z-60">
-        <svg class="w-3 h-3 transition-transform duration-300" viewBox="0 0 24 24" fill="none"
-            xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round" />
-        </svg>
-    </button>
-
-    <nav class="pt-8 items-start bg-white flex flex-col space-y-4 h-full px-4">
-
+<div class="sm:w-[8.5%] sm:h-screen xs:w-screen xs:h-[9vh] xs:bottom-0 sm:bottom-auto fixed z-10">
+    <nav
+        class="sm:shadow-none xs:shadow-[0px_0px_3px_5px_rgba(0,0,0,0.03)] sm:pt-8 xs:pt-2 xs:pb-4 sm:pb-0 sm:items-center xs:items-start bg-white flex sm:flex-col xs:flex-row sm:space-y-7 xs:space-x-6 sm:space-x-0 sm:justify-normal xs:justify-center h-full border-r relative z-50">
         {{-- dashboard --}}
-        <x-sidebar.dashboard :active="$active" :expanded="true" />
+        <x-sidebar.dashboard :active="$active" />
 
         {{-- project --}}
-        <x-sidebar.project :active="$active" :expanded="true" />
+        <x-sidebar.project :active="$active" />
 
         {{-- tasks --}}
-        @if (auth()->user()->employee)
-            <x-sidebar.tasks :active="$active" :expanded="true" />
-        @endif
+        <x-sidebar.tasks :active="$active" />
 
         {{-- activity --}}
-        <x-sidebar.activity :active="$active" :expanded="true" />
+        <x-sidebar.activity :active="$active" />
 
         {{-- Administration --}}
-        @if (auth()->user()->employee)
-            <x-sidebar.administration :active="$active" :expanded="true" />
-        @endif
+        <x-sidebar.administration :active="$active" />
 
         {{-- admin --}}
-        @if (!auth()->user()->employee)
-            <x-sidebar.admin :active="$active" :expanded="true" />
-        @endif
+        <div class="sm:block xs:hidden">
+            @if (!auth()->user()->employee)
+                <x-sidebar.admin :active="$active" />
+            @endif
+        </div>
     </nav>
 </div>
