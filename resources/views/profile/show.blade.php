@@ -91,7 +91,7 @@
         </form>
 
 
-        <div class="px-5 pb-7 pt-2 mb-4">
+        {{-- <div class="px-5 pb-7 pt-2 mb-4">
              <div class="max-w-sm">
                 <div class="text-sm text-gray-600 mb-2">Work hours</div>
                 <div class="flex items-center">
@@ -111,7 +111,7 @@
                     </div>
                 @endif
             </div>
-        </div>
+        </div> --}}
     </div>
 </x-layouts.layout>
 <script>

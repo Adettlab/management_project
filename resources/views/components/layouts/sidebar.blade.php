@@ -11,21 +11,35 @@
 
     <nav class="pt-8 items-start bg-white flex flex-col space-y-4 h-full px-4">
 
-        {{-- dashboard --}}
+        {{-- Dashboard - selalu tampil --}}
         <x-sidebar.dashboard :active="$active" :expanded="true" />
 
-        {{-- project --}}
-        <x-sidebar.project :active="$active" :expanded="true" />
+        {{-- Projects - cek permission hybrid --}}
+        @if (auth()->user()->hasPermission('projects', 'view'))
+            <x-sidebar.project :active="$active" :expanded="true" />
+        @endif
 
-        {{-- tasks --}}
-        @if (auth()->user()->employee)
+        {{-- Tasks - cek permission hybrid + fallback employee --}}
+        @php
+            $canViewTasks = false;
+            
+            // Cek custom permission dulu
+            if (auth()->user()->hasCustomPermissions()) {
+                $canViewTasks = auth()->user()->hasPermission('tasks', 'view');
+            } else {
+                // Fallback ke logic lama: hanya employee yang bisa lihat tasks
+                $canViewTasks = auth()->user()->employee ? true : false;
+            }
+        @endphp
+        
+        @if ($canViewTasks)
             <x-sidebar.tasks :active="$active" :expanded="true" />
         @endif
 
-        {{-- activity --}}
+        {{-- Activity - selalu tampil --}}
         <x-sidebar.activity :active="$active" :expanded="true" />
 
-        {{-- Administration --}}
+          {{-- Administration --}}
         @if (auth()->user()->employee)
             <x-sidebar.administration :active="$active" :expanded="true" />
         @endif
@@ -34,5 +48,6 @@
         @if (!auth()->user()->employee)
             <x-sidebar.admin :active="$active" :expanded="true" />
         @endif
+
     </nav>
 </div>

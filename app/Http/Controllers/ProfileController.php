@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
-class UserController extends Controller
+class ProfileController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -42,7 +42,7 @@ class UserController extends Controller
 
         $user->totalWorkDuration = $workhour;
 
-        return view('users.show', [
+        return view('profile.show', [
             'title' => 'Profile',
             'active' => 'users',
             'user' => $user,

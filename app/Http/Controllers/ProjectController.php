@@ -19,13 +19,25 @@ class ProjectController extends Controller
 
     public function __construct()
     {
+        // PERBAIKAN: Ganti dengan permission system yang baru
         $this->middleware(function ($request, $next) {
-            if ($this->isAuthorized()) {
+            $user = auth()->user();
+            
+            $action = 'view';
+            if (in_array($request->route()->getActionMethod(), ['create', 'store'])) {
+                $action = 'create';
+            } elseif (in_array($request->route()->getActionMethod(), ['edit', 'update'])) {
+                $action = 'update';
+            } elseif ($request->route()->getActionMethod() === 'destroy') {
+                $action = 'delete';
+            }
+            
+            if ($user->hasPermission('projects', $action)) {
                 return $next($request);
             }
 
-            return redirect()->route('projects.index');
-        })->only(['create', 'store', 'edit', 'update', 'destroy']);
+            abort(403, 'You do not have permission to access this page.');
+        });
     }
 
     public function index(Request $request)
@@ -46,18 +58,24 @@ class ProjectController extends Controller
             ->whereHas('role', fn ($q) => $q->where('name', 'Project Director'))
             ->get();
 
+        // PERBAIKAN: Tambah permission data untuk view
+        $pagePermissions = $user->getPagePermissions('projects');
+
         return view('project.index', [
             'title' => 'Projects',
             'active' => 'projects',
             'projects' => $projects,
             'directors' => $directors,
             'statuses' => ProjectStatus::all(),
+            'canCreate' => $pagePermissions['allow_create'],
+            'canUpdate' => $pagePermissions['allow_update'],
+            'canDelete' => $pagePermissions['allow_delete'],
         ]);
     }
 
     private function applyFilters(Builder $query, Request $request, $user)
     {
-        if ($user->employee) {
+       if ($user->employee) {
             $query->whereHas('employees', function ($q) use ($user) {
                 $q->where('employees.id', $user->employee->id)
                   ->where('project_employees.isformeremployee', 0);
@@ -94,6 +112,11 @@ class ProjectController extends Controller
 
     public function edit(Project $project)
     {
+        // PERBAIKAN: Cek akses individual project
+        if (!$this->canUserAccessProject(auth()->user(), $project)) {
+            abort(403, 'You do not have permission to edit this project.');
+        }
+
         $project->load(['employees' => function ($q) {
             $q->where('isformeremployee', false);
         }, 'level', 'status']);
@@ -128,6 +151,51 @@ class ProjectController extends Controller
         ], $this->getFormData());
     }
 
+    public function show(string $id)
+    {
+        $project = Project::with(['level', 'status', 'employees.user'])->findOrFail($id);
+
+        // PERBAIKAN: Cek akses individual project
+        if (!$this->canUserAccessProject(auth()->user(), $project)) {
+            abort(403, 'You do not have permission to view this project.');
+        }
+
+        $pagePermissions = auth()->user()->getPagePermissions('projects');
+
+        return view('project.show', [
+            'title' => 'Project Details',
+            'active' => 'projects',
+            'project' => $project,
+            'canUpdate' => $pagePermissions['allow_update'],
+            'canDelete' => $pagePermissions['allow_delete'],
+        ]);
+    }
+
+    // PERBAIKAN: Helper method untuk cek akses project
+    private function canUserAccessProject($user, $project)
+    {
+        if ($user->isAdmin()) return true;
+        
+        if ($user->hasCustomPermissions()) {
+            $page = \App\Models\Page::where('name', 'projects')->first();
+            if ($page) {
+                $permission = $user->permissions()->where('page_id', $page->id)->first();
+                if ($permission && $permission->allow_view) return true;
+            }
+        }
+        
+        if ($user->isProjectDirector()) return true;
+        
+        if ($user->employee) {
+            return $project->employees()
+                          ->where('employees.id', $user->employee->id)
+                          ->where('project_employees.isformeremployee', 0)
+                          ->exists();
+        }
+        
+        return false;
+    }
+
     private function getFormData(): array
     {
         if ($this->commonData !== null) {
@@ -141,14 +209,6 @@ class ProjectController extends Controller
         ];
 
         return $this->commonData;
-    }
-
-    private function isAuthorized(): bool
-    {
-        $user = auth()->user();
-
-        return $user->role === 'admin' ||
-               ($user->employee && $user->employee->role->name === 'Project Director');
     }
 
     public function store(Request $request)
@@ -205,37 +265,19 @@ class ProjectController extends Controller
 
             return redirect()->route('projects.index')->with('success', 'Project created successfully.');
         } catch (\Exception $e) {
-            // Rollback transaction if any operation fails
             DB::rollBack();
-
-            // Optionally log the error for debugging
             logger()->error('Error creating project: '.$e->getMessage());
-
-            // Return an error response
             return back()->withInput()->withErrors(['error' => 'Something went wrong. Please try again or contact support']);
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        $project = Project::with(['level', 'status', 'employees.user'])->findOrFail($id);
-
-        return view('project.show', [
-            'title' => 'Project Details',
-            'active' => 'projects',
-            'project' => $project,
-        ]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-
     public function update(Request $request, Project $project)
     {
+        // PERBAIKAN: Cek akses individual project
+        if (!$this->canUserAccessProject(auth()->user(), $project)) {
+            abort(403, 'You do not have permission to update this project.');
+        }
+
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
@@ -319,20 +361,33 @@ class ProjectController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-
             Log::error('Error updating project: ' . $e->getMessage());
             return back()->withInput()->withErrors(['error' => 'Something went wrong. Please try again or contact support']);
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Project $project)
     {
-        $project->delete();
+        // PERBAIKAN: Cek akses individual project
+        if (!$this->canUserAccessProject(auth()->user(), $project)) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'You do not have permission to delete this project.'
+            ], 403);
+        }
 
-        return redirect()->route('projects.index')->with('success', 'Project deleted successfully.');
-
+        try {
+            $project->delete();
+            return response()->json([
+                'success' => true,
+                'message' => 'Project deleted successfully.'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error deleting project: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong. Please try again or contact support.'
+            ], 500);
+        }
     }
 }

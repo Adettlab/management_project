@@ -71,7 +71,7 @@
                     </div>
                     <div class="flex flex-col space-y-2">
                         <label class="block text-lg text-primary-white" for="description">Project Description</label>
-                        <textarea name="description" id="description" rows="2" placeholder="project description.."class="w-full bg-primary-white border border-primary-white px-3 py-1 text-sm rounded focus:outline-none" value="{{old('description', $project->description)}}"></textarea>
+                        <textarea name="description" id="description" rows="2" placeholder="project description.."class="w-full bg-primary-white border border-primary-white px-3 py-1 text-sm rounded focus:outline-none">{{old('description', $project->description)}}</textarea>
                         @error('description')
                             <span class="text-red-600 text-sm">{{ $message }}</span>
                         @enderror
@@ -167,11 +167,10 @@
             </div>
             <!-- Form Buttons -->
             <div class="fixed bottom-4 right-4 flex space-x-4">
-                <a href="{{ url()->previous() }}"
+                <a href="{{ route('projects.index') }}"
                    class="bg-white text-black border border-black px-4 py-2 rounded-md hover:bg-gray-100">Cancel</a>
                 <button type="submit" class="bg-black text-white px-4 py-2 rounded-md">Update</button>
             </div>
         </form>
     </main>
-
 </x-layouts.layout>

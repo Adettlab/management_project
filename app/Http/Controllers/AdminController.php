@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Employee;
 use App\Models\Role;
+use App\Models\Permission;
+use App\Models\Page;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use PhpParser\Node\Stmt\TryCatch;
 
 class AdminController extends Controller
 {
@@ -18,45 +19,31 @@ class AdminController extends Controller
             if (!auth()->user()->employee) {
                 return $next($request);
             }
-
             return redirect()->route('dashboard');
-
         });
     }
 
     public function index(Request $request)
     {
-        // // Periksa apakah pengguna adalah admin
-        // $user = auth()->user(); // Mendapatkan pengguna yang sedang login
-        // if ($user->role !== 'admin') {
-        //   abort(403, 'Anda tidak memiliki akses ke halaman ini.'); // Forbidden
-        // }
-
-        // Ambil query untuk search dan filter
         $search = $request->input('search');
         $roleFilter = $request->input('role');
 
-        // Query employees melalui relasi
         $query = Employee::with(['user', 'role']);
 
-        // Filter berdasarkan search
         if (!empty($search)) {
             $query->whereHas('user', function ($q) use ($search) {
-                $q->where('name', 'LIKE', '%' . $search . '%') // Filter nama user
-                    ->orWhere('email', 'LIKE', '%' . $search . '%'); // Filter email user
+                $q->where('name', 'LIKE', '%' . $search . '%')
+                    ->orWhere('email', 'LIKE', '%' . $search . '%');
             });
         }
 
-        // Filter berdasarkan role (opsional)
         if (!empty($roleFilter)) {
             $query->where('role_id', $roleFilter);
         }
 
-        // Paginate hasil query
         $employees = $query->paginate(10);
-
-        // Ambil semua role
         $roles = Role::all();
+
         return view('admin.index', [
             "title" => "Admin",
             "active" => "admin",
@@ -69,17 +56,17 @@ class AdminController extends Controller
 
     public function create()
     {
-        // // Periksa apakah pengguna adalah admin
-        // $user = auth()->user(); // Mendapatkan pengguna yang sedang login
-        // if ($user->role !== 'admin') {
-        //   abort(403, 'Anda tidak memiliki akses ke halaman ini.'); // Forbidden
-        // }
-
         $roles = Role::all();
+        $pages = Page::all();
+
+        // Exclude dashboard dan activity dari permission checkboxes
+        $pagesForPermissions = $pages->whereNotIn('name', ['dashboard', 'activity','admin']);
+
         return view('admin.create', [
             "title" => "Create User",
             "active" => "admin",
             "roles" => $roles,
+            "pages" => $pagesForPermissions,
         ]);
     }
 
@@ -96,10 +83,11 @@ class AdminController extends Controller
             if ($validated['role_id'] == 2) {
                 return redirect()->back()->withInput()->with('error', 'Tidak bisa membuat akun dengan role Project Director dari sini.');
             }
+
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
-                'password' => $validated['password'],
+                'password' => Hash::make($validated['password']),
                 'role' => 'user',
             ]);
 
@@ -108,9 +96,42 @@ class AdminController extends Controller
                 'role_id' => $validated['role_id'],
             ]);
 
-            return redirect()->route('admin.index')->with('success', 'User created successfully!');
+            // Handle custom permissions HANYA jika ada yang dicentang
+            $permissions = $request->input('permissions', []);
+            $hasCustomPermissions = false;
+
+            foreach ($permissions as $page_id => $permission_data) {
+                // Check apakah ada permission yang di-set
+                $hasAnyPermission = isset($permission_data['allow_create']) ||
+                    isset($permission_data['allow_view']) ||
+                    isset($permission_data['allow_update']) ||
+                    isset($permission_data['allow_delete']);
+
+                if ($hasAnyPermission) {
+                    Permission::create([
+                        'user_id' => $user->id,
+                        'page_id' => $page_id,
+                        'allow_create' => isset($permission_data['allow_create']) ? true : false,
+                        'allow_view' => isset($permission_data['allow_view']) ? true : false,
+                        'allow_update' => isset($permission_data['allow_update']) ? true : false,
+                        'allow_delete' => isset($permission_data['allow_delete']) ? true : false,
+                    ]);
+                    $hasCustomPermissions = true;
+                }
+            }
+
+            // Pesan berdasarkan apakah ada custom permissions atau tidak
+            $message = 'User created successfully!';
+            if ($hasCustomPermissions) {
+                $message .= ' Using custom permissions.';
+            } else {
+                $message .= ' Using default role-based permissions.';
+            }
+
+            return redirect()->route('admin.index')->with('success', $message);
+
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return redirect()->back()->withInput()->with('error', implode(' ', $e->errors()));
+            return redirect()->back()->withInput()->with('error', implode(' ', $e->validator->errors()->all()));
         } catch (\Exception $e) {
             return redirect()->back()->withInput()->with('error', 'Failed to create user: ' . $e->getMessage());
         }
@@ -118,9 +139,28 @@ class AdminController extends Controller
 
     public function edit($id)
     {
-        $employee = Employee::findOrFail($id);
+        $employee = Employee::with(['user.permissions.page'])->findOrFail($id);
         $roles = Role::all();
-        $statuses = Employee::getStatuses();
+        $statuses = ['Kontrak', 'Freelance', 'Tetap', 'Tenaga Ahli'];
+        $pages = Page::whereNotIn('name', ['dashboard', 'activity', 'admin'])->get();
+
+        // Get existing permissions
+        $userPermissions = [];
+        foreach ($employee->user->permissions as $permission) {
+            $userPermissions[$permission->page_id] = [
+                'allow_create' => $permission->allow_create,
+                'allow_view' => $permission->allow_view,
+                'allow_update' => $permission->allow_update,
+                'allow_delete' => $permission->allow_delete,
+            ];
+        }
+
+        // Check if user has custom permissions (exclude dashboard dan activity)
+        $hasCustomPermissions = $employee->user->permissions()
+            ->whereHas('page', function ($query) {
+                $query->whereNotIn('name', ['dashboard', 'activity']);
+            })
+            ->exists();
 
         return view('admin.edit', [
             'title' => 'Edit Employee',
@@ -128,17 +168,19 @@ class AdminController extends Controller
             'employee' => $employee,
             'roles' => $roles,
             'statuses' => $statuses,
+            'pages' => $pages,
+            'userPermissions' => $userPermissions,
+            'hasCustomPermissions' => $hasCustomPermissions,
         ]);
     }
 
     public function update(Request $request, $id)
     {
-
         $employee = Employee::findOrFail($id);
 
         $validated = $request->validate([
             'work_email' => 'required|email|unique:employees,work_email,' . $employee->id,
-            'photo' => 'nullable|image|max:2048', // Maksimum ukuran 2MB
+            'photo' => 'nullable|image|max:2048',
             'nik' => 'nullable|string|max:255|unique:employees,nik,' . $employee->id,
             'status' => 'nullable|in:Kontrak,Freelance,Tetap,Tenaga Ahli',
             'birth_date' => 'nullable|date',
@@ -153,10 +195,40 @@ class AdminController extends Controller
             if ($request->old_photo) {
                 Storage::delete($request->old_photo);
             }
-            $validated['photo'] = $request->file('photo')->store( 'users-image','public');
+            $validated['photo'] = $request->file('photo')->store('users-image', 'public');
         }
-        // Update data employee
+
         $employee->update($validated);
+
+        // Update permissions - SELALU jalankan bagian ini
+        $permissions = $request->input('permissions', []);
+
+        // Delete existing custom permissions (kecuali dashboard dan activity)
+        $defaultPages = Page::whereIn('name', ['dashboard', 'activity'])->pluck('id');
+        Permission::where('user_id', $employee->user_id)
+            ->whereNotIn('page_id', $defaultPages)
+            ->delete();
+
+        // Add new permissions jika ada
+        if (!empty($permissions)) {
+            foreach ($permissions as $page_id => $permission_data) {
+                $hasAnyPermission = isset($permission_data['allow_create']) ||
+                    isset($permission_data['allow_view']) ||
+                    isset($permission_data['allow_update']) ||
+                    isset($permission_data['allow_delete']);
+
+                if ($hasAnyPermission) {
+                    Permission::create([
+                        'user_id' => $employee->user_id,
+                        'page_id' => $page_id,
+                        'allow_create' => isset($permission_data['allow_create']) ? true : false,
+                        'allow_view' => isset($permission_data['allow_view']) ? true : false,
+                        'allow_update' => isset($permission_data['allow_update']) ? true : false,
+                        'allow_delete' => isset($permission_data['allow_delete']) ? true : false,
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('admin.index')->with('success', 'Employee updated successfully!');
     }
@@ -167,6 +239,7 @@ class AdminController extends Controller
             $employee = Employee::findOrFail($id);
             $user = $employee->user;
 
+            Permission::where('user_id', $user->id)->delete();
             $employee->delete();
             $user->delete();
 

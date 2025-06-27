@@ -20,9 +20,7 @@
                         id="roleFilter">
                         <option value="">Filter by division</option>
                         @foreach ($roles as $role)
-                            <option value="{{ $role->id }}" {{ request('role') == $role->id ? 'selected' : '' }}>
-                                {{ $role->name }}
-                            </option>
+                            <option value="{{ $role->id }}" {{ request('role') == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -54,31 +52,24 @@
                 <tbody class="divide-y divide-gray-200">
                     <!-- Row -->
                     @foreach ($employees as $index => $employee)
-                        <tr class="group hover:bg-[#F5F5F5] cursor-pointer font-medium" onclick="window.location='{{ route('admin.edit', $employee->id) }}'">
-                            <td
-                                class="pl-6 py-2 text-sm">
+                        <tr class="group hover:bg-[#F5F5F5] cursor-pointer" onclick="window.location='{{ route('admin.edit', $employee->id) }}'">
+                            <td class="pl-6 py-2 text-sm">
                                 {{ $employees->firstItem() + $index }}
                             </td>
-                            <td
-                                class="px-4 py-2 text-sm">
+                            <td class="px-4 py-2 text-sm">
                                 {{ $employee->user->name ?? 'No username' }}
                             </td>
-                            <td
-                                class="px-2 py-2 text-sm">
+                            <td class="px-2 py-2 text-sm">
                                 {{ $employee->role->name ?? 'No devisi' }}
                             </td>
-                            <td
-                                class="px-4 py-2 text-sm">
+                            <td class="px-4 py-2 text-sm">
                                 {{ $employee->user->role ?? 'No role' }}
                             </td>
-                            <td
-                                class="px-4 py-2 text-sm">
+                            <td class="px-4 py-2 text-sm">
                                 {{ $employee->user->email ?? 'No email' }}
                             </td>
                             <td class="py-2 text-sm">
-                                <button type="button"
-                                    class="bg-primary-red text-white px-2 py-[3px] text-sm rounded-lg delete-btn-user"
-                                    data-id="{{ $employee->id }}">
+                                <button type="button" class="bg-primary-red text-white px-2 py-[3px] text-sm rounded-lg delete-btn-user" data-id="{{ $employee->id }}">
                                     Delete
                                 </button>
                             </td>
@@ -93,9 +84,19 @@
         </div>
     </main>
 </x-layouts.layout>
+
 <script>
     document.getElementById('roleFilter').addEventListener('change', function() {
         // Kirim form secara otomatis
         document.getElementById('filterForm').submit();
+    });
+
+    // Add event listener to prevent row click on delete
+    document.querySelectorAll('.delete-btn-user').forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.stopPropagation(); // Prevent the row click event
+            const employeeId = this.getAttribute('data-id');
+            // Perform the delete operation, for example, an AJAX call or redirection
+        });
     });
 </script>
