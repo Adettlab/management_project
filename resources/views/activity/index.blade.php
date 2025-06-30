@@ -54,7 +54,7 @@
                         </div>
                     </div>
 
-                    <div class="px-5 pb-7 pt-2 -mb-4">
+                    {{-- <div class="px-5 pb-7 pt-2 -mb-4">
                         <div class="max-w-sm">
                             <div class="text-sm text-gray-600 mb-2">
                                 Work hours
@@ -77,7 +77,7 @@
                                 @endif
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                 </div>
                 @endforeach
             </div>

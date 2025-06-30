@@ -1,12 +1,14 @@
 <?php
+// File: app/Http/Controllers/AdminController.php (Complete & Fixed)
 
 namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Employee;
 use App\Models\Role;
-use App\Models\Permission;
-use App\Models\Page;
+use App\Models\SiMenuWeb;
+use App\Models\SisRolePartnerTypeMenuWeb;
+use App\Models\SisRolePartnerType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -57,16 +59,16 @@ class AdminController extends Controller
     public function create()
     {
         $roles = Role::all();
-        $pages = Page::all();
+        $menus = SiMenuWeb::all();
 
-        // Exclude dashboard dan activity dari permission checkboxes
-        $pagesForPermissions = $pages->whereNotIn('name', ['dashboard', 'activity','admin']);
+        // Exclude dashboard, activity, dan admin dari permission checkboxes
+        $menusForPermissions = $menus->whereNotIn('teks', ['dashboard', 'activity', 'admin']);
 
         return view('admin.create', [
             "title" => "Create User",
             "active" => "admin",
             "roles" => $roles,
-            "pages" => $pagesForPermissions,
+            "pages" => $menusForPermissions, // untuk backward compatibility dengan view
         ]);
     }
 
@@ -76,47 +78,62 @@ class AdminController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
+                'work_email' => 'required|email|unique:employees,work_email',
                 'password' => 'required|min:8|confirmed',
                 'role_id' => 'required|exists:roles,id',
             ]);
-
-            if ($validated['role_id'] == 2) {
-                return redirect()->back()->withInput()->with('error', 'Tidak bisa membuat akun dengan role Project Director dari sini.');
-            }
 
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
-                'role' => 'user',
+                'role' => $validated['role_id'] == 2 ? 'admin' : 'user', // Project Director = admin role
             ]);
 
-            Employee::create([
+            $employee = Employee::create([
                 'user_id' => $user->id,
                 'role_id' => $validated['role_id'],
+                'work_email' => $validated['work_email'],
             ]);
 
-            // Handle custom permissions HANYA jika ada yang dicentang
+            // Create role partner type record - MINIMAL DATA
+            SisRolePartnerType::create([
+                'id_user' => $user->id,
+                'id_role' => $validated['role_id'],
+                'nama' => $validated['name'],
+                // person_key dan pwd dibiarkan NULL
+            ]);
+
+            // Handle custom permissions - HANYA jika ada yang dicentang
             $permissions = $request->input('permissions', []);
             $hasCustomPermissions = false;
 
-            foreach ($permissions as $page_id => $permission_data) {
-                // Check apakah ada permission yang di-set
-                $hasAnyPermission = isset($permission_data['allow_create']) ||
-                    isset($permission_data['allow_view']) ||
-                    isset($permission_data['allow_update']) ||
-                    isset($permission_data['allow_delete']);
+            if (!empty($permissions)) {
+                foreach ($permissions as $menu_id => $permission_data) {
+                    // Check apakah ada permission yang di-set (hanya check field yang digunakan)
+                    $hasAnyPermission = isset($permission_data['allow_create']) ||
+                        isset($permission_data['allow_view']) ||
+                        isset($permission_data['allow_update']) ||
+                        isset($permission_data['allow_delete']);
 
-                if ($hasAnyPermission) {
-                    Permission::create([
-                        'user_id' => $user->id,
-                        'page_id' => $page_id,
-                        'allow_create' => isset($permission_data['allow_create']) ? true : false,
-                        'allow_view' => isset($permission_data['allow_view']) ? true : false,
-                        'allow_update' => isset($permission_data['allow_update']) ? true : false,
-                        'allow_delete' => isset($permission_data['allow_delete']) ? true : false,
-                    ]);
-                    $hasCustomPermissions = true;
+                    if ($hasAnyPermission) {
+                        SisRolePartnerTypeMenuWeb::create([
+                            'id_user' => $user->id,
+                            'menu_id' => $menu_id,
+                            'id_role' => $validated['role_id'],
+                            'allow_create' => isset($permission_data['allow_create']) ? true : false,
+                            'allow_view' => isset($permission_data['allow_view']) ? true : false,
+                            'allow_update' => isset($permission_data['allow_update']) ? true : false,
+                            'allow_delete' => isset($permission_data['allow_delete']) ? true : false,
+                            // Field yang tidak digunakan di-set false
+                            'allow_export' => false,
+                            'allow_import' => false,
+                            'allow_edit' => false,
+                            'is_visible' => true,
+                            // menu_id_ref dibiarkan NULL
+                        ]);
+                        $hasCustomPermissions = true;
+                    }
                 }
             }
 
@@ -139,28 +156,25 @@ class AdminController extends Controller
 
     public function edit($id)
     {
-        $employee = Employee::with(['user.permissions.page'])->findOrFail($id);
+        $employee = Employee::with(['user.permissions.menu'])->findOrFail($id);
         $roles = Role::all();
         $statuses = ['Kontrak', 'Freelance', 'Tetap', 'Tenaga Ahli'];
-        $pages = Page::whereNotIn('name', ['dashboard', 'activity', 'admin'])->get();
+        $menus = SiMenuWeb::whereNotIn('teks', ['dashboard', 'activity', 'admin'])->get();
 
-        // Get existing permissions
+        // Get existing permissions (hanya field yang digunakan)
         $userPermissions = [];
         foreach ($employee->user->permissions as $permission) {
-            $userPermissions[$permission->page_id] = [
+            $userPermissions[$permission->menu_id] = [
                 'allow_create' => $permission->allow_create,
                 'allow_view' => $permission->allow_view,
                 'allow_update' => $permission->allow_update,
                 'allow_delete' => $permission->allow_delete,
+                // Field yang tidak digunakan tidak perlu di-load
             ];
         }
 
-        // Check if user has custom permissions (exclude dashboard dan activity)
-        $hasCustomPermissions = $employee->user->permissions()
-            ->whereHas('page', function ($query) {
-                $query->whereNotIn('name', ['dashboard', 'activity']);
-            })
-            ->exists();
+        // Check if user has custom permissions
+        $hasCustomPermissions = $employee->user->hasCustomPermissions();
 
         return view('admin.edit', [
             'title' => 'Edit Employee',
@@ -168,7 +182,7 @@ class AdminController extends Controller
             'employee' => $employee,
             'roles' => $roles,
             'statuses' => $statuses,
-            'pages' => $pages,
+            'pages' => $menus, // untuk backward compatibility
             'userPermissions' => $userPermissions,
             'hasCustomPermissions' => $hasCustomPermissions,
         ]);
@@ -200,31 +214,38 @@ class AdminController extends Controller
 
         $employee->update($validated);
 
-        // Update permissions - SELALU jalankan bagian ini
+        // Update permissions - HANYA jika ada custom permissions yang dikirim
         $permissions = $request->input('permissions', []);
 
-        // Delete existing custom permissions (kecuali dashboard dan activity)
-        $defaultPages = Page::whereIn('name', ['dashboard', 'activity'])->pluck('id');
-        Permission::where('user_id', $employee->user_id)
-            ->whereNotIn('page_id', $defaultPages)
+        // Delete existing custom permissions untuk menu yang bukan default
+        $defaultMenus = SiMenuWeb::whereIn('teks', ['dashboard', 'activity'])->pluck('id');
+        SisRolePartnerTypeMenuWeb::where('id_user', $employee->user_id)
+            ->whereNotIn('menu_id', $defaultMenus)
             ->delete();
 
         // Add new permissions jika ada
         if (!empty($permissions)) {
-            foreach ($permissions as $page_id => $permission_data) {
+            foreach ($permissions as $menu_id => $permission_data) {
                 $hasAnyPermission = isset($permission_data['allow_create']) ||
                     isset($permission_data['allow_view']) ||
                     isset($permission_data['allow_update']) ||
                     isset($permission_data['allow_delete']);
 
                 if ($hasAnyPermission) {
-                    Permission::create([
-                        'user_id' => $employee->user_id,
-                        'page_id' => $page_id,
+                    SisRolePartnerTypeMenuWeb::create([
+                        'id_user' => $employee->user_id,
+                        'menu_id' => $menu_id,
+                        'id_role' => $employee->role_id,
                         'allow_create' => isset($permission_data['allow_create']) ? true : false,
                         'allow_view' => isset($permission_data['allow_view']) ? true : false,
                         'allow_update' => isset($permission_data['allow_update']) ? true : false,
                         'allow_delete' => isset($permission_data['allow_delete']) ? true : false,
+                        // Field yang tidak digunakan di-set false
+                        'allow_export' => false,
+                        'allow_import' => false,
+                        'allow_edit' => false,
+                        'is_visible' => true,
+                        // menu_id_ref tetap NULL
                     ]);
                 }
             }
@@ -239,7 +260,10 @@ class AdminController extends Controller
             $employee = Employee::findOrFail($id);
             $user = $employee->user;
 
-            Permission::where('user_id', $user->id)->delete();
+            // Delete related records
+            SisRolePartnerTypeMenuWeb::where('id_user', $user->id)->delete();
+            SisRolePartnerType::where('id_user', $user->id)->delete();
+            
             $employee->delete();
             $user->delete();
 

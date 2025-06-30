@@ -3,7 +3,7 @@
         <div class="bg-white w-[80%] md:w-[60%] py-9 px-12 rounded-xl border border-gray-200">
             <form action="{{ route('admin.store') }}" method="POST">
                 @csrf
-                <h1 class="font-semibold text-xl mb-6 text-center">Create New Account</h1>
+                <h1 class="font-semibold text-xl mb-6 text-center">Bikin Akun Baru</h1>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Username Input -->
@@ -11,7 +11,7 @@
                         <label for="username" class="primary-gray font-medium text-sm">Username</label>
                         <input
                             class="primary-gray font-medium rounded-lg py-2 px-3 text-sm border border-gray-200 outline-none"
-                            placeholder="Enter username" type="text" id="username" name="name"
+                            placeholder="Masukin username" type="text" id="username" name="name"
                             value="{{ old('name') }}" required>
                         @error('name')
                             <span class="text-red-600 text-xs">{{ $message }}</span>
@@ -23,7 +23,7 @@
                         <label for="password" class="primary-gray font-medium text-sm">Password</label>
                         <input
                             class="primary-gray font-medium rounded-lg py-2 px-3 text-sm border border-gray-200 outline-none"
-                            placeholder="Enter password" type="password" id="password" name="password" required>
+                            placeholder="Masukin password" type="password" id="password" name="password" required>
                         @error('password')
                             <span class="text-red-600 text-xs">{{ $message }}</span>
                         @enderror
@@ -36,7 +36,7 @@
                         <label for="email" class="primary-gray font-medium text-sm">Email Akun</label>
                         <input
                             class="primary-gray font-medium rounded-lg py-2 px-3 text-sm border border-gray-200 outline-none"
-                            placeholder="Enter email" type="email" id="email" name="email"
+                            placeholder="Masukin email" type="email" id="email" name="email"
                             value="{{ old('email') }}" required>
                         @error('email')
                             <span class="text-red-600 text-xs">{{ $message }}</span>
@@ -45,11 +45,11 @@
 
                     <!-- Password Confirmation -->
                     <div class="flex flex-col space-y-1">
-                        <label for="password_confirmation" class="primary-gray font-medium text-sm">Confirm
-                            password</label>
+                        <label for="password_confirmation" class="primary-gray font-medium text-sm">Konfirmasi
+                            Password</label>
                         <input
                             class="primary-gray font-medium rounded-lg py-2 px-3 text-sm border border-gray-200 outline-none"
-                            placeholder="Confirm password" type="password" id="password_confirmation"
+                            placeholder="Konfirmasi password" type="password" id="password_confirmation"
                             name="password_confirmation" required>
                         @error('password_confirmation')
                             <span class="text-red-600 text-xs">{{ $message }}</span>
@@ -57,17 +57,33 @@
                     </div>
                 </div>
 
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <!-- Work Email Input -->
+                    <div class="flex flex-col space-y-1">
+                        <label for="work_email" class="primary-gray font-medium text-sm">Email Kantor</label>
+                        <input
+                            class="primary-gray font-medium rounded-lg py-2 px-3 text-sm border border-gray-200 outline-none"
+                            placeholder="Masukin email kantor" type="email" id="work_email" name="work_email"
+                            value="{{ old('work_email') }}" required>
+                        @error('work_email')
+                            <span class="text-red-600 text-xs">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <!-- Empty div for grid alignment -->
+                    <div></div>
+                </div>
+
                 <!-- Role Selection -->
                 <div class="mt-6">
-                    <label for="role_id" class="primary-gray font-medium text-sm">Division</label>
+                    <label for="role_id" class="primary-gray font-medium text-sm">Divisi</label>
                     <select name="role_id" id="role_id"
                         class="w-full primary-gray font-medium rounded-lg py-2 px-3 text-sm border border-gray-200 outline-none"
                         required>
-                        <option value="">Select Division</option>
+                        <option value="">Pilih Divisi</option>
                         @foreach ($roles as $role)
-                            @if ($role->id != 2)
-                                <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
-                            @endif
+                            <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
+                                {{ $role->name }}</option>
                         @endforeach
                     </select>
                     @error('role_id')
@@ -75,138 +91,136 @@
                     @enderror
                 </div>
 
-                <!-- Permission Mode Selection -->
-                <div class="mt-6">
-                    <label class="primary-gray font-medium text-sm">Permission Mode</label>
-                    <div class="mt-2 space-y-2">
-                        <div class="flex items-center">
-                            <input type="radio" id="default_permissions" name="permission_mode" value="default" 
-                                   class="mr-2" checked onchange="togglePermissionMode()">
-                            <label for="default_permissions" class="text-sm">Use Default Role Permissions</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="radio" id="custom_permissions" name="permission_mode" value="custom" 
-                                   class="mr-2" onchange="togglePermissionMode()">
-                            <label for="custom_permissions" class="text-sm">Set Custom Permissions</label>
-                        </div>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1">
-                        Default: Permissions will be based on the selected role. Custom: You can set specific permissions for this user.
-                    </p>
-                </div>
-
                 <!-- Custom Permissions Section -->
-                <div id="custom_permissions_section" class="mt-6 w-full" style="display: none;">
-                    <label class="primary-gray font-medium text-sm">Custom Permissions</label>
+                <div id="custom_permissions_section" class="mt-6 w-full">
+                    <label class="primary-gray font-medium text-sm">Atur Permission Khusus (Opsional)</label>
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                        <p class="text-xs text-blue-800 mb-1">
+                            <strong>Default:</strong> Setiap role udah punya permission bawaan dari sistem.
+                        </p>
+                        <p class="text-xs text-blue-600">
+                            <strong>Permission Khusus:</strong> Centang kotak di bawah cuma kalau mau GANTI permission
+                            default role-nya.
+                            <br>Kalau gak dicentang sama sekali, nanti pake permission standar sesuai role aja.
+                        </p>
+                    </div>
                     <div class="space-y-4 mt-2">
                         @foreach ($pages as $page)
                             <div class="border border-gray-300 rounded-lg p-4">
                                 <div class="flex justify-between items-center">
-                                    <span class="font-medium text-sm capitalize">{{ $page->name }}</span>
+                                    <span class="font-medium text-sm capitalize">{{ $page->teks }}</span>
                                     <div class="flex space-x-4">
                                         <div class="flex items-center">
                                             <input type="checkbox" id="allow_view_{{ $page->id }}"
                                                 name="permissions[{{ $page->id }}][allow_view]" value="1">
-                                            <label for="allow_view_{{ $page->id }}" class="ml-2 text-sm">View</label>
+                                            <label for="allow_view_{{ $page->id }}"
+                                                class="ml-2 text-sm">View</label>
                                         </div>
                                         <div class="flex items-center">
                                             <input type="checkbox" id="allow_create_{{ $page->id }}"
                                                 name="permissions[{{ $page->id }}][allow_create]" value="1">
-                                            <label for="allow_create_{{ $page->id }}" class="ml-2 text-sm">Create</label>
+                                            <label for="allow_create_{{ $page->id }}"
+                                                class="ml-2 text-sm">Create</label>
                                         </div>
                                         <div class="flex items-center">
                                             <input type="checkbox" id="allow_update_{{ $page->id }}"
                                                 name="permissions[{{ $page->id }}][allow_update]" value="1">
-                                            <label for="allow_update_{{ $page->id }}" class="ml-2 text-sm">Update</label>
+                                            <label for="allow_update_{{ $page->id }}"
+                                                class="ml-2 text-sm">Update</label>
                                         </div>
                                         <div class="flex items-center">
                                             <input type="checkbox" id="allow_delete_{{ $page->id }}"
                                                 name="permissions[{{ $page->id }}][allow_delete]" value="1">
-                                            <label for="allow_delete_{{ $page->id }}" class="ml-2 text-sm">Delete</label>
+                                            <label for="allow_delete_{{ $page->id }}"
+                                                class="ml-2 text-sm">Delete</label>
                                         </div>
+                                        <!-- Export, Import, Edit fields disembunyikan karena gak dipake -->
+                                        <input type="hidden" name="permissions[{{ $page->id }}][allow_export]"
+                                            value="0">
+                                        <input type="hidden" name="permissions[{{ $page->id }}][allow_import]"
+                                            value="0">
+                                        <input type="hidden" name="permissions[{{ $page->id }}][allow_edit]"
+                                            value="0">
                                     </div>
                                 </div>
                             </div>
                         @endforeach
                     </div>
                     <p class="text-xs text-gray-500 mt-2">
-                        Note: Dashboard and Activity pages will have view access by default for all users.
+                        <strong>Catatan:</strong> Kalau gak ada permission khusus yang dipilih, sistem bakal otomatis
+                        pake permission default sesuai role yang udah diatur di kode.
                     </p>
                 </div>
 
                 <div class="mt-9 mb-4 flex justify-center">
                     <button type="submit"
-                        class="bg-primary-black hover:bg-zinc-500 text-white text-sm px-10 py-1 rounded-lg">Create
-                        Account</button>
+                        class="bg-primary-black hover:bg-zinc-500 text-white text-sm px-10 py-1 rounded-lg">Bikin
+                        Akun</button>
                 </div>
             </form>
         </div>
     </main>
 
     <script>
-        function togglePermissionMode() {
-            const customPermissionsSection = document.getElementById('custom_permissions_section');
-            const customRadio = document.getElementById('custom_permissions');
-            
-            if (customRadio.checked) {
-                customPermissionsSection.style.display = 'block';
-            } else {
-                customPermissionsSection.style.display = 'none';
-                // Clear all custom permission checkboxes
-                const checkboxes = customPermissionsSection.querySelectorAll('input[type="checkbox"]');
-                checkboxes.forEach(checkbox => checkbox.checked = false);
-            }
-        }
-
-        // Role-based permission suggestions
+        // Script yang sudah ada untuk role selection
         document.getElementById('role_id').addEventListener('change', function() {
             const roleId = this.value;
-            const customRadio = document.getElementById('custom_permissions');
-            
-            if (!customRadio.checked) return; // Only suggest if custom mode is selected
-            
-            // Clear existing selections
-            const checkboxes = document.querySelectorAll('#custom_permissions_section input[type="checkbox"]');
-            checkboxes.forEach(checkbox => checkbox.checked = false);
-            
-            // Role-based suggestions (sesuai dengan logic default di User model)
-            const roleSuggestions = {
-                '1': { // Analyst
-                    'projects': ['view'],
-                    'tasks': ['view', 'create', 'update']
-                },
-                '3': { // Designer  
-                    'projects': ['view'],
-                    'tasks': ['view', 'create', 'update']
-                },
-                '4': { // Engineer Web
-                    'projects': ['view'],
-                    'tasks': ['view', 'create', 'update']
-                },
-                '5': { // Engineer Mobile
-                    'projects': ['view'],
-                    'tasks': ['view', 'create', 'update']
-                },
-                '6': { // Engineer Tester
-                    'projects': ['view'],
-                    'tasks': ['view', 'create', 'update']
-                }
+
+            const roleInfo = {
+                '1': 'Analyst: Default bisa liat project, sama bikin/update/edit task',
+                '2': 'Project Director: Default punya akses penuh ke semua fitur (level admin)',
+                '3': 'Designer: Default bisa liat project, sama bikin/update/edit task',
+                '4': 'Engineer Web: Default bisa liat project, sama bikin/update/edit task',
+                '5': 'Engineer Mobile: Default bisa liat project, sama bikin/update/edit task',
+                '6': 'Engineer Tester: Default bisa liat project, sama bikin/update/edit task'
             };
-            
-            if (roleSuggestions[roleId]) {
-                Object.keys(roleSuggestions[roleId]).forEach(pageName => {
-                    const permissions = roleSuggestions[roleId][pageName];
-                    const pageElement = document.querySelector(`[id*="${pageName}"]`);
-                    
-                    if (pageElement) {
-                        const pageId = pageElement.id.split('_').pop();
-                        permissions.forEach(permission => {
-                            const checkbox = document.getElementById(`allow_${permission}_${pageId}`);
-                            if (checkbox) checkbox.checked = true;
-                        });
+
+            const infoElement = document.querySelector('.role-info');
+            if (infoElement && roleInfo[roleId]) {
+                infoElement.textContent = roleInfo[roleId];
+            }
+        });
+
+        // Script untuk auto-check View ketika Create, Update, atau Delete dicentang
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ambil semua checkbox permissions
+            const permissionCheckboxes = document.querySelectorAll(
+                '#custom_permissions_section input[type="checkbox"]');
+
+            // Tambahkan event listener untuk setiap checkbox
+            permissionCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const checkboxId = this.id;
+                    const pageId = checkboxId.split('_').pop();
+
+                    const viewCheckbox = document.getElementById(`allow_view_${pageId}`);
+
+                    // Jika checkbox yang diklik adalah Create, Update, atau Delete
+                    if (checkboxId.includes('allow_create_') ||
+                        checkboxId.includes('allow_update_') ||
+                        checkboxId.includes('allow_delete_')) {
+
+                        // Jika checkbox tersebut dicentang, otomatis centang View
+                        if (this.checked) {
+                            viewCheckbox.checked = true;
+                        }
+                    }
+
+                    // Jika checkbox View di-uncheck, otomatis uncheck semua yang lain
+                    if (checkboxId.includes('allow_view_') && !this.checked) {
+                        document.getElementById(`allow_create_${pageId}`).checked = false;
+                        document.getElementById(`allow_update_${pageId}`).checked = false;
+                        document.getElementById(`allow_delete_${pageId}`).checked = false;
                     }
                 });
-            }
+            });
+
+            // Tambahin elemen info setelah pemilihan role
+            const roleSelect = document.getElementById('role_id');
+            const infoElement = document.createElement('p');
+            infoElement.className = 'role-info text-xs text-blue-600 mt-1';
+            infoElement.textContent = 'Pilih role dulu buat liat info permission default';
+            roleSelect.parentNode.appendChild(infoElement);
         });
     </script>
 </x-layouts.layout>

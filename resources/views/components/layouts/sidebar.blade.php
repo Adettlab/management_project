@@ -39,10 +39,10 @@
         {{-- Activity - selalu tampil --}}
         <x-sidebar.activity :active="$active" :expanded="true" />
 
-          {{-- Administration --}}
+          {{-- Administration
         @if (auth()->user()->employee)
             <x-sidebar.administration :active="$active" :expanded="true" />
-        @endif
+        @endif --}}
 
         {{-- admin --}}
         @if (!auth()->user()->employee)

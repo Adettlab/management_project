@@ -25,8 +25,8 @@ class AdministrationController extends Controller
         $leaveCategories = LeaveCategories::select('id', 'name')->get();
 
         return view('administration.index', [
-            'title' => 'Administrations',
-            'active' => 'administration',
+            // 'title' => 'Administrations',
+            // 'active' => 'administration',
             'categories' => $leaveCategories
         ]);
     }

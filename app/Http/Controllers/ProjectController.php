@@ -7,6 +7,7 @@ use App\Models\Employee;
 use App\Models\Project;
 use App\Models\ProjectLevel;
 use App\Models\ProjectStatus;
+use App\Models\SiMenuWeb; // Updated model
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Bus;
@@ -19,7 +20,7 @@ class ProjectController extends Controller
 
     public function __construct()
     {
-        // PERBAIKAN: Ganti dengan permission system yang baru
+        // PERBAIKAN: Menggunakan sistem permission yang baru
         $this->middleware(function ($request, $next) {
             $user = auth()->user();
             
@@ -58,8 +59,8 @@ class ProjectController extends Controller
             ->whereHas('role', fn ($q) => $q->where('name', 'Project Director'))
             ->get();
 
-        // PERBAIKAN: Tambah permission data untuk view
-        $pagePermissions = $user->getPagePermissions('projects');
+        // PERBAIKAN: Menggunakan method yang benar untuk get permissions
+        $pagePermissions = $user->getMenuPermissions('projects');
 
         return view('project.index', [
             'title' => 'Projects',
@@ -70,10 +71,11 @@ class ProjectController extends Controller
             'canCreate' => $pagePermissions['allow_create'],
             'canUpdate' => $pagePermissions['allow_update'],
             'canDelete' => $pagePermissions['allow_delete'],
+            // Field yang tidak digunakan dihapus
         ]);
     }
 
-    private function applyFilters(Builder $query, Request $request, $user)
+   private function applyFilters(Builder $query, Request $request, $user)
     {
        if ($user->employee) {
             $query->whereHas('employees', function ($q) use ($user) {
@@ -160,7 +162,7 @@ class ProjectController extends Controller
             abort(403, 'You do not have permission to view this project.');
         }
 
-        $pagePermissions = auth()->user()->getPagePermissions('projects');
+        $pagePermissions = auth()->user()->getMenuPermissions('projects');
 
         return view('project.show', [
             'title' => 'Project Details',
@@ -168,24 +170,37 @@ class ProjectController extends Controller
             'project' => $project,
             'canUpdate' => $pagePermissions['allow_update'],
             'canDelete' => $pagePermissions['allow_delete'],
+            // Field yang tidak digunakan dihapus
         ]);
     }
 
-    // PERBAIKAN: Helper method untuk cek akses project
+    // PERBAIKAN: Helper method untuk cek akses project dengan sistem baru
     private function canUserAccessProject($user, $project)
     {
+        // Admin selalu bisa akses
         if ($user->isAdmin()) return true;
         
+        // Project Director selalu bisa akses
+        if ($user->isProjectDirector()) return true;
+        
+        // Cek custom permission jika ada
         if ($user->hasCustomPermissions()) {
-            $page = \App\Models\Page::where('name', 'projects')->first();
-            if ($page) {
-                $permission = $user->permissions()->where('page_id', $page->id)->first();
-                if ($permission && $permission->allow_view) return true;
+            $menu = SiMenuWeb::where('teks', 'projects')->first();
+            if ($menu) {
+                $permission = $user->permissions()->where('menu_id', $menu->id)->first();
+                if ($permission && $permission->allow_view) {
+                    // Jika punya custom permission view, bisa akses project yang dia terlibat
+                    if ($user->employee) {
+                        return $project->employees()
+                                      ->where('employees.id', $user->employee->id)
+                                      ->where('project_employees.isformeremployee', 0)
+                                      ->exists();
+                    }
+                }
             }
         }
         
-        if ($user->isProjectDirector()) return true;
-        
+        // Default: cek apakah user terlibat dalam project
         if ($user->employee) {
             return $project->employees()
                           ->where('employees.id', $user->employee->id)
@@ -242,6 +257,9 @@ class ProjectController extends Controller
                 }
             }
 
+            // Remove duplicates
+            $employeeIds = array_unique($employeeIds);
+
             // Update status employee menjadi "Stand By"
             Employee::whereIn('id', $employeeIds)->update(['status_employee' => 'Stand By']);
 
@@ -249,12 +267,12 @@ class ProjectController extends Controller
             $project->employees()->sync($employeeIds);
 
             // Send email notification to each assigned employee
-            $employees = Employee::whereIn('id', $employeeIds)->get();
-            $jobs = $employees->map(function ($employee) use ($project) {
-                return new BroadcastEmailJob($project, $employee);
-            });
+            if (!empty($employeeIds)) {
+                $employees = Employee::whereIn('id', $employeeIds)->get();
+                $jobs = $employees->map(function ($employee) use ($project) {
+                    return new BroadcastEmailJob($project, $employee);
+                });
 
-            if (! empty($jobs)) {
                 Bus::batch($jobs)
                     ->allowFailures()
                     ->onQueue('emails')
@@ -266,7 +284,7 @@ class ProjectController extends Controller
             return redirect()->route('projects.index')->with('success', 'Project created successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            logger()->error('Error creating project: '.$e->getMessage());
+            Log::error('Error creating project: '.$e->getMessage());
             return back()->withInput()->withErrors(['error' => 'Something went wrong. Please try again or contact support']);
         }
     }
@@ -304,7 +322,7 @@ class ProjectController extends Controller
                 $request->engineer_web_id,
                 $request->engineer_mobile_id,
                 $request->engineer_tester_id,
-            ])->filter()->all();
+            ])->filter()->unique()->all();
 
             $currentEmployeeIds = $project->employees()
                 ->where('isformeremployee', 0)
@@ -314,6 +332,7 @@ class ProjectController extends Controller
             $employeesToAdd = array_diff($newEmployeeIds, $currentEmployeeIds);
             $employeesToRemove = array_diff($currentEmployeeIds, $newEmployeeIds);
 
+            // Add new employees
             foreach ($employeesToAdd as $employeeId) {
                 $existingRecord = DB::table('project_employees')
                     ->where('project_id', $project->id)
@@ -329,6 +348,7 @@ class ProjectController extends Controller
                 }
             }
 
+            // Remove employees
             foreach ($employeesToRemove as $employeeId) {
                 $projectEmployee = DB::table('project_employees')
                     ->where('project_id', $project->id)
@@ -337,11 +357,13 @@ class ProjectController extends Controller
                     ->first();
 
                 if ($projectEmployee) {
+                    // Delete unfinished tasks
                     DB::table('tasks')
                         ->where('assigned_project_employee_id', $projectEmployee->id)
                         ->where('task_status_id', 1)
                         ->delete();
 
+                    // Mark as former employee
                     DB::table('project_employees')
                         ->where('id', $projectEmployee->id)
                         ->update(['isformeremployee' => 1]);

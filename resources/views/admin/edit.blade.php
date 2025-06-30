@@ -19,20 +19,20 @@
                             <input type="hidden" name="old_photo" id="old_photo" value="{{ $employee->photo }}">
                         @endif
                         <div class="ml-5">
-                            <h1 class="font-semibold text-xl">{{ $employee->user->name ?? 'No username' }}</h1>
-                            <p class="tex-xs">{{ $employee->role->name ?? 'No devisi' }}</p>
+                            <h1 class="font-semibold text-xl">{{ $employee->user->name ?? 'Tidak ada username' }}</h1>
+                            <p class="tex-xs">{{ $employee->role->name ?? 'Tidak ada divisi' }}</p>
                         </div>
                         <div class="flex mt-2">
                             <div class="ml-5 mr-3">
                                 <label for="photo"
                                     class="cursor-pointer bg-sky-blue text-white text-xs font-medium px-4 py-1 rounded hover:bg-blue-600">
-                                    Upload Picture
+                                    Upload Foto
                                 </label>
                                 <input id="photo" name="photo" type="file" accept="image/*" class="hidden" />
                             </div>
-                            <button id="delete-button"
-                                class="bg-secondary-white text-[#7D7D7D] px-4 py-1 text-xs rounded font-medium">Delete
-                                Picture
+                            <button id="delete-button" type="button"
+                                class="bg-secondary-white text-[#7D7D7D] px-4 py-1 text-xs rounded font-medium">Hapus
+                                Foto
                             </button>
                         </div>
                     </div>
@@ -41,10 +41,10 @@
                 <div class="flex mt-10 w-full">
                     <!-- Work Email Input -->
                     <div class="w-1/2 flex flex-col space-y-1">
-                        <label for="work_email" class="primary-gray font-medium text-sm">Email Company</label>
+                        <label for="work_email" class="primary-gray font-medium text-sm">Email Perusahaan</label>
                         <input
                             class="w-[94%] primary-gray font-medium rounded-lg py-1 px-2 text-sm border border-gray-200 outline-none"
-                            placeholder="Enter email" type="email" name="work_email" id="work_email"
+                            placeholder="Masukkan email perusahaan" type="email" name="work_email" id="work_email"
                             value="{{ old('work_email', $employee->work_email) }}">
                         @error('work_email')
                             <span class="text-red-600 text-xs">{{ $message }}</span>
@@ -56,7 +56,7 @@
                         <label for="nik" class="primary-gray font-medium text-sm">NIK</label>
                         <input
                             class="w-[94%] primary-gray font-medium rounded-lg py-1 px-2 text-sm border border-gray-200 outline-none"
-                            placeholder="Enter NIK" type="text" name="nik" id="nik"
+                            placeholder="Masukkan NIK" type="text" name="nik" id="nik"
                             value="{{ old('nik', $employee->nik) }}">
                         @error('nik')
                             <span class="text-red-600 text-xs">{{ $message }}</span>
@@ -70,7 +70,7 @@
                         <label for="status" class="primary-gray font-medium text-sm">Status SDM</label>
                         <select name="status" id="status"
                             class="w-[94%] primary-gray font-medium rounded-lg py-1 px-2 text-sm border border-gray-200 outline-none">
-                            <option value="">Select status</option>
+                            <option value="">Pilih status</option>
                             @foreach ($statuses as $status)
                                 <option value="{{ $status }}"
                                     {{ old('status', $employee->status) === $status ? 'selected' : '' }}>
@@ -88,7 +88,7 @@
                         <label for="phone_number" class="primary-gray font-medium text-sm">No. HP</label>
                         <input
                             class="w-[94%] primary-gray font-medium rounded-lg py-1 px-2 text-sm border border-gray-200 outline-none"
-                            placeholder="Enter no. hp" type="text" name="phone_number" id="phone_number"
+                            placeholder="Masukkan no. hp" type="text" name="phone_number" id="phone_number"
                             value="{{ old('phone_number', $employee->phone_number) }}">
                         @error('phone_number')
                             <span class="text-red-600 text-xs">{{ $message }}</span>
@@ -102,7 +102,7 @@
                         <label for="address" class="primary-gray font-medium text-sm">Alamat</label>
                         <input
                             class="w-[94%] primary-gray font-medium rounded-lg py-1 px-2 text-sm border border-gray-200 outline-none"
-                            placeholder="Enter address" type="text" name="address" id="address"
+                            placeholder="Masukkan alamat" type="text" name="address" id="address"
                             value="{{ old('address', $employee->address) }}">
                         @error('address')
                             <span class="text-red-600 text-xs">{{ $message }}</span>
@@ -140,25 +140,32 @@
                         <label for="education" class="primary-gray font-medium text-sm">Pendidikan Terakhir</label>
                         <input
                             class="w-[94%] primary-gray font-medium rounded-lg py-1 px-2 text-sm border border-gray-200 outline-none"
-                            placeholder="Enter education" type="text" name="education" id="education"
-                            value="{{ old('education', $employee->education) }}">
+                            placeholder="Masukkan pendidikan terakhir" type="text" name="education"
+                            id="education" value="{{ old('education', $employee->education) }}">
                         @error('education')
                             <span class="text-red-600 text-xs">{{ $message }}</span>
                         @enderror
                     </div>
                 </div>
 
-                <!-- Custom Permissions Section - SELALU TAMPIL UNTUK SEMUA USER -->
-                <div class="mt-6 border-t pt-4">
-                    <h3 class="primary-gray font-medium text-sm mb-3">Permissions</h3>
+                <!-- Custom Permissions Section -->
+                <div id="custom_permissions_section" class="mt-6 border-t pt-4">
+                    <h3 class="primary-gray font-medium text-sm mb-3">Hak Akses (Permissions)</h3>
 
                     @if ($hasCustomPermissions)
-                        <p class="text-xs text-green-600 mb-3">✓ User ini menggunakan custom permissions</p>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+                            <p class="text-xs text-green-800">✓ Pengguna ini menggunakan hak akses khusus (custom)</p>
+                        </div>
                     @else
-                        <p class="text-xs text-blue-600 mb-3">ℹ User ini menggunakan default role permissions
-                            ({{ $employee->role->name ?? 'No Role' }})</p>
-                        <p class="text-xs text-orange-600 mb-3">💡 Centang checkbox di bawah untuk menambahkan custom
-                            permissions</p>
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                            <p class="text-xs text-blue-800 mb-1">
+                                ℹ Pengguna ini menggunakan hak akses default sesuai role:
+                                <strong>{{ $employee->role->name ?? 'Tidak ada role' }}</strong>
+                            </p>
+                            <p class="text-xs text-orange-600">
+                                💡 Centang kotak di bawah untuk memberikan hak akses khusus (custom)
+                            </p>
+                        </div>
                     @endif
 
                     <div class="space-y-3">
@@ -168,7 +175,7 @@
                             @endphp
                             <div class="border border-gray-300 rounded-lg p-3">
                                 <div class="flex justify-between items-center">
-                                    <span class="font-medium text-sm capitalize">{{ $page->name }}</span>
+                                    <span class="font-medium text-sm capitalize">{{ $page->teks }}</span>
                                     <div class="flex space-x-3">
                                         <div class="flex items-center">
                                             <input type="checkbox" id="allow_view_{{ $page->id }}"
@@ -198,19 +205,29 @@
                                             <label for="allow_delete_{{ $page->id }}"
                                                 class="ml-1 text-xs">Delete</label>
                                         </div>
+                                        <!-- Hidden fields untuk compatibility -->
+                                        <input type="hidden" name="permissions[{{ $page->id }}][allow_export]"
+                                            value="0">
+                                        <input type="hidden" name="permissions[{{ $page->id }}][allow_import]"
+                                            value="0">
+                                        <input type="hidden" name="permissions[{{ $page->id }}][allow_edit]"
+                                            value="0">
                                     </div>
                                 </div>
                             </div>
                         @endforeach
                     </div>
-                    <p class="text-xs text-gray-500 mt-2">
-                        @if ($hasCustomPermissions)
-                            Kosongkan semua untuk kembali menggunakan default role permissions.
-                        @else
-                            Centang checkbox untuk menambahkan custom permissions. Kosongkan semua untuk tetap
-                            menggunakan default role permissions.
-                        @endif
-                    </p>
+                    <div class="bg-gray-50 rounded-lg p-3 mt-3">
+                        <p class="text-xs text-gray-600">
+                            @if ($hasCustomPermissions)
+                                <strong>Catatan:</strong> Kosongkan semua kotak untuk kembali menggunakan hak akses
+                                default sesuai role.
+                            @else
+                                <strong>Catatan:</strong> Centang kotak untuk memberikan hak akses khusus. Jika tidak
+                                ada yang dicentang, sistem akan menggunakan hak akses default sesuai role.
+                            @endif
+                        </p>
+                    </div>
                 </div>
 
                 <div class="mt-9 flex justify-center">
@@ -222,28 +239,108 @@
     </main>
 
     <script>
-        const fileInput = document.getElementById('photo');
-        const imagePreview = document.getElementById('image-preview');
-        const deleteButton = document.getElementById('delete-button');
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handler untuk upload foto
+            const photoInput = document.getElementById('photo');
+            const imagePreview = document.getElementById('image-preview');
+            const deleteButton = document.getElementById('delete-button');
 
-        fileInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file && file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    imagePreview.innerHTML =
-                        `<img src="${e.target.result}" alt="Uploaded Picture" class="w-full h-full object-cover">`;
-                };
-                reader.readAsDataURL(file);
-            } else {
-                imagePreview.innerHTML = `<span class="text-gray-400 text-sm">Preview</span>`;
+            if (photoInput) {
+                photoInput.addEventListener('change', function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="w-full h-full object-cover">`;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
             }
-        });
 
-        deleteButton.addEventListener('click', (event) => {
-            event.preventDefault();
-            imagePreview.innerHTML = `<span class="text-gray-400 text-sm">Preview</span>`;
-            fileInput.value = '';
+            // Handler untuk hapus foto
+            if (deleteButton) {
+                deleteButton.addEventListener('click', function() {
+                    // Reset preview ke kondisi awal
+                    imagePreview.innerHTML = '<span class="text-gray-400 text-sm">Preview</span>';
+                    // Reset input file
+                    if (photoInput) {
+                        photoInput.value = '';
+                    }
+                    // Jika ada old_photo input, kosongkan nilainya
+                    const oldPhotoInput = document.getElementById('old_photo');
+                    if (oldPhotoInput) {
+                        oldPhotoInput.value = '';
+                    }
+                });
+            }
+
+            // Handler untuk role selection (jika ada role_id select)
+            const roleSelect = document.getElementById('role_id');
+            if (roleSelect) {
+                const roleInfo = {
+                    '1': 'Analyst: Default bisa liat project, sama bikin/update/edit task',
+                    '2': 'Project Director: Default punya akses penuh ke semua fitur (level admin)',
+                    '3': 'Designer: Default bisa liat project, sama bikin/update/edit task',
+                    '4': 'Engineer Web: Default bisa liat project, sama bikin/update/edit task',
+                    '5': 'Engineer Mobile: Default bisa liat project, sama bikin/update/edit task',
+                    '6': 'Engineer Tester: Default bisa liat project, sama bikin/update/edit task'
+                };
+
+                roleSelect.addEventListener('change', function() {
+                    const roleId = this.value;
+                    const infoElement = document.querySelector('.role-info');
+                    if (infoElement && roleInfo[roleId]) {
+                        infoElement.textContent = roleInfo[roleId];
+                    }
+                });
+
+                // Buat elemen info untuk role
+                const infoElement = document.createElement('p');
+                infoElement.className = 'role-info text-xs text-blue-600 mt-1';
+                infoElement.textContent = 'Pilih role dulu buat liat info permission default';
+                roleSelect.parentNode.appendChild(infoElement);
+            }
+
+            // Handler untuk permission checkboxes - auto-check View
+            const permissionSection = document.getElementById('custom_permissions_section');
+            if (permissionSection) {
+                const permissionCheckboxes = permissionSection.querySelectorAll('input[type="checkbox"]');
+
+                permissionCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const checkboxId = this.id;
+                        const pageId = checkboxId.split('_').pop();
+                        const viewCheckbox = document.getElementById(`allow_view_${pageId}`);
+
+                        if (!viewCheckbox) return; // Skip jika view checkbox tidak ditemukan
+
+                        // Jika checkbox yang diklik adalah Create, Update, atau Delete
+                        if (checkboxId.includes('allow_create_') ||
+                            checkboxId.includes('allow_update_') ||
+                            checkboxId.includes('allow_delete_')) {
+
+                            // Jika checkbox tersebut dicentang, otomatis centang View
+                            if (this.checked) {
+                                viewCheckbox.checked = true;
+                            }
+                        }
+
+                        // Jika checkbox View di-uncheck, otomatis uncheck semua yang lain
+                        if (checkboxId.includes('allow_view_') && !this.checked) {
+                            const createCheckbox = document.getElementById(`allow_create_${pageId}`);
+                            const updateCheckbox = document.getElementById(`allow_update_${pageId}`);
+                            const deleteCheckbox = document.getElementById(`allow_delete_${pageId}`);
+
+                            if (createCheckbox) createCheckbox.checked = false;
+                            if (updateCheckbox) updateCheckbox.checked = false;
+                            if (deleteCheckbox) deleteCheckbox.checked = false;
+                        }
+                    });
+                });
+            }
+
+            console.log('JavaScript berhasil dimuat dan event listeners telah terpasang');
         });
     </script>
 </x-layouts.layout>
