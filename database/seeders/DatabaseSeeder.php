@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             TaskLevelSeeder::class,
             TaskStatusSeeder::class,
             LeaveSeeder::class,
+            PageSeeder::class,
         ]);
     }
 }

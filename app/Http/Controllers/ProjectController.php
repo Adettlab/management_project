@@ -7,6 +7,7 @@ use App\Models\Employee;
 use App\Models\Project;
 use App\Models\ProjectLevel;
 use App\Models\ProjectStatus;
+use App\Models\SiMenuWeb; // Updated model
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Bus;
@@ -19,13 +20,25 @@ class ProjectController extends Controller
 
   public function __construct()
   {
+    // PERBAIKAN: Menggunakan sistem permission yang baru
     $this->middleware(function ($request, $next) {
-      if ($this->isAuthorized()) {
+      $user = auth()->user();
+
+      $action = 'view';
+      if (in_array($request->route()->getActionMethod(), ['create', 'store'])) {
+        $action = 'create';
+      } elseif (in_array($request->route()->getActionMethod(), ['edit', 'update'])) {
+        $action = 'update';
+      } elseif ($request->route()->getActionMethod() === 'destroy') {
+        $action = 'delete';
+      }
+
+      if ($user->hasPermission('projects', $action)) {
         return $next($request);
       }
 
-      return redirect()->route('projects.index');
-    })->only(['create', 'store', 'edit', 'update', 'destroy']);
+      abort(403, 'You do not have permission to access this page.');
+    });
   }
 
   public function index(Request $request)
@@ -46,12 +59,19 @@ class ProjectController extends Controller
       ->whereHas('role', fn($q) => $q->where('name', 'Project Director'))
       ->get();
 
+    // PERBAIKAN: Menggunakan method yang benar untuk get permissions
+    $pagePermissions = $user->getMenuPermissions('projects');
+
     return view('project.index', [
       'title' => 'Projects',
       'active' => 'projects',
       'projects' => $projects,
       'directors' => $directors,
       'statuses' => ProjectStatus::all(),
+      'canCreate' => $pagePermissions['allow_create'],
+      'canUpdate' => $pagePermissions['allow_update'],
+      'canDelete' => $pagePermissions['allow_delete'],
+      // Field yang tidak digunakan dihapus
     ]);
   }
 
@@ -94,6 +114,11 @@ class ProjectController extends Controller
 
   public function edit(Project $project)
   {
+    // PERBAIKAN: Cek akses individual project
+    if (!$this->canUserAccessProject(auth()->user(), $project)) {
+      abort(403, 'You do not have permission to edit this project.');
+    }
+
     $project->load(['employees' => function ($q) {
       $q->where('isformeremployee', false);
     }, 'level', 'status']);
@@ -128,6 +153,64 @@ class ProjectController extends Controller
     ], $this->getFormData());
   }
 
+  public function show(string $id)
+  {
+    $project = Project::with(['level', 'status', 'employees.user'])->findOrFail($id);
+
+    // PERBAIKAN: Cek akses individual project
+    if (!$this->canUserAccessProject(auth()->user(), $project)) {
+      abort(403, 'You do not have permission to view this project.');
+    }
+
+    $pagePermissions = auth()->user()->getMenuPermissions('projects');
+
+    return view('project.show', [
+      'title' => 'Project Details',
+      'active' => 'projects',
+      'project' => $project,
+      'canUpdate' => $pagePermissions['allow_update'],
+      'canDelete' => $pagePermissions['allow_delete'],
+      // Field yang tidak digunakan dihapus
+    ]);
+  }
+
+  // PERBAIKAN: Helper method untuk cek akses project dengan sistem baru
+  private function canUserAccessProject($user, $project)
+  {
+    // Admin selalu bisa akses
+    if ($user->isAdmin()) return true;
+
+    // Project Director selalu bisa akses
+    if ($user->isProjectDirector()) return true;
+
+    // Cek custom permission jika ada
+    if ($user->hasCustomPermissions()) {
+      $menu = SiMenuWeb::where('teks', 'projects')->first();
+      if ($menu) {
+        $permission = $user->permissions()->where('menu_id', $menu->id)->first();
+        if ($permission && $permission->allow_view) {
+          // Jika punya custom permission view, bisa akses project yang dia terlibat
+          if ($user->employee) {
+            return $project->employees()
+              ->where('employees.id', $user->employee->id)
+              ->where('project_employees.isformeremployee', 0)
+              ->exists();
+          }
+        }
+      }
+    }
+
+    // Default: cek apakah user terlibat dalam project
+    if ($user->employee) {
+      return $project->employees()
+        ->where('employees.id', $user->employee->id)
+        ->where('project_employees.isformeremployee', 0)
+        ->exists();
+    }
+
+    return false;
+  }
+
   private function getFormData(): array
   {
     if ($this->commonData !== null) {
@@ -141,14 +224,6 @@ class ProjectController extends Controller
     ];
 
     return $this->commonData;
-  }
-
-  private function isAuthorized(): bool
-  {
-    $user = auth()->user();
-
-    return $user->role === 'admin' ||
-      ($user->employee && $user->employee->role->name === 'Project Director');
   }
 
   public function store(Request $request)
@@ -182,19 +257,22 @@ class ProjectController extends Controller
         }
       }
 
+      // Remove duplicates
+      $employeeIds = array_unique($employeeIds);
+
       // Update status employee menjadi "Stand By"
       Employee::whereIn('id', $employeeIds)->update(['status_employee' => 'Stand By']);
 
       // Associate employees with the project
       $project->employees()->sync($employeeIds);
 
-      // // Send email notification to each assigned employee
-      // $employees = Employee::whereIn('id', $employeeIds)->get();
-      // $jobs = $employees->map(function ($employee) use ($project) {
-      //     return new BroadcastEmailJob($project, $employee);
-      // });
+      // Send email notification to each assigned employee
+      // if (!empty($employeeIds)) {
+      //     $employees = Employee::whereIn('id', $employeeIds)->get();
+      //     $jobs = $employees->map(function ($employee) use ($project) {
+      //         return new BroadcastEmailJob($project, $employee);
+      //     });
 
-      // if (! empty($jobs)) {
       //     Bus::batch($jobs)
       //         ->allowFailures()
       //         ->onQueue('emails')
@@ -205,37 +283,19 @@ class ProjectController extends Controller
 
       return redirect()->route('projects.index')->with('success', 'Project created successfully.');
     } catch (\Exception $e) {
-      // Rollback transaction if any operation fails
       DB::rollBack();
-
-      // Optionally log the error for debugging
-      logger()->error('Error creating project: ' . $e->getMessage());
-
-      // Return an error response
+      Log::error('Error creating project: ' . $e->getMessage());
       return back()->withInput()->withErrors(['error' => 'Something went wrong. Please try again or contact support']);
     }
   }
 
-  /**
-   * Display the specified resource.
-   */
-  public function show(string $id)
-  {
-    $project = Project::with(['level', 'status', 'employees.user'])->findOrFail($id);
-
-    return view('project.show', [
-      'title' => 'Project Details',
-      'active' => 'projects',
-      'project' => $project,
-    ]);
-  }
-
-  /**
-   * Update the specified resource in storage.
-   */
-
   public function update(Request $request, Project $project)
   {
+    // PERBAIKAN: Cek akses individual project
+    if (!$this->canUserAccessProject(auth()->user(), $project)) {
+      abort(403, 'You do not have permission to update this project.');
+    }
+
     try {
       $validated = $request->validate([
         'name' => 'required|string|max:255',
@@ -262,7 +322,7 @@ class ProjectController extends Controller
         $request->engineer_web_id,
         $request->engineer_mobile_id,
         $request->engineer_tester_id,
-      ])->filter()->all();
+      ])->filter()->unique()->all();
 
       $currentEmployeeIds = $project->employees()
         ->where('isformeremployee', 0)
@@ -272,6 +332,7 @@ class ProjectController extends Controller
       $employeesToAdd = array_diff($newEmployeeIds, $currentEmployeeIds);
       $employeesToRemove = array_diff($currentEmployeeIds, $newEmployeeIds);
 
+      // Add new employees
       foreach ($employeesToAdd as $employeeId) {
         $existingRecord = DB::table('project_employees')
           ->where('project_id', $project->id)
@@ -287,6 +348,7 @@ class ProjectController extends Controller
         }
       }
 
+      // Remove employees
       foreach ($employeesToRemove as $employeeId) {
         $projectEmployee = DB::table('project_employees')
           ->where('project_id', $project->id)
@@ -295,11 +357,13 @@ class ProjectController extends Controller
           ->first();
 
         if ($projectEmployee) {
+          // Delete unfinished tasks
           DB::table('tasks')
             ->where('assigned_project_employee_id', $projectEmployee->id)
             ->where('task_status_id', 1)
             ->delete();
 
+          // Mark as former employee
           DB::table('project_employees')
             ->where('id', $projectEmployee->id)
             ->update(['isformeremployee' => 1]);
@@ -318,19 +382,33 @@ class ProjectController extends Controller
         ->with('success', $message);
     } catch (\Exception $e) {
       DB::rollBack();
-
       Log::error('Error updating project: ' . $e->getMessage());
       return back()->withInput()->withErrors(['error' => 'Something went wrong. Please try again or contact support']);
     }
   }
 
-  /**
-   * Remove the specified resource from storage.
-   */
   public function destroy(Project $project)
   {
-    $project->delete();
+    // PERBAIKAN: Cek akses individual project
+    if (!$this->canUserAccessProject(auth()->user(), $project)) {
+      return response()->json([
+        'success' => false,
+        'message' => 'You do not have permission to delete this project.'
+      ], 403);
+    }
 
-    return redirect()->route('projects.index')->with('success', 'Project deleted successfully.');
+    try {
+      $project->delete();
+      return response()->json([
+        'success' => true,
+        'message' => 'Project deleted successfully.'
+      ]);
+    } catch (\Exception $e) {
+      Log::error('Error deleting project: ' . $e->getMessage());
+      return response()->json([
+        'success' => false,
+        'message' => 'Something went wrong. Please try again or contact support.'
+      ], 500);
+    }
   }
 }

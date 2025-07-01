@@ -14,7 +14,7 @@
             $canViewTasks = false;
 
             // Cek custom permission dulu
-            if (auth()->user()->hasCustomPermissions()) {
+            if (auth()->user()) {
                 $canViewTasks = auth()->user()->hasPermission('tasks', 'view');
             } else {
                 // Fallback ke logic lama: hanya employee yang bisa lihat tasks
@@ -29,8 +29,10 @@
         {{-- Activity - selalu tampil --}}
         <x-sidebar.activity :active="$active" />
 
-        {{-- Administration --}}
-        <x-sidebar.administration :active="$active" />
+        {{-- Administration
+        @if (auth()->user()->employee)
+            <x-sidebar.administration :active="$active" :expanded="true" />
+        @endif --}}
 
         {{-- admin --}}
         <div class="sm:block xs:hidden">

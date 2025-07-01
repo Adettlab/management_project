@@ -9,41 +9,42 @@ use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
-    public function index()
-    {
-        return view('auth.login', ["title" => "Login"]);
+  public function index()
+  {
+    if (Auth::check()) {
+      return redirect('dashboard');
+    }
+    return view('auth.login', ["title" => "Login"]);
+  }
+
+  public function authenticate(Request $request)
+  {
+    $validatedata = $request->validate([
+      'email' => 'required|email',
+      'password' => 'required'
+    ]);
+
+    if (Auth::attempt($validatedata)) {
+      $request->session()->regenerate();
+
+
+      return redirect()->intended('dashboard');
     }
 
-    public function authenticate(Request $request)
-    {
-        $validatedata = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
-        ]);
+    return back()->withErrors([
+      'login' => 'login gagal',
+    ])->withInput();
+  }
 
-        if (Auth::attempt($validatedata)) {
-            $request->session()->regenerate();
+  public function logout(request $request)
+  {
 
+    Auth::logout();
 
-            return redirect()->intended('dashboard');
-        }
+    $request->session()->invalidate();
 
-        return back()->withErrors([
-            'login' => 'login gagal',
-        ])->withInput();
-    }
+    $request->session()->regenerateToken();
 
-    public function logout(request $request)
-    {
-
-        Auth::logout();
-
-        $request->session()->invalidate();
-
-        $request->session()->regenerateToken();
-
-        return redirect('/');
-
-    }
+    return redirect('/');
+  }
 }
-

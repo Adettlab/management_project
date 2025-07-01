@@ -2,32 +2,41 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\SendNotification;
 use App\Models\Employee;
 use App\Models\Project;
 use App\Models\ProjectEmployee;
+use App\Models\SiMenuWeb;
 use App\Models\Task;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use Minishlink\WebPush\Subscription;
-use Minishlink\WebPush\WebPush;
-use PhpParser\Node\Stmt\TryCatch;
 
 class TaskController extends Controller
 {
-  /**
-   * Display a listing of the resource.
-   */
   public function __construct()
   {
     $this->middleware(function ($request, $next) {
       $user = auth()->user();
+
+      // Cek apakah user punya employee
       if (!$user->employee) {
         return redirect()->route('dashboard');
+      }
+
+      // HANYA untuk custom permission, cek permission tasks
+      // User dengan role default (admin, user biasa) tetap bisa akses
+      if ($user->hasCustomPermissions()) {
+        $action = 'view';
+        if (in_array($request->route()->getActionMethod(), ['store'])) {
+          $action = 'create';
+        } elseif (in_array($request->route()->getActionMethod(), ['update', 'updateStatus'])) {
+          $action = 'update';
+        } elseif ($request->route()->getActionMethod() === 'destroy') {
+          $action = 'delete';
+        }
+
+        if (!$user->hasPermission('tasks', $action)) {
+          abort(403, 'You do not have permission to access this page.');
+        }
       }
 
       return $next($request);
@@ -47,10 +56,31 @@ class TaskController extends Controller
       ->whereIn('project_status_id', [2, 3])
       ->get();
 
+    // Default permissions untuk user biasa
+    $pagePermissions = [
+      'allow_create' => true,
+      'allow_update' => true,
+      'allow_delete' => true,
+    ];
+
+    // HANYA override jika user punya custom permissions
+    if ($user->hasCustomPermissions()) {
+      $pagePermissions = $user->getMenuPermissions('tasks');
+    }
+
+    // Logic khusus untuk All Task dan Transfer Task (hanya Project Director dan Admin)
+    $isProjectDirector = $user->employee && $user->employee->role->name === 'Project Director';
+    $isAdmin = $user->role === 'admin';
+
     return view('task.index', [
       'title' => 'Tasks',
       'active' => 'tasks',
       'projects' => $projects,
+      'canCreate' => $pagePermissions['allow_create'],
+      'canUpdate' => $pagePermissions['allow_update'],
+      'canDelete' => $pagePermissions['allow_delete'],
+      'canTransfer' => $isAdmin || $isProjectDirector, // Khusus untuk transfer task
+      'canSeeAllTask' => $isAdmin || $isProjectDirector, // Khusus untuk see all task
     ]);
   }
 
@@ -68,14 +98,6 @@ class TaskController extends Controller
 
   public function getTasks(Request $request)
   {
-    /*
-          1. ambil semua project termasuk relasi tasks dan employees dll yang dibutuhkan
-          2. jika user adalah admin, maka ambil semua project
-          3. jika user bukan admin, maka ambil project yang memiliki employee_id yang sama dengan employee_id user
-          4. jika request memiliki query date, maka return semua data yang sudah difilter berdasarkan admin dan created_at berdasarkan query date
-          5. jika request tidak memiliki query date maka filter project dimana created_at = variable date dan task_status_id = 1
-        */
-
     $user = auth()->user();
     $date = $request->query('date', now()->toDateString());
     $isAdmin = $user->employee && $user->employee->role->name === 'Project Director';
@@ -127,11 +149,14 @@ class TaskController extends Controller
     return response()->json($projects);
   }
 
-  /**
-   * Store a newly created resource in storage.
-   */
   public function store(Request $request)
   {
+    // HANYA cek permission jika user punya custom permission
+    $user = auth()->user();
+    if ($user->hasCustomPermissions() && !$user->hasPermission('tasks', 'create')) {
+      abort(403, 'You do not have permission to create tasks.');
+    }
+
     try {
       $validated = $request->validate([
         'project_id' => 'required|exists:projects,id',
@@ -140,7 +165,9 @@ class TaskController extends Controller
         'task_level_id' => 'required|exists:task_levels,id',
         'assigned_project_employee_id' => 'required|exists:project_employees,id',
       ]);
+
       Task::create($validated);
+
       // Ambil employee_id dari project_employees
       $projectEmployee = ProjectEmployee::findOrFail($validated['assigned_project_employee_id']);
 
@@ -155,24 +182,20 @@ class TaskController extends Controller
     }
   }
 
-  // show all task
   public function allTask(Request $request)
   {
     $user = auth()->user();
-    $isAdmin = !$user->employee; // Check if the user is not an admin
+
+    // Hanya Admin atau Project Director yang bisa akses (tidak terpengaruh custom permission)
+    $isProjectDirector = $user->employee && $user->employee->role->name === 'Project Director';
+    $isAdmin = $user->role === 'admin';
+
+    if (!$isAdmin && !$isProjectDirector) {
+      abort(403, 'You do not have permission to view all tasks.');
+    }
 
     // Base query
-    $tasksQuery = Task::with(['project', 'taskStatus', 'taskLevel', 'assignedProjectEmployee'])->whereHas('project', function ($q) {
-      $q->whereIn('project_status_id', [2, 3]);
-    });
-
-    if (!$isAdmin) {
-      $tasksQuery->whereHas('project', function ($query) use ($user) {
-        $query->whereHas('employees', function ($q) use ($user) {
-          $q->where('employees.id', $user->employee->id); // Filter by the user's employee ID
-        });
-      });
-    }
+    $tasksQuery = Task::with(['project', 'taskStatus', 'taskLevel', 'assignedProjectEmployee']);
 
     // Filter task level
     if ($request->has('task_level') && $request->task_level) {
@@ -188,41 +211,28 @@ class TaskController extends Controller
       });
     }
 
-    if ($request->has('project') && $request->project) {
-      $tasksQuery->where('project_id', $request->project);
-    }
-
-    if ($request->has('employee') && $request->employee) {
-      $projectEmployeeIds = DB::table('project_employees')
-        ->where('employee_id', $request->employee)
-        ->pluck('id')
-        ->toArray();
-
-      if (!empty($projectEmployeeIds)) {
-        $tasksQuery->whereIn('assigned_project_employee_id', $projectEmployeeIds);
-      }
-    }
-
-    // Paginate the results
-    $tasks = $tasksQuery->orderBy('created_at', 'desc')->paginate(10);
-    $employees = User::has('employee') // Only include users with an associated employee record
-      ->with('employee') // Eager load the employee relationship
-      ->orderBy('name')
-      ->get();
+    $tasks = $tasksQuery->paginate(10);
 
     return view('task.all_task', [
       'title' => 'Task',
       'active' => 'tasks',
       'tasks' => $tasks,
-      'employees' => $employees
     ]);
   }
 
-  /**
-   * Update the specified resource in storage.
-   */
   public function update(Request $request, task $task)
   {
+    // Cek permission untuk update
+    $user = auth()->user();
+    if ($user->hasCustomPermissions() && !$user->hasPermission('tasks', 'update')) {
+      abort(403, 'You do not have permission to update tasks.');
+    }
+
+    // Cek apakah user bisa akses task ini
+    if (!$this->canUserAccessTask($user, $task)) {
+      abort(403, 'You do not have permission to update this task.');
+    }
+
     try {
       $validated = $request->validate([
         'name' => 'required|string|max:255',
@@ -240,12 +250,29 @@ class TaskController extends Controller
 
   public function updateStatus(Request $request, $id)
   {
+    // Cek permission untuk update
+    $user = auth()->user();
+    if ($user->hasCustomPermissions() && !$user->hasPermission('tasks', 'update')) {
+      return response()->json([
+        'success' => false,
+        'message' => 'You do not have permission to update task status.'
+      ], 403);
+    }
+
+    $task = Task::findOrFail($id);
+
+    // Cek apakah user bisa akses task ini
+    if (!$this->canUserAccessTask($user, $task)) {
+      return response()->json([
+        'success' => false,
+        'message' => 'You do not have permission to update this task.'
+      ], 403);
+    }
+
     // Validasi hanya task_status_id untuk pembaruan status
     $validated = $request->validate([
       'task_status_id' => 'required|exists:task_statuses,id',
     ]);
-    // Temukan task berdasarkan id yang diberikan
-    $task = Task::findOrFail($id);
 
     // Update task_status_id
     $task->task_status_id = $validated['task_status_id'];
@@ -260,13 +287,70 @@ class TaskController extends Controller
     ], 201);
   }
 
-  /**
-   * Remove the specified resource from storage.
-   */
   public function destroy(Task $task)
   {
-    $task->delete();
+    // Cek permission untuk delete
+    $user = auth()->user();
+    if ($user->hasCustomPermissions() && !$user->hasPermission('tasks', 'delete')) {
+      return response()->json([
+        'success' => false,
+        'message' => 'You do not have permission to delete tasks.'
+      ], 403);
+    }
 
-    return redirect()->route('tasks.index')->with('success', 'Task deleted successfully.');
+    // Cek apakah user bisa akses task ini
+    if (!$this->canUserAccessTask($user, $task)) {
+      return response()->json([
+        'success' => false,
+        'message' => 'You do not have permission to delete this task.'
+      ], 403);
+    }
+
+    try {
+      $task->delete();
+      return response()->json([
+        'success' => true,
+        'message' => 'Task deleted successfully.'
+      ]);
+    } catch (\Exception $e) {
+      Log::error('Error deleting task: ' . $e->getMessage());
+      return response()->json([
+        'success' => false,
+        'message' => 'Something went wrong. Please try again or contact support.'
+      ], 500);
+    }
+  }
+
+  // Helper method untuk cek akses task
+  private function canUserAccessTask($user, $task)
+  {
+    // Admin selalu bisa akses
+    if ($user->role === 'admin') return true;
+
+    // Project Director selalu bisa akses
+    if ($user->employee && $user->employee->role->name === 'Project Director') return true;
+
+    // Cek custom permission jika ada
+    if ($user->hasCustomPermissions()) {
+      $menu = SiMenuWeb::where('teks', 'tasks')->first();
+      if ($menu) {
+        $permission = $user->permissions()->where('menu_id', $menu->id)->first();
+        if ($permission && ($permission->allow_view || $permission->allow_update || $permission->allow_delete)) {
+          // Jika punya custom permission, cek apakah task assigned ke user tersebut
+          if ($user->employee) {
+            return $task->assignedProjectEmployee &&
+              $task->assignedProjectEmployee->employee_id === $user->employee->id;
+          }
+        }
+      }
+    }
+
+    // Default: cek apakah task assigned ke user
+    if ($user->employee) {
+      return $task->assignedProjectEmployee &&
+        $task->assignedProjectEmployee->employee_id === $user->employee->id;
+    }
+
+    return false;
   }
 }

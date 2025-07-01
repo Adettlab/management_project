@@ -11,20 +11,20 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TimeManagementController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProfileController;
 use App\Models\ProjectEmployee;
 use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
-
+use Symfony\Component\HttpKernel\Profiler\Profile;
 
 Route::get('/storage-link', function () {
-  Artisan::call('storage:link');  
+  Artisan::call('storage:link');
   return 'storage link successfully created';
 });
 
 Route::get('/', function () {
-    return redirect('login');
+  return redirect('login');
 });
 
 
@@ -43,10 +43,10 @@ Route::middleware('auth')->group(function () {
   Route::resource('tasks', TaskController::class);
   Route::resource('activity', ActivityController::class);
   Route::resource('admin', AdminController::class);
-  Route::resource('setting', SettingController::class);
-  Route::resource('calendar', CalendarController::class);
-  Route::resource('time-management', TimeManagementController::class);
-  Route::resource('users', UserController::class);
-  Route::get('/users/profile', [UserController::class, 'show'])->name('users.profile');
+  // Route::resource('setting', SettingController::class);
+  // Route::resource('calendar', CalendarController::class);
+  // Route::resource('time-management', TimeManagementController::class);
+  Route::resource('users', ProfileController::class);
+  Route::get('/users/profile', [ProfileController::class, 'show'])->name('users.profile');
   Route::resource('administration', AdministrationController::class);
 });
