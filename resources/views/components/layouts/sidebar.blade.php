@@ -4,13 +4,29 @@
         {{-- dashboard --}}
         <x-sidebar.dashboard :active="$active" />
 
-        {{-- project --}}
-        <x-sidebar.project :active="$active" />
+        {{-- Projects - cek permission hybrid --}}
+        @if (auth()->user()->hasPermission('projects', 'view'))
+            <x-sidebar.project :active="$active" />
+        @endif
 
-        {{-- tasks --}}
-        <x-sidebar.tasks :active="$active" />
+        {{-- Tasks - cek permission hybrid + fallback employee --}}
+        @php
+            $canViewTasks = false;
 
-        {{-- activity --}}
+            // Cek custom permission dulu
+            if (auth()->user()->hasCustomPermissions()) {
+                $canViewTasks = auth()->user()->hasPermission('tasks', 'view');
+            } else {
+                // Fallback ke logic lama: hanya employee yang bisa lihat tasks
+                $canViewTasks = auth()->user()->employee ? true : false;
+            }
+        @endphp
+
+        @if ($canViewTasks)
+            <x-sidebar.tasks :active="$active" />
+        @endif
+
+        {{-- Activity - selalu tampil --}}
         <x-sidebar.activity :active="$active" />
 
         {{-- Administration --}}
