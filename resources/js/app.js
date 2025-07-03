@@ -28,6 +28,100 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 // Modal Logout end
 
+// Handle delete project with SweetAlert2
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteButtons = document.querySelectorAll('.delete-btn-project');
+
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const projectId = this.getAttribute('data-id');
+            const projectName = this.getAttribute('data-name');
+
+            // Menampilkan SweetAlert2 untuk konfirmasi delete
+            Swal.fire({
+                title: 'Are you sure?',
+                text: `You want to delete project "${projectName}"? This action cannot be undone.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading alert
+                    Swal.fire({
+                        title: 'Deleting...',
+                        text: 'Please wait while we delete the project.',
+                        icon: 'info',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Proceed with deletion
+                    fetch(`/projects/${projectId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector(
+                                    'meta[name="csrf-token"]').getAttribute('content'),
+                                'Content-Type': 'application/json',
+                            },
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Show success message
+                                Swal.fire({
+                                    title: 'Deleted!',
+                                    text: `Project "${projectName}" has been deleted successfully.`,
+                                    icon: 'success',
+                                    confirmButtonColor: '#3085d6',
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+                                    // Animate row removal
+                                    const row = this.closest('tr');
+                                    row.style.transition = 'opacity 0.3s ease';
+                                    row.style.opacity = '0';
+
+                                    setTimeout(() => {
+                                        location.reload();
+                                    }, 300);
+                                });
+                            } else {
+                                // Show error message
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: data.message || 'Failed to delete project',
+                                    icon: 'error',
+                                    confirmButtonColor: '#3085d6',
+                                    confirmButtonText: 'OK'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            // Show error message
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'An error occurred while deleting the project',
+                                icon: 'error',
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'OK'
+                            });
+                        });
+                }
+            });
+        });
+    });
+});
+
 // Modal delete user start
 document.addEventListener('DOMContentLoaded', function() {
     // Handle delete button click

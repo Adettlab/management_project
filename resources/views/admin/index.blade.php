@@ -104,4 +104,13 @@
         // Kirim form secara otomatis
         document.getElementById('filterForm').submit();
     });
+
+    // Add event listener to prevent row click on delete
+    document.querySelectorAll('.delete-btn-user').forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.stopPropagation(); // Prevent the row click event
+            const employeeId = this.getAttribute('data-id');
+            // Perform the delete operation, for example, an AJAX call or redirection
+        });
+    });
 </script>

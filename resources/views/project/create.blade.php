@@ -24,8 +24,10 @@
                 </div>
                 <div class="space-y-4 mt-6">
                     <div class="flex flex-col space-y-2">
-                        <label class="block sm:text-lg xs:text-[10px] text-primary-white" for="name">Project
-                            name</label>
+                        <label class="block sm:text-lg xs:text-[10px] text-primary-white " for="name">Project
+                            name<span
+                                class="bg-red-100 ml-1 text-red-600 px-2 py-1 my-auto rounded-full text-[8px] font-semibold"
+                                data-required-label="name">Required</span></label>
                         <input type="text" name="name" id="name"
                             class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                             placeholder="project name.." required value="{{ old('name') }}">
@@ -34,31 +36,36 @@
                         @enderror
                     </div>
                     <div class="flex flex-col space-y-2">
-                        <label class="block sm:text-lg xs:text-[10px] text-primary-white">Date</label>
+                        <label class="block sm:text-lg xs:text-[10px] text-primary-white">Date <span
+                                class="bg-red-100 ml-1 text-red-600 px-2 py-1 rounded-full text-[8px] font-semibold"
+                                data-required-label="date">Required</span></label>
                         <div class="flex items-center justify-between w-full gap-4">
                             <div class="flex sm:flex-row xs:flex-col sm:items-center xs:items-start w-[50%] gap-2">
                                 <label for="start_date" class="sm:text-sm xs:text-[12px] text-gray-700">Start:</label>
                                 <input type="date" name="start_date" id="start_date"
                                     class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                                     required value="{{ old('start_date') }}">
-                                @error('start_date')
-                                    <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
-                                @enderror
                             </div>
                             <div class="flex sm:flex-row xs:flex-col sm:items-center xs:items-start w-[50%] gap-1">
                                 <label for="end_date" class="sm:text-sm xs:text-[12px] text-gray-700">End:</label>
                                 <input type="date" name="end_date" id="end_date"
                                     class="w-full bg-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none border border-primary-white"
                                     required value="{{ old('end_date') }}">
-                                @error('end_date')
-                                    <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
-                                @enderror
+
                             </div>
                         </div>
+                        @error('start_date')
+                            <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
+                        @enderror
+                        @error('end_date')
+                            <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
+                        @enderror
                     </div>
                     <div class="flex flex-col space-y-2">
                         <label class="block sm:text-lg xs:text-[10px] text-primary-white" for="level">Level
-                            Project</label>
+                            Project <span
+                                class="bg-red-100 ml-1 text-red-600 px-2 py-1 rounded-full text-[8px] font-semibold"
+                                data-required-label="level">Required</span></label>
                         <select name="project_level_id"
                             class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                             id="level" required>
@@ -74,7 +81,9 @@
                         @enderror
                     </div>
                     <div class="flex flex-col space-y-2">
-                        <label class="block sm:text-lg xs:text-[10px] text-primary-white" for="status">Status</label>
+                        <label class="block sm:text-lg xs:text-[10px] text-primary-white" for="status">Status <span
+                                class="bg-red-100 ml-1 text-red-600 px-2 py-1 rounded-full text-[8px] font-semibold"
+                                data-required-label="status">Required</span></label>
                         <select name="project_status_id"
                             class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                             id="status" required>
@@ -91,7 +100,8 @@
                     </div>
                     <div class="flex flex-col space-y-2">
                         <label class="block sm:text-lg xs:text-[10px] text-primary-white" for="description">Project
-                            Description</label>
+                            Description <span
+                                class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span></label>
                         <textarea name="description" id="description" rows="2"
                             placeholder="project description.."class="w-full bg-primary-white border border-primary-white px-3 py-1 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                             value="{{ old('description') }}"></textarea>
@@ -108,10 +118,12 @@
                 <div class="space-y-4 mt-6">
                     <div class="flex flex-col space-y-2">
                         <label class="block sm:text-lg xs:text-[10px] text-primary-white" for="director">Project
-                            Director</label>
+                            Director <span
+                                class="bg-red-100 ml-1 text-red-600 px-2 py-1 rounded-full text-[8px] font-semibold"
+                                data-required-label="director">Required</span></label>
                         <select name="director_id"
                             class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
-                            id="director">
+                            id="director" required>
                             <option value="">Select project director</option>
                             @foreach ($employees->where('role.name', 'Project Director') as $employee)
                                 <option value="{{ $employee->id }}"
@@ -125,7 +137,8 @@
                     </div>
                     <div class="flex flex-col space-y-2">
                         <label class="block sm:text-lg xs:text-[10px] text-primary-white" for="analyst">Project
-                            Analyst</label>
+                            Analyst <span
+                                class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span></label>
                         <select name="analyst_id"
                             class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                             id="analyst">
@@ -144,7 +157,8 @@
                         <div class="flex sm:flex-row xs:flex-col sm:space-x-2 w-full sm:space-y-0 xs:space-y-4">
                             <div class="sm:w-[50%] xs:w-full space-y-2">
                                 <label class="block sm:text-lg xs:text-[10px] text-primary-white"
-                                    for="designer">Project Designer</label>
+                                    for="designer">Project Designer <span
+                                        class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span></label>
                                 <select name="designer_id"
                                     class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                                     id="designer">
@@ -161,7 +175,8 @@
                             </div>
                             <div class="sm:w-[50%] xs:w-full space-y-2">
                                 <label class="block sm:text-lg xs:text-[10px] text-primary-white"
-                                    for="engineer_web">Engineer Web</label>
+                                    for="engineer_web">Engineer Web <span
+                                        class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span></label>
                                 <select name="engineer_web_id"
                                     class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                                     id="engineer_web">
@@ -182,7 +197,8 @@
                         <div class="flex sm:flex-row xs:flex-col sm:space-x-2 sm:space-y-0 xs:space-y-4">
                             <div class="sm:w-[50%] xs:w-full space-y-2">
                                 <label class="block sm:text-lg xs:text-[10px] text-primary-white"
-                                    for="engineer_mobile">Engineer Mobile</label>
+                                    for="engineer_mobile">Engineer Mobile <span
+                                        class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span></label>
                                 <select
                                     name="engineer_mobile_id"class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                                     id="engineer_mobile">
@@ -199,7 +215,8 @@
                             </div>
                             <div class="space-y-2 sm:w-[50%] xs:w-full">
                                 <label class="block sm:text-lg xs:text-[10px] text-primary-white"
-                                    for="engineer_tester">Engineer Tester</label>
+                                    for="engineer_tester">Engineer Tester <span
+                                        class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span></label>
                                 <select name="engineer_tester_id"
                                     class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                                     id="engineer_tester">
@@ -261,6 +278,55 @@
 
         form.addEventListener('submit', (e) => {
             localStorage.clear();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ambil semua input yang memiliki atribut required
+            const requiredInputs = document.querySelectorAll(
+                'input[required], textarea[required], select[required]');
+
+            requiredInputs.forEach(function(input) {
+                const label = document.querySelector(`span[data-required-label="${input.id}"]`);
+
+                if (!label) return; // Lewati kalau tidak ada label
+
+                function toggleLabel() {
+                    if (input.value.trim() !== '') {
+                        label.style.display = 'none';
+                    } else {
+                        label.style.display = '';
+                    }
+                }
+
+                toggleLabel(); // Set awal
+                input.addEventListener('input', toggleLabel);
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fungsi pengecekan untuk grup date (start & end)
+            function toggleDateLabel() {
+                const start = document.getElementById('start_date');
+                const end = document.getElementById('end_date');
+                const dateLabel = document.querySelector('span[data-required-label="date"]');
+
+                if (!dateLabel || !start || !end) return;
+
+                if (start.value.trim() !== '' && end.value.trim() !== '') {
+                    dateLabel.style.display = 'none';
+                } else {
+                    dateLabel.style.display = '';
+                }
+            }
+
+            // Jalankan saat halaman dimuat
+            toggleDateLabel();
+
+            // Tambahkan event listener ke kedua input
+            document.getElementById('start_date').addEventListener('input', toggleDateLabel);
+            document.getElementById('end_date').addEventListener('input', toggleDateLabel);
+
+            // — Kamu bisa lanjutkan juga untuk field lain seperti sebelumnya —
         });
     </script>
 </x-layouts.layout>

@@ -35,10 +35,8 @@
         @endif --}}
 
         {{-- admin --}}
-        <div class="sm:block xs:hidden">
-            @if (!auth()->user()->employee)
-                <x-sidebar.admin :active="$active" />
-            @endif
-        </div>
+        @if (!auth()->user()->employee)
+            <x-sidebar.admin :active="$active" />
+        @endif
     </nav>
 </div>

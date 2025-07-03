@@ -23,7 +23,7 @@
                             value="{{ old('email') }}" required>
                     </div>
                 </div>
-                <div class="mb-4 flex items-center relative">
+                <div class="mb-5 flex items-center relative">
                     <div class="absolute ml-2">
                         <svg class="w-5 h-5 primary-gray" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                             width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
@@ -50,18 +50,18 @@
                         </svg>
                     </div>
                 </div>
-                <div class="flex items-center justify-end mb-4">
+                {{-- <div class="flex items-center justify-end mb-4">
                     <a href="#" class="text-sm primary-black hover:text-zinc-700">Forgot password?</a>
-                </div>
+                </div> --}}
                 {{-- Error Message --}}
                 @if ($errors->has('login'))
-                    <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 text-sm rounded text-center relative"
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 text-sm rounded text-center relative"
                         role="alert">
                         <span class="block sm:inline">{{ $errors->first('login') }}</span>
                     </div>
                 @endif
                 <button type="submit"
-                    class="w-full bg-primary-black text-sm text-white p-2 rounded-lg font-medium hover:bg-zinc-700">
+                    class="mt-5 w-full bg-primary-black text-sm text-white p-2 rounded-lg font-medium hover:bg-zinc-700">
                     SIGN IN
                 </button>
             </form>
