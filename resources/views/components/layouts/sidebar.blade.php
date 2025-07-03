@@ -22,8 +22,21 @@
             }
         @endphp
 
+      {{-- Tasks - cek permission hybrid + fallback employee --}}
+        @php
+            $canViewTasks = false;
+            
+            // Cek custom permission dulu
+            if (auth()->user()->hasCustomPermissions()) {
+                $canViewTasks = auth()->user()->hasPermission('tasks', 'view');
+            } else {
+                // Fallback ke logic lama: hanya employee yang bisa lihat tasks
+                $canViewTasks = auth()->user()->employee ? true : false;
+            }
+        @endphp
+        
         @if ($canViewTasks)
-            <x-sidebar.tasks :active="$active" />
+            <x-sidebar.tasks :active="$active" :expanded="true" />
         @endif
 
         {{-- Activity - selalu tampil --}}
