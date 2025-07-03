@@ -23,99 +23,111 @@
                         data-content="Absent" onclick="filterByStatus('absent')">Absent</button>
                 </div>
                 <div class="h-[calc(100vh-200px)] overflow-y-auto mt-2">
-                <div class="grid grid-cols-3 gap-3 mt-5">
-                    @forelse ($employees as $index => $employee)
-                        @if (strtolower($filter) == 'ready' || strtolower($filter) == 'completed')
-                            @php
-                                $firstTask = $employee->projects->flatMap(function($project) use ($employee) {
-                                                return $project->tasks->filter(function($task) use ($employee) {
-                                                    return optional($task->assignedProjectEmployee)->employee_id === $employee->id;
-                                                });
-                                            })->first();
-                            @endphp
-                            <div class="border rounded-md p-4 h-fit max-h-full">
-                                <div class="flex">
-                                    @if ($employee->photo)
-                                        <img src="{{ asset('/storage/' . $employee->photo) }}" alt="Photo" class="w-12 h-12 rounded-full object-cover" loading="lazy">
-                                    @else
-                                        <div
-                                            class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-                                            <img src="{{ asset('blank_profile.png') }}" alt="Photo" class="w-9 h-9 rounded-full object-cover" loading="lazy">
-                                         </div>
-                                    @endif
-                                    <div class="flex flex-col justify-center ml-2">
-                                        <p class="font-semibold text-sm">{{ $employee->user->name }}</p>
-                                        <p class="text-xs primary-gray">{{ $employee->role->name }}</p>
-                                    </div>
-                                </div>
-                                <p class="text-sm font-black mt-2">Working on
-                                    {{ $employee->projects->firstWhere('id', $firstTask->project_id)?->name}} :
-                                </p>
-                                <div>
-                                    @if($firstTask)
-                                        <div class="text-xs primary-gray font-medium mb-8 mt-2">
-                                            {{ $firstTask->name }}
+                    <div class="grid grid-cols-3 gap-3 mt-5">
+                        @forelse ($employees as $index => $employee)
+                            @if (strtolower($filter) == 'ready' || strtolower($filter) == 'completed')
+                                @php
+                                    $firstTask = $employee->projects
+                                        ->flatMap(function ($project) use ($employee) {
+                                            return $project->tasks->filter(function ($task) use ($employee) {
+                                                return optional($task->assignedProjectEmployee)->employee_id ===
+                                                    $employee->id;
+                                            });
+                                        })
+                                        ->first();
+                                @endphp
+                                <div class="border rounded-md p-4 h-fit max-h-full">
+                                    <div class="flex">
+                                        @if ($employee->photo)
+                                            <img src="{{ asset('/storage/' . $employee->photo) }}" alt="Photo"
+                                                class="w-12 h-12 rounded-full object-cover" loading="lazy">
+                                        @else
+                                            <div
+                                                class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                                                <img src="{{ asset('blank_profile.png') }}" alt="Photo"
+                                                    class="w-9 h-9 rounded-full object-cover" loading="lazy">
+                                            </div>
+                                        @endif
+                                        <div class="flex flex-col justify-center ml-2">
+                                            <p class="font-semibold text-sm">{{ $employee->user->name }}</p>
+                                            <p class="text-xs primary-gray">{{ $employee->role->name }}</p>
                                         </div>
-                                        <div class="flex mt-3 gap-x-2">
-                                            <p class="px-3 py-1 rounded-md font-medium text-xs {{ strtolower($firstTask->taskStatus->name) === 'completed' ? 'bg-primary-green text-white' : 'bg-secondary-white primary-gray' }}">
-                                                {{ $firstTask->taskStatus->name }}
-                                            </p>
-                                            <p style="background-color: {{ $firstTask->taskLevel->color }}" class="text-xs px-3 py-1 rounded-md text-white font-medium">
-                                                {{ $firstTask->taskLevel->name }}
+                                    </div>
+                                    <p class="text-sm font-black mt-2">Working on
+                                        {{ $employee->projects->firstWhere('id', $firstTask->project_id)?->name }} :
+                                    </p>
+                                    <div>
+                                        @if ($firstTask)
+                                            <div class="text-xs primary-gray font-medium mb-8 mt-2">
+                                                {{ $firstTask->name }}
+                                            </div>
+                                            <div class="flex mt-3 gap-x-2">
+                                                <p
+                                                    class="px-3 py-1 rounded-md font-medium text-xs {{ strtolower($firstTask->taskStatus->name) === 'completed' ? 'bg-primary-green text-white' : 'bg-secondary-white primary-gray' }}">
+                                                    {{ $firstTask->taskStatus->name }}
+                                                </p>
+                                                <p style="background-color: {{ $firstTask->taskLevel->color }}"
+                                                    class="text-xs px-3 py-1 rounded-md text-white font-medium">
+                                                    {{ $firstTask->taskLevel->name }}
+                                                </p>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            @elseif (strtolower($filter) == 'absent')
+                                <div class="border rounded-md p-4 h-fit max-h-full">
+                                    <div class="flex">
+                                        @if ($employee->photo)
+                                            <img src="{{ asset('/storage/' . $employee->photo) }}" alt="Photo"
+                                                class="w-12 h-12 rounded-full object-cover" loading="lazy">
+                                        @else
+                                            <div
+                                                class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                                                <img src="{{ asset('blank_profile.png') }}" alt="Photo"
+                                                    class="w-9 h-9 rounded-full object-cover" loading="lazy">
+                                            </div>
+                                        @endif
+                                        <div class="flex flex-col justify-center ml-2">
+                                            <p class="font-semibold text-sm">{{ $employee->user->name }}</p>
+                                            <p class="text-xs primary-gray">
+                                                {{ \Carbon\Carbon::parse($employee->administration->start_date)->diffInDays($employee->administration->end_date) + 1 }}
+                                                day off
                                             </p>
                                         </div>
-                                    @endif
-                                </div>
-                            </div>
-                        @elseif (strtolower($filter) == 'absent')
-                            <div class="border rounded-md p-4 h-fit max-h-full">
-                                <div class="flex">
-                                    @if ($employee->photo)
-                                        <img src="{{ asset('/storage/' . $employee->photo) }}" alt="Photo" class="w-12 h-12 rounded-full object-cover" loading="lazy">
-                                    @else
-                                        <div
-                                            class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-                                            <img src="{{ asset('blank_profile.png') }}" alt="Photo" class="w-9 h-9 rounded-full object-cover" loading="lazy">
-                                         </div>
-                                    @endif
-                                    <div class="flex flex-col justify-center ml-2">
-                                        <p class="font-semibold text-sm">{{ $employee->user->name }}</p>
-                                        <p class="text-xs primary-gray">
-                                            {{ \Carbon\Carbon::parse($employee->administration->start_date)->diffInDays($employee->administration->end_date)+1 }} day off
-                                        </p>
+                                    </div>
+                                    <p class="text-sm font-black mt-2 mb-2">
+                                        {{ $employee->administration->leavecategory->name }}
+                                    </p>
+                                    <div>
+                                        <p class="text-xs w-fit">{{ $employee->administration->description }}</p>
                                     </div>
                                 </div>
-                                <p class="text-sm font-black mt-2 mb-2">
-                                    {{$employee->administration->leavecategory->name}}
-                                </p>
-                                <div>
-                                    <p class="text-xs w-fit">{{$employee->administration->description}}</p>
-                                </div>
-                            </div>
-                        @else
-                            <div class="border rounded-md p-2 max-h-full h-fit">
-                                <div class="flex">
-                                    @if ($employee->photo)
-                                        <img src="{{ asset('/storage/' . $employee->photo) }}" alt="Photo" class="w-12 h-12 rounded-full object-cover" loading="lazy">
-                                    @else
-                                         <div
-                                            class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-                                            <img src="{{ asset('blank_profile.png') }}" alt="Photo" class="w-9 h-9 rounded-full object-cover" loading="lazy">
-                                         </div>
-                                    @endif
-                                    <div class="flex flex-col justify-center ml-2">
-                                        <p class="font-semibold text-sm">{{ $employee->user->name }}</p>
-                                        <p class="text-xs primary-gray">{{ $employee->role->name }}</p>
+                            @else
+                                <div class="border rounded-md p-2 max-h-full h-fit">
+                                    <div class="flex">
+                                        @if ($employee->photo)
+                                            <img src="{{ asset('/storage/' . $employee->photo) }}" alt="Photo"
+                                                class="w-12 h-12 rounded-full object-cover" loading="lazy">
+                                        @else
+                                            <div
+                                                class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                                                <img src="{{ asset('blank_profile.png') }}" alt="Photo"
+                                                    class="w-9 h-9 rounded-full object-cover" loading="lazy">
+                                            </div>
+                                        @endif
+                                        <div class="flex flex-col justify-center ml-2">
+                                            <p class="font-semibold text-sm">{{ $employee->user->name }}</p>
+                                            <p class="text-xs primary-gray">{{ $employee->role->name }}</p>
+                                        </div>
                                     </div>
                                 </div>
+                            @endif
+                        @empty
+                            <div>
+                                <p colspan="4" class="text-center border-gray-300">No employees found.</p>
                             </div>
-                        @endif
-                    @empty
-                        <div>
-                            <p colspan="4" class="text-center border-gray-300">No employees found.</p>
-                        </div>
-                    @endforelse
-                </div>
+                        @endforelse
+                    </div>
                 </div>
             </div>
             {{-- Status SDM end --}}
@@ -221,4 +233,3 @@
         });
     });
 </script>
-
