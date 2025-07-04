@@ -1,11 +1,11 @@
 <x-layouts.layout :title="$title" :active="$active">
     <div class="sm:mx-6 xs:mx-3  my-1">
         <div class="bg-white rounded-lg border-2 border-gray-200 p-6 max-w-full w-full mx-auto">
-            <div class="flex justify-between items-center w-full -mt-8">
-                <div class="w-[20%]">
-                    <form method="GET">
+            <div class="flex flex-1 justify-between items-center w-full -mt-8">
+                <div class="w-[35%] sm:w-[20%]">
+                    <form method="GET" class="w-full">
                         <input type="month" name="month"
-                            class="primary-gray font-medium rounded-lg py-2 px-2 sm:text-sm xs:text-xs border outline-none"
+                            class="primary-gray w-full font-medium rounded-lg py-2 px-2 sm:text-sm xs:text-xs border outline-none"
                             onchange="this.form.submit()" value="{{ request('month', date('Y-m')) }}" />
                     </form>
                 </div>
@@ -42,9 +42,9 @@
                         </div>
 
                         <div class="grid mb-4 mr-7 ml-4">
-                            <div class="flex sm:space-x-10 xs:space-x-9">
+                            <div class="flex sm:space-x-5 xs:space-x-9">
                                 <div class="items-center justify-between">
-                                    <p class="text-gray-600 sm:text-sm xs:text-[10px] xss:text-[12px]">Project Total</p>
+                                    <p class="text-gray-600 sm:text-sm xs:text-[10px] xss:text-[12px]">Total</p>
                                     <input type="text"
                                         class="sm:w-20 xs:w-[65px] xss:w-[75px] sm:text-md xs:text-[13px] xss:text-sm font-semibold rounded border text-center mx-auto"
                                         value="{{ $emp->sumProjects }}" readonly disabled>

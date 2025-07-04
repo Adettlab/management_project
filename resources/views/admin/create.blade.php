@@ -2,7 +2,7 @@
     <main class="sm:h-full flex flex-col items-center justify-center">
         <div
             class="bg-white sm:w-[60%] xs:w-[90vw] py-9 px-12 rounded-xl border border-gray-200 sm:shadow-none xs:shadow-[0_0_3px_3px_rgba(0,0,0,0.05)]">
-            <form action="{{ route('admin.store') }}" method="POST">
+            <form action="{{ route('admin.store') }}" method="POST" onsubmit="return validateForm()">
                 @csrf
                 <h1 class="font-semibold sm:text-xl xs:text-[16px] text-center">Bikin Akun Baru</h1>
 
@@ -10,8 +10,9 @@
 
                     <!-- Username Input -->
                     <div class="sm:w-1/2 flex flex-col space-y-1 xs:mb-3 sm:mb-0">
-                        <label for="username" class="primary-gray font-medium sm:text-sm xs:text-[10px]">Username <span
-                                class="bg-red-100 ml-1 text-red-600 px-1 py-[1px] my-auto rounded-full text-[7px] font-semibold"
+                        <label for="username"
+                            class="primary-gray font-medium sm:text-sm xs:text-[10px] flex items-center">Username <span
+                                class="bg-red-100 ml-1 text-red-600 px-1 py-[1px] flex items-center h-4 rounded-full text-[7px] font-semibold"
                                 data-required-label="username">Required</span></label>
                         <input
                             class="w-[94%] primary-gray font-medium rounded-lg sm:py-1 xs:py-2 px-2 sm:text-sm xs:text-[12px] border border-gray-200 outline-none"
@@ -24,8 +25,9 @@
 
                     <!-- Password Input -->
                     <div class="sm:w-1/2 flex flex-col space-y-1">
-                        <label for="password" class="primary-gray font-medium sm:text-sm xs:text-[10px]">Password <span
-                                class="bg-red-100 ml-1 text-red-600 px-1 py-[1px] my-auto rounded-full text-[7px] font-semibold"
+                        <label for="password"
+                            class="primary-gray font-medium sm:text-sm xs:text-[10px] flex items-center">Password <span
+                                class="bg-red-100 ml-1 text-red-600 px-1 py-[1px] flex items-center h-4 rounded-full text-[7px] font-semibold"
                                 data-required-label="password">Required</span></label>
                         <input
                             class="w-[94%] primary-gray font-medium rounded-lg sm:py-1 xs:py-2 px-2 sm:text-sm xs:text-[12px] border border-gray-200 outline-none"
@@ -38,9 +40,10 @@
                 <div class="flex sm:flex-row xs:flex-col mt-3 w-full sm:mb-0">
                     <!-- Email Input -->
                     <div class="sm:w-1/2 flex flex-col space-y-1 sm:mb-0 xs:mb-3">
-                        <label for="email" class="primary-gray font-medium sm:text-sm xs:text-[10px]">Email
+                        <label for="email"
+                            class="primary-gray font-medium sm:text-sm xs:text-[10px] flex items-center">Email
                             Akun <span
-                                class="bg-red-100 ml-1 text-red-600 px-1 py-[1px] my-auto rounded-full text-[7px] font-semibold"
+                                class="bg-red-100 ml-1 text-red-600 px-1 py-[1px] flex items-center h-4 rounded-full text-[7px] font-semibold"
                                 data-required-label="email">Required</span></label>
                         <input
                             class="w-[94%] primary-gray font-medium rounded-lg sm:py-1 xs:py-2 px-2 sm:text-sm xs:text-[12px] border border-gray-200 outline-none"
@@ -54,9 +57,9 @@
                     <!-- Password Confirmation -->
                     <div class="sm:w-1/2 flex flex-col space-y-1">
                         <label for="password_confirmation"
-                            class="primary-gray font-medium sm:text-sm xs:text-[10px]">Confirm
+                            class="primary-gray font-medium sm:text-sm xs:text-[10px] flex items-center">Confirm
                             password <span
-                                class="bg-red-100 ml-1 text-red-600 px-1 py-[1px] my-auto rounded-full text-[7px] font-semibold"
+                                class="bg-red-100 ml-1 text-red-600 px-1 py-[1px] flex items-center h-4 rounded-full text-[7px] font-semibold"
                                 data-required-label="password_confirmation">Required</span></label>
                         <input
                             class="w-[94%] primary-gray font-medium rounded-lg sm:py-1 xs:py-2 px-2 sm:text-sm xs:text-[12px] border border-gray-200 outline-none"
@@ -71,9 +74,10 @@
                 <div class="flex sm:flex-row xs:flex-col mt-3 w-full sm:mb-0">
                     <!-- Word Email Input -->
                     <div class="sm:w-1/2 flex flex-col space-y-1 sm:mb-0 xs:mb-3">
-                        <label for="work_email" class="primary-gray font-medium sm:text-sm xs:text-[10px]">Email
+                        <label for="work_email"
+                            class="primary-gray font-medium sm:text-sm xs:text-[10px] flex items-center">Email
                             Kantor <span
-                                class="bg-red-100 ml-1 text-red-600 px-1 py-[1px] my-auto rounded-full text-[7px] font-semibold"
+                                class="bg-red-100 ml-1 text-red-600 px-1 py-[1px] flex items-center h-4 rounded-full text-[7px] font-semibold"
                                 data-required-label="work_email">Required</span></label>
                         <input
                             class="w-[94%] primary-gray font-medium rounded-lg sm:py-1 xs:py-2 px-2 sm:text-sm xs:text-[12px] border border-gray-200 outline-none"
@@ -86,12 +90,12 @@
 
                     <!-- Role Selection -->
                     <div class="sm:w-1/2 flex flex-col space-y-1">
-                        <label for="role_id" class="primary-gray font-medium sm:text-sm xs:text-[10px]">Division <span
-                                class="bg-red-100 ml-1 text-red-600 px-1 py-[1px] my-auto rounded-full text-[7px] font-semibold"
+                        <label for="role_id"
+                            class="primary-gray font-medium sm:text-sm xs:text-[10px] flex items-center">Division <span
+                                class="bg-red-100 ml-1 text-red-600 px-1 py-[1px] flex items-center h-4 rounded-full text-[7px] font-semibold"
                                 data-required-label="role_id">Required</span></label>
-                        <select name="role_id" id="role_id"
-                            class="w-[94%] primary-gray font-medium rounded-lg sm:py-1 xs:py-2 px-2 sm:text-sm xs:text-[12px] border border-gray-200 outline-none"
-                            required>
+                        <select name="role_id" id="role_id" required
+                            class="w-[94%] primary-gray font-medium rounded-lg sm:py-1 xs:py-2 px-2 sm:text-sm xs:text-[12px] border border-gray-200 outline-none">
                             <option value="">Enter division</option>
                             @foreach ($roles as $role)
                                 <option value="{{ $role->id }}"
@@ -99,7 +103,6 @@
                                     {{ $role->name }}
                                 </option>
                             @endforeach
-                            <option value="custom">Custom</option>
                         </select>
                         @error('role_id')
                             <span class="text-red-600 text-xs">{{ $message }}</span>
@@ -109,8 +112,46 @@
 
                 <!-- Custom Permissions Section -->
                 <div id="custom_permissions_section" class="mt-6 w-full">
-                    <label class="primary-gray font-medium text-sm">Atur Permission Custom <span
-                            class="bg-blue-100 ml-1 text-blue-600 px-1 py-[1px] my-auto rounded-full text-[7px] font-semibold">Optional</span></label>
+                    <label class="primary-gray font-medium text-sm flex items-center"> <svg class="size-5 mr-1"
+                            viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
+                                fill="#2c5282" />
+                        </svg>Atur Hak Akses Permission<span
+                            class="bg-blue-100 ml-1 text-blue-600 px-1 py-[1px] py-2 flex items-center h-4 rounded-full text-[7px] font-semibold">Optional</span></label>
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3 mt-2">
+                        <p class="text-xs mb-[4px] flex">
+                            <svg class="size-4 mr-2" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                                    fill="#38a169" />
+                            </svg>
+                            <span class="font-semibold">Default:</span> &nbsp;Role sudah punya hak akses standar
+                        </p>
+                        <p class="text-xs mb-[4px] flex">
+                            <svg class="size-4 mr-2" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                                    fill="#3182ce" />
+                            </svg>
+                            <span class="font-semibold">Kustomisasi:</span> &nbsp;Centang kotak untuk mengubah hak
+                            akses
+                            default
+                        </p>
+                        <p class="text-xs flex">
+                            <svg class="size-4 mr-2" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                                    fill="#ed8936" />
+                            </svg>
+                            <span class="font-semibold">Rekomendasi:</span> &nbsp;Biarkan kosong untuk menggunakan
+                            pengaturan
+                            standar
+                        </p>
+                    </div>
                     <div class="space-y-4 mt-2">
                         @foreach ($pages as $page)
                             <div class="border border-gray-300 rounded-lg p-4">
@@ -120,7 +161,8 @@
                                         <div class="flex sm:space-x-4 flex-col sm:flex-row">
                                             <div class="flex items-center">
                                                 <input type="checkbox" id="allow_view_{{ $page->id }}"
-                                                    name="permissions[{{ $page->id }}][allow_view]" value="1">
+                                                    name="permissions[{{ $page->id }}][allow_view]"
+                                                    value="1">
                                                 <label for="allow_view_{{ $page->id }}"
                                                     class="ml-2 text-sm">View</label>
                                             </div>
@@ -171,14 +213,9 @@
         </div>
     </main>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const roleSelect = document.getElementById('role_id');
-            const customSection = document.getElementById('custom_permissions_section');
-
-            const infoElement = document.createElement('p');
-            infoElement.className = 'role-info text-[9px] text-blue-600 mt-1 ml-1';
-            infoElement.textContent = 'Pilih role dulu buat liat info permission default';
-            roleSelect.parentNode.appendChild(infoElement);
+        // Script yang sudah ada untuk role selection
+        document.getElementById('role_id').addEventListener('change', function() {
+            const roleId = this.value;
 
             const roleInfo = {
                 '1': 'Analyst: Default bisa liat project, sama bikin/update/edit task',
@@ -189,32 +226,19 @@
                 '6': 'Engineer Tester: Default bisa liat project, sama bikin/update/edit task'
             };
 
-            function toggleCustomSection() {
-                const selectedValue = roleSelect.value;
-
-                // Tampilkan info default kalau bukan custom
-                if (selectedValue in roleInfo) {
-                    infoElement.textContent = roleInfo[selectedValue];
-                    customSection.classList.add('hidden');
-                } else if (selectedValue === 'custom') {
-                    infoElement.textContent = 'Silakan atur permission manual sesuai kebutuhan.';
-                    customSection.classList.remove('hidden');
-                } else {
-                    infoElement.textContent = '';
-                    customSection.classList.add('hidden');
-                }
+            const infoElement = document.querySelector('.role-info');
+            if (infoElement && roleInfo[roleId]) {
+                infoElement.textContent = roleInfo[roleId];
             }
+        });
 
-            // Jalankan saat halaman dimuat (handle old value juga)
-            toggleCustomSection();
-
-            // Jalankan ulang saat user mengganti pilihan role
-            roleSelect.addEventListener('change', toggleCustomSection);
-
-            // Script auto-check View dari checkbox permission (yang kamu punya)
+        // Script untuk auto-check View ketika Create, Update, atau Delete dicentang
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ambil semua checkbox permissions
             const permissionCheckboxes = document.querySelectorAll(
                 '#custom_permissions_section input[type="checkbox"]');
 
+            // Tambahkan event listener untuk setiap checkbox
             permissionCheckboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
                     const checkboxId = this.id;
@@ -222,14 +246,18 @@
 
                     const viewCheckbox = document.getElementById(`allow_view_${pageId}`);
 
+                    // Jika checkbox yang diklik adalah Create, Update, atau Delete
                     if (checkboxId.includes('allow_create_') ||
                         checkboxId.includes('allow_update_') ||
                         checkboxId.includes('allow_delete_')) {
+
+                        // Jika checkbox tersebut dicentang, otomatis centang View
                         if (this.checked) {
                             viewCheckbox.checked = true;
                         }
                     }
 
+                    // Jika checkbox View di-uncheck, otomatis uncheck semua yang lain
                     if (checkboxId.includes('allow_view_') && !this.checked) {
                         document.getElementById(`allow_create_${pageId}`).checked = false;
                         document.getElementById(`allow_update_${pageId}`).checked = false;
@@ -237,6 +265,13 @@
                     }
                 });
             });
+
+            // Tambahin elemen info setelah pemilihan role
+            // const roleSelect = document.getElementById('role_id');
+            // const infoElement = document.createElement('p');
+            // infoElement.className = 'role-info text-xs text-blue-600 mt-1';
+            // infoElement.textContent = 'Pilih role dulu buat liat info permission default';
+            // roleSelect.parentNode.appendChild(infoElement);
         });
 
         document.addEventListener('DOMContentLoaded', function() {
