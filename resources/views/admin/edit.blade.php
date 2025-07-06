@@ -32,13 +32,13 @@
 
                         <div class="flex flex-col xss:flex-row gap-2 xss:gap-3 justify-center sm:justify-start">
                             <label for="photo"
-                                class="cursor-pointer bg-sky-blue text-white text-xs font-medium px-3 sm:px-4 py-1.5 sm:py-1 rounded hover:bg-blue-600 transition-colors text-center">
+                                class="cursor-pointer bg-sky-blue text-white text-xs font-medium px-3 sm:px-4 py-1.5 sm:py-1 rounded hover:bg-blue-400 transition-colors text-center">
                                 Upload Foto
                             </label>
                             <input id="photo" name="photo" type="file" accept="image/*" class="hidden" />
 
                             <button id="delete-button" type="button"
-                                class="bg-secondary-white text-[#7D7D7D] px-3 sm:px-4 py-1.5 sm:py-1 text-xs rounded font-medium hover:bg-gray-100 transition-colors">
+                                class="bg-secondary-white text-[#7D7D7D] px-3 sm:px-4 py-1.5 sm:py-1 text-xs rounded font-medium hover:bg-gray-200 transition-colors">
                                 Hapus Foto
                             </button>
                         </div>
@@ -188,8 +188,8 @@
                         </div>
                     @else
                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-                            <p class="text-xs flex flex-col sm:flex-row sm:items-center mb-1">
-                                <svg class="w-4 h-4 mr-0 sm:mr-2 mb-1 sm:mb-0 flex-shrink-0" viewBox="0 0 24 24"
+                            <p class="text-xs flex sm:flex-row sm:items-center mb-1">
+                                <svg class="w-4 h-4 mr-2 sm:mr-2 mb-1 sm:mb-0 flex-shrink-0" viewBox="0 0 24 24"
                                     fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path
                                         d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
@@ -198,14 +198,14 @@
                                 <span>Pengguna ini menggunakan hak akses default sesuai role:
                                     <strong>{{ $employee->role->name ?? 'Tidak ada role' }}</strong></span>
                             </p>
-                            <p class="text-xs flex flex-col sm:flex-row sm:items-center">
-                                <svg class="w-4 h-4 mr-0 sm:mr-2 mb-1 sm:mb-0 flex-shrink-0" viewBox="0 0 24 24"
+                            <p class="text-xs flex sm:flex-row sm:items-center">
+                                <svg class="w-4 h-4 mr-2 sm:mr-2 mb-1 sm:mb-0 flex-shrink-0" viewBox="0 0 24 24"
                                     fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path
                                         d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
                                         fill="#3182ce" />
                                 </svg>
-                                <span><span class="font-semibold">Kustomisasi:</span> Centang kotak untuk mengubah hak
+                                <span> Centang kotak untuk mengubah hak
                                     akses default</span>
                             </p>
                         </div>
@@ -265,9 +265,9 @@
                     </div>
 
                     <div class="bg-gray-50 rounded-lg p-3 mt-3">
-                        <p class="text-xs text-gray-600 flex flex-col sm:flex-row sm:items-center">
+                        <p class="text-xs text-gray-600 flex sm:flex-row sm:items-center">
                             @if ($hasCustomPermissions)
-                                <svg class="w-6 h-6 mr-0 sm:mr-2 mb-1 sm:mb-0 flex-shrink-0" viewBox="0 0 24 24"
+                                <svg class="w-6 h-6 mr-2 sm:mr-2 mb-1 sm:mb-0 flex-shrink-0" viewBox="0 0 24 24"
                                     fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path
                                         d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
@@ -276,7 +276,7 @@
                                 <span>Kosongkan semua kotak untuk kembali menggunakan hak akses default sesuai
                                     role.</span>
                             @else
-                                <svg class="w-6 h-6 mr-0 sm:mr-2 mb-1 sm:mb-0 flex-shrink-0" viewBox="0 0 24 24"
+                                <svg class="w-6 h-6 mr-2 sm:mr-2 mb-1 sm:mb-0 flex-shrink-0" viewBox="0 0 24 24"
                                     fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path
                                         d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
