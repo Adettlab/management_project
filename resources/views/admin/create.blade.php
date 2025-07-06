@@ -112,13 +112,16 @@
 
                 <!-- Custom Permissions Section -->
                 <div id="custom_permissions_section" class="mt-6 w-full">
-                    <label class="primary-gray font-medium text-sm flex items-center"> <svg class="size-5 mr-1"
-                            viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <label class="primary-gray font-medium text-sm flex items-center">
+                        <svg class="size-5 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path
                                 d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
                                 fill="#2c5282" />
-                        </svg>Atur Hak Akses Permission<span
-                            class="bg-blue-100 ml-1 text-blue-600 px-1 py-[1px] py-2 flex items-center h-4 rounded-full text-[7px] font-semibold">Optional</span></label>
+                        </svg>
+                        Atur Hak Akses Permission
+                        <span
+                            class="bg-blue-100 ml-1 text-blue-600 px-1 py-[1px] py-2 flex items-center h-4 rounded-full text-[7px] font-semibold">Optional</span>
+                    </label>
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3 mt-2">
                         <p class="text-xs mb-[4px] flex">
                             <svg class="size-4 mr-2" viewBox="0 0 24 24" fill="none"

@@ -192,6 +192,7 @@ class AdminController extends Controller
     $employee = Employee::findOrFail($id);
 
     $validated = $request->validate([
+      'email' => 'required|email|unique:employees,email,' . $employee->id,
       'work_email' => 'required|email|unique:employees,work_email,' . $employee->id,
       'photo' => 'nullable|image|max:2048',
       'nik' => 'nullable|string|max:255|unique:employees,nik,' . $employee->id,
