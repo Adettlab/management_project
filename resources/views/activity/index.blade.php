@@ -55,16 +55,16 @@
                                         class="sm:w-20 xs:w-[65px] xss:w-[75px] sm:text-md xs:text-[13px] xss:text-sm font-semibold rounded border text-center"
                                         value="{{ $emp->sumTasks }}" readonly disabled>
                                 </div>
-                                <div class="items-center justify-between">
+                                {{-- <div class="items-center justify-between">
                                     <p class="text-gray-600 sm:text-sm xs:text-[10px] xss:text-[12px]">Total Leave</p>
                                     <input type="text"
                                         class="sm:w-20 xs:w-[65px] xss:w-[75px] sm:text-md xs:text-[13px] xss:text-sm font-semibold rounded border text-center"
                                         value="{{ $emp->totalDayOff }}" readonly disabled>
-                                </div>
+                                </div> --}}
                             </div>
                         </div>
 
-                        <div class="px-5 pb-7 pt-2 -mb-4">
+                        {{-- <div class="px-5 pb-7 pt-2 -mb-4">
                             <div class="max-w-sm">
                                 <div class="sm:text-sm xs:text-[10px]text-gray-600 mb-2">
                                     Work hours
@@ -92,7 +92,7 @@
                                     @endif
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
                 @endforeach
             </div>
