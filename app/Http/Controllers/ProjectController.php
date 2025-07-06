@@ -267,17 +267,17 @@ class ProjectController extends Controller
       $project->employees()->sync($employeeIds);
 
       // Send email notification to each assigned employee
-      // if (!empty($employeeIds)) {
-      //     $employees = Employee::whereIn('id', $employeeIds)->get();
-      //     $jobs = $employees->map(function ($employee) use ($project) {
-      //         return new BroadcastEmailJob($project, $employee);
-      //     });
+      if (!empty($employeeIds)) {
+          $employees = Employee::whereIn('id', $employeeIds)->get();
+          $jobs = $employees->map(function ($employee) use ($project) {
+              return new BroadcastEmailJob($project, $employee);
+          });
 
-      //     Bus::batch($jobs)
-      //         ->allowFailures()
-      //         ->onQueue('emails')
-      //         ->dispatch();
-      // }
+          Bus::batch($jobs)
+              ->allowFailures()
+              ->onQueue('emails')
+              ->dispatch();
+      }
 
       DB::commit();
 
