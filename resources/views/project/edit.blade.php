@@ -108,35 +108,35 @@
                 <div class="space-y-4 mt-6">
                     <div class="flex flex-col space-y-2">
                         <label class="block sm:text-lg xs:text-[10px] text-primary-white" for="director">Project
-                            Director</label>
-                        <select name="director_id"
+                            Kepala PUSTIK</label>
+                        <select name="kepala_id"
                             class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                             id="director">
-                            <option value="">Select project director</option>
-                            @foreach ($employees->where('role.name', 'Project Director') as $employee)
+                            <option value="">Select Kepala PUSTIK</option>
+                            @foreach ($employees->where('role.name', 'KEPALA PUSTIK') as $employee)
                                 <option value="{{ $employee->id }}"
-                                    {{ old('director_id', $director->id ?? '') == $employee->id ? 'selected' : '' }}>
+                                    {{ old('kepala_id', $kepala->id ?? '') == $employee->id ? 'selected' : '' }}>
                                     {{ $employee->user->name }}</option>
                             @endforeach
                         </select>
-                        @error('director_id')
+                        @error('kepala_id')
                             <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
                         @enderror
                     </div>
                     <div class="flex flex-col space-y-2">
                         <label class="block sm:text-lg xs:text-[10px] text-primary-white" for="analyst">Project
-                            Analyst</label>
-                        <select name="analyst_id"
+                            Pelaporan PDDIKTI</label>
+                        <select name="pelaporan_pddikti_id"
                             class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                             id="analyst">
-                            <option value="">Select project analyst</option>
-                            @foreach ($employees->where('role.name', 'Analyst') as $employee)
+                            <option value="">Select project Pelaporan PDDIKTI</option>
+                            @foreach ($employees->where('role.name', 'Pelaporan PDDIKTI') as $employee)
                                 <option value="{{ $employee->id }}"
-                                    {{ old('analyst_id', $analyst->id ?? '') == $employee->id ? 'selected' : '' }}>
+                                    {{ old('pelaporan_pddikti_id', $PelaporanPDDIKTI->id ?? '') == $employee->id ? 'selected' : '' }}>
                                     {{ $employee->user->name }}</option>
                             @endforeach
                         </select>
-                        @error('analyst_id')
+                        @error('pelaporan_pddikti_id')
                             <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
                         @enderror
                     </div>
@@ -144,35 +144,35 @@
                         <div class="flex sm:flex-row xs:flex-col sm:space-x-2 w-full">
                             <div class="sm:w-[50%] xs:w-full space-y-2">
                                 <label class="block sm:text-lg xs:text-[10px] text-primary-white" for="designer">Project
-                                    Designer</label>
-                                <select name="designer_id"
+                                    Asisten Dosen</label>
+                                <select name="asisten_id"
                                     class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                                     id="designer">
-                                    <option value="">Select project designer</option>
-                                    @foreach ($employees->where('role.name', 'Designer') as $employee)
+                                    <option value="">Select project asisten dosen</option>
+                                    @foreach ($employees->where('role.name', 'Asisten DOSEN') as $employee)
                                         <option value="{{ $employee->id }}"
-                                            {{ old('designer_id', $designer->id ?? '') == $employee->id ? 'selected' : '' }}>
+                                            {{ old('asisten_id', $asistenDosen->id ?? '') == $employee->id ? 'selected' : '' }}>
                                             {{ $employee->user->name }}</option>
                                     @endforeach
                                 </select>
-                                @error('designer_id')
+                                @error('asisten_id')
                                     <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div class="sm:w-[50%] xs:w-full space-y-2">
                                 <label class="block sm:text-lg xs:text-[10px] text-primary-white"
-                                    for="engineer_web">Engineer Web</label>
-                                <select name="engineer_web_id"
+                                    for="engineer_web">Jaringan dan Instalasi</label>
+                                <select name="jaringan_instalasi_id"
                                     class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                                     id="engineer_web">
-                                    <option value="">Select engineer web</option>
-                                    @foreach ($employees->where('role.name', 'Engineer Web') as $employee)
+                                    <option value="">Select jaringan dan instalasi</option>
+                                    @foreach ($employees->where('role.name', 'Jaringan Dan Instalasi') as $employee)
                                         <option value="{{ $employee->id }}"
-                                            {{ old('engineer_web_id', $engineerWeb->id ?? '') == $employee->id ? 'selected' : '' }}>
+                                            {{ old('jaringan_instalasi_id', $jaringanInstalasi->id ?? '') == $employee->id ? 'selected' : '' }}>
                                             {{ $employee->user->name }}</option>
                                     @endforeach
                                 </select>
-                                @error('engineer_web_id')
+                                @error('jaringan_instalasi_id')
                                     <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
                                 @enderror
                             </div>
@@ -182,35 +182,35 @@
                         <div class="flex flex-row space-x-2">
                             <div class="sm:w-[50%] xs:w-full space-y-2">
                                 <label class="block sm:text-lg xs:text-[10px] text-primary-white"
-                                    for="engineer_mobile">Engineer Mobile</label>
+                                    for="engineer_mobile">teknisi</label>
                                 <select
-                                    name="engineer_mobile_id"class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
+                                    name="teknisi_id"class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                                     id="engineer_mobile">
-                                    <option value="">Select engineer mobile</option>
-                                    @foreach ($employees->where('role.name', 'Engineer Mobile') as $employee)
+                                    <option value="">Select teknisi</option>
+                                    @foreach ($employees->where('role.name', 'TEKNISI') as $employee)
                                         <option value="{{ $employee->id }}"
-                                            {{ old('engineer_mobile_id', $engineerMobile->id ?? '') == $employee->id ? 'selected' : '' }}>
+                                            {{ old('teknisi_id', $Teknisi->id ?? '') == $employee->id ? 'selected' : '' }}>
                                             {{ $employee->user->name }}</option>
                                     @endforeach
                                 </select>
-                                @error('engineer_mobile_id')
+                                @error('teknisi_id')
                                     <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div class="space-y-2 sm:w-[50%] xs:w-full">
                                 <label class="block sm:text-lg xs:text-[10px] text-primary-white"
-                                    for="engineer_tester">Engineer Tester</label>
-                                <select name="engineer_tester_id"
+                                    for="engineer_tester">Pengelola Sosial Media</label>
+                                <select name="pengelola_sosmed_id"
                                     class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                                     id="engineer_tester">
-                                    <option value="">Select engineer tester</option>
-                                    @foreach ($employees->where('role.name', 'Engineer Tester') as $employee)
+                                    <option value="">Select Pengelola Sosial Media</option>
+                                    @foreach ($employees->where('role.name', 'Pengelola Sosial Media') as $employee)
                                         <option value="{{ $employee->id }}"
-                                            {{ old('engineer_tester_id', $engineerTester->id ?? '') == $employee->id ? 'selected' : '' }}>
+                                            {{ old('pengelola_sosmed_id', $PengelolaSosmed->id ?? '') == $employee->id ? 'selected' : '' }}>
                                             {{ $employee->user->name }}</option>
                                     @endforeach
                                 </select>
-                                @error('engineer_tester_id')
+                                @error('pengelola_sosmed_id')
                                     <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
                                 @enderror
                             </div>

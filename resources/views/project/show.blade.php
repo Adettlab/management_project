@@ -17,44 +17,44 @@
                 <h5 class="mt-4 text-gray-900 font-semibold">Assigned Employees</h5>
                 <div class="grid grid-cols-2 gap-2 mb-4">
                     <div>
-                        <p class="mt-1 text-gray-900 font-semibold">Project Director :</p>
+                        <p class="mt-1 text-gray-900 font-semibold">Kepala Pustik :</p>
                         <p>
-                            {{ $project->employees->where('role.name', 'Project Director')->first()?->user->name ?? 'Not assigned' }}
+                            {{ $project->employees->where('role.name', 'KEPALA PUSTIK')->first()?->user->name ?? 'Not assigned' }}
                         </p>
                     </div>
 
                     <div>
-                        <p class="mt-1 text-gray-900 font-semibold">Project Analyst :</p>
+                        <p class="mt-1 text-gray-900 font-semibold">Project Pelaporan :</p>
                         <p>
-                            {{ $project->employees->where('role.name', 'Analyst')->first()?->user->name ?? 'Not assigned' }}
+                            {{ $project->employees->where('role.name', 'Pelaporan PDDIKTI')->first()?->user->name ?? 'Not assigned' }}
                         </p>
                     </div>
 
                     <div>
-                        <p class="mt-1 text-gray-900 font-semibold">Designer:</p>
+                        <p class="mt-1 text-gray-900 font-semibold">Asisten DOSEN:</p>
                         <p>
-                            {{ $project->employees->where('role.name', 'Designer')->first()?->user->name ?? 'Not assigned' }}
+                            {{ $project->employees->where('role.name', 'Asisten DOSEN')->first()?->user->name ?? 'Not assigned' }}
                         </p>
                     </div>
 
                     <div>
-                        <p class="mt-1 text-gray-900 font-semibold">Engineer Web :</p>
+                        <p class="mt-1 text-gray-900 font-semibold">TEKNISI :</p>
                         <p>
-                            {{ $project->employees->where('role.name', 'Engineer Web')->first()?->user->name ?? 'Not assigned' }}
+                            {{ $project->employees->where('role.name', 'TEKNISI')->first()?->user->name ?? 'Not assigned' }}
                         </p>
                     </div>
 
                     <div>
-                        <p class="mt-1 text-gray-900 font-semibold">Engineer Mobile :</p>
+                        <p class="mt-1 text-gray-900 font-semibold">Jaringan Dan Instalasi :</p>
                         <p>
-                            {{ $project->employees->where('role.name', 'Engineer Mobile')->first()?->user->name ?? 'Not assigned' }}
+                            {{ $project->employees->where('role.name', 'Jaringan Dan Instalasi')->first()?->user->name ?? 'Not assigned' }}
                         </p>
                     </div>
 
                     <div>
-                        <p class="mt-1 text-gray-900 font-semibold">Engineer Tester :</p>
+                        <p class="mt-1 text-gray-900 font-semibold">Pengelola Sosial Media :</p>
                         <p>
-                            {{ $project->employees->where('role.name', 'Engineer Tester')->first()?->user->name ?? 'Not assigned' }}
+                            {{ $project->employees->where('role.name', 'Pengelola Sosial Media')->first()?->user->name ?? 'Not assigned' }}
                         </p>
                     </div>
                 </div>

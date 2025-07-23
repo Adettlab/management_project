@@ -56,12 +56,12 @@
                             class="w-16 sm:w-20 text-sm sm:text-lg font-semibold px-2 py-1 rounded border text-center"
                             value="{{ $sumTasks }}" readonly disabled>
                     </div>
-                    <div class="flex items-center justify-between">
+                    {{-- <div class="flex items-center justify-between">
                         <p class="text-gray-600 text-sm sm:text-lg">Total Leave</p>
                         <input type="text"
                             class="w-16 sm:w-20 text-sm sm:text-lg font-semibold px-2 py-1 rounded border text-center"
                             value="{{ $totalDayOff }}" readonly disabled>
-                    </div>
+                    </div> --}}
                 </div>
 
                 <!-- Form Input -->

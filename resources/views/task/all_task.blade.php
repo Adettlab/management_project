@@ -60,6 +60,10 @@
                             Task Status</th>
                         <th class="w-[6%] py-5 primary-gray text-left font-medium text-sm w-24 hidden sm:table-cell">
                             Created</th>
+                        <th class="w-[10%] px-4 py-5 primary-gray text-left font-medium sm:text-sm xs:text-[12px]">
+                            Start Date</th>
+                        <th class="w-[10%] px-4 py-5 primary-gray text-left font-medium sm:text-sm xs:text-[12px]">
+                            End Date</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
@@ -90,7 +94,14 @@
                             <td class="py-3 text-sm hidden sm:table-cell">
                                 {{ $task->created_at->format('M j, Y') }}
                             </td>
-                            <!-- Row -->
+                            <!-- Start Date -->
+                            <td class="px-4 py-3 text-sm">
+                                {{ \Carbon\Carbon::parse($task->start_date)->format('M j, Y') }}
+                            </td>
+                            <!-- End Date -->
+                            <td class="px-4 py-3 text-sm">
+                                {{ \Carbon\Carbon::parse($task->end_date)->format('M j, Y') }}
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>

@@ -56,7 +56,7 @@ class ProjectController extends Controller
 
     // Get directors for filter dropdown
     $directors = Employee::with('user')
-      ->whereHas('role', fn($q) => $q->where('name', 'Project Director'))
+      ->whereHas('role', fn($q) => $q->where('name', 'KEPALA PUSTIK'))
       ->get();
 
     // PERBAIKAN: Menggunakan method yang benar untuk get permissions
@@ -93,7 +93,7 @@ class ProjectController extends Controller
       $query->whereHas('employees', function ($q) use ($director) {
         $q->where('employees.id', $director)
           ->where('project_employees.isformeremployee', 0) // Only active directors
-          ->whereHas('role', fn($q) => $q->where('name', 'Project Director'));
+          ->whereHas('role', fn($q) => $q->where('name', 'KEPALA PUSTIK'));
       });
     }
 
@@ -119,19 +119,23 @@ class ProjectController extends Controller
       abort(403, 'You do not have permission to edit this project.');
     }
 
-    $project->load(['employees' => function ($q) {
-      $q->where('isformeremployee', false);
-    }, 'level', 'status']);
+    $project->load([
+      'employees' => function ($q) {
+        $q->where('isformeremployee', false);
+      },
+      'level',
+      'status'
+    ]);
 
     $employees = $project->employees;
 
     $roles = [
-      'director' => 'Project Director',
-      'analyst' => 'Analyst',
-      'designer' => 'Designer',
-      'engineerWeb' => 'Engineer Web',
-      'engineerMobile' => 'Engineer Mobile',
-      'engineerTester' => 'Engineer Tester',
+      'kepala' => 'KEPALA PUSTIK',
+      'PelaporanPDDIKTI' => 'Pelaporan PDDIKTI',
+      'Teknisi' => 'TEKNISI',
+      'asistenDosen' => 'Asisten DOSEN',
+      'jaringanInstalasi' => 'Jaringan Dan Instalasi',
+      'PengelolaSosmed' => 'Pengelola Sosial Media',
     ];
 
     $employeeByRole = [];
@@ -144,12 +148,12 @@ class ProjectController extends Controller
       'active' => 'projects',
       'project' => $project,
       'employeeIds' => $employees->pluck('id')->toArray(),
-      'director' => $employeeByRole['director'],
-      'analyst' => $employeeByRole['analyst'],
-      'designer' => $employeeByRole['designer'],
-      'engineerWeb' => $employeeByRole['engineerWeb'],
-      'engineerMobile' => $employeeByRole['engineerMobile'],
-      'engineerTester' => $employeeByRole['engineerTester'],
+      'kepala' => $employeeByRole['kepala'],
+      'PelaporanPDDIKTI' => $employeeByRole['PelaporanPDDIKTI'],
+      'Teknisi' => $employeeByRole['Teknisi'],
+      'asistenDosen' => $employeeByRole['asistenDosen'],
+      'jaringanInstalasi' => $employeeByRole['jaringanInstalasi'],
+      'PengelolaSosmed' => $employeeByRole['PengelolaSosmed'],
     ], $this->getFormData());
   }
 
@@ -178,10 +182,12 @@ class ProjectController extends Controller
   private function canUserAccessProject($user, $project)
   {
     // Admin selalu bisa akses
-    if ($user->isAdmin()) return true;
+    if ($user->isAdmin())
+      return true;
 
-    // Project Director selalu bisa akses
-    if ($user->isProjectDirector()) return true;
+    // KEPALA PUSTIK selalu bisa akses
+    if ($user->isProjectDirector())
+      return true;
 
     // Cek custom permission jika ada
     if ($user->hasCustomPermissions()) {
@@ -235,12 +241,12 @@ class ProjectController extends Controller
       'end_date' => 'required|date|after_or_equal:start_date',
       'project_level_id' => 'required|exists:project_levels,id',
       'project_status_id' => 'required|exists:project_statuses,id',
-      'director_id' => 'nullable|exists:employees,id',
-      'analyst_id' => 'nullable|exists:employees,id',
-      'designer_id' => 'nullable|exists:employees,id',
-      'engineer_web_id' => 'nullable|exists:employees,id',
-      'engineer_mobile_id' => 'nullable|exists:employees,id',
-      'engineer_tester_id' => 'nullable|exists:employees,id',
+      'kepala_id' => 'nullable|exists:employees,id',
+      'pelaporan_pddikti_id' => 'nullable|exists:employees,id',
+      'asisten_id' => 'nullable|exists:employees,id',
+      'jaringan_instalasi_id' => 'nullable|exists:employees,id',
+      'teknisi_id' => 'nullable|exists:employees,id',
+      'pengelola_sosmed_id' => 'nullable|exists:employees,id',
     ]);
 
     DB::beginTransaction();
@@ -251,7 +257,7 @@ class ProjectController extends Controller
 
       // Gather employee IDs
       $employeeIds = [];
-      foreach (['director_id', 'analyst_id', 'designer_id', 'engineer_web_id', 'engineer_mobile_id', 'engineer_tester_id'] as $role) {
+      foreach (['kepala_id', 'pelaporan_pddikti_id', 'asisten_id', 'jaringan_instalasi_id', 'teknisi_id', 'pengelola_sosmed_id'] as $role) {
         if ($request->$role) {
           $employeeIds[] = $request->$role;
         }
@@ -268,15 +274,15 @@ class ProjectController extends Controller
 
       // Send email notification to each assigned employee
       if (!empty($employeeIds)) {
-          $employees = Employee::whereIn('id', $employeeIds)->get();
-          $jobs = $employees->map(function ($employee) use ($project) {
-              return new BroadcastEmailJob($project, $employee);
-          });
+        $employees = Employee::whereIn('id', $employeeIds)->get();
+        $jobs = $employees->map(function ($employee) use ($project) {
+          return new BroadcastEmailJob($project, $employee);
+        });
 
-          Bus::batch($jobs)
-              ->allowFailures()
-              ->onQueue('emails')
-              ->dispatch();
+        Bus::batch($jobs)
+          ->allowFailures()
+          ->onQueue('emails')
+          ->dispatch();
       }
 
       DB::commit();
@@ -304,24 +310,24 @@ class ProjectController extends Controller
         'end_date' => 'required|date|after_or_equal:start_date',
         'project_level_id' => 'required|exists:project_levels,id',
         'project_status_id' => 'required|exists:project_statuses,id',
-        'director_id' => 'nullable|exists:employees,id',
-        'analyst_id' => 'nullable|exists:employees,id',
-        'designer_id' => 'nullable|exists:employees,id',
-        'engineer_web_id' => 'nullable|exists:employees,id',
-        'engineer_mobile_id' => 'nullable|exists:employees,id',
-        'engineer_tester_id' => 'nullable|exists:employees,id',
+        'kepala_id' => 'nullable|exists:employees,id',
+        'pelaporan_pddikti_id' => 'nullable|exists:employees,id',
+        'asisten_id' => 'nullable|exists:employees,id',
+        'jaringan_instalasi_id' => 'nullable|exists:employees,id',
+        'teknisi_id' => 'nullable|exists:employees,id',
+        'pengelola_sosmed_id' => 'nullable|exists:employees,id',
       ]);
 
       DB::beginTransaction();
       $project->update($validated);
 
       $newEmployeeIds = collect([
-        $request->director_id,
-        $request->analyst_id,
-        $request->designer_id,
-        $request->engineer_web_id,
-        $request->engineer_mobile_id,
-        $request->engineer_tester_id,
+        $request->kepala_id,
+        $request->pelaporan_pddikti_id,
+        $request->asisten_id,
+        $request->jaringan_instalasi_id,
+        $request->teknisi_id,
+        $request->pengelola_sosmed_id,
       ])->filter()->unique()->all();
 
       $currentEmployeeIds = $project->employees()

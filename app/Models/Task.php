@@ -20,6 +20,8 @@ class Task extends Model
         'task_status_id',
         'task_level_id',
         'assigned_project_employee_id',
+        'start_date',
+        'end_date',
     ];
 
     // Define the relationships

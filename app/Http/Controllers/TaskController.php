@@ -46,9 +46,12 @@ class TaskController extends Controller
   public function index()
   {
     $user = auth()->user();
-    $projects = Project::with(['employees' => function ($query) {
-      $query->where('isformeremployee', false);
-    }, 'employees.user'])
+    $projects = Project::with([
+      'employees' => function ($query) {
+        $query->where('isformeremployee', false);
+      },
+      'employees.user'
+    ])
       ->whereHas('employees', function ($query) use ($user) {
         $query->where('employee_id', $user->employee->id)
           ->where('isformeremployee', false);
@@ -68,8 +71,8 @@ class TaskController extends Controller
       $pagePermissions = $user->getMenuPermissions('tasks');
     }
 
-    // Logic khusus untuk All Task dan Transfer Task (hanya Project Director dan Admin)
-    $isProjectDirector = $user->employee && $user->employee->role->name === 'Project Director';
+    // Logic khusus untuk All Task dan Transfer Task (hanya KEPALA PUSTIK dan Admin)
+    $isProjectDirector = $user->employee && $user->employee->role->name === 'KEPALA PUSTIK';
     $isAdmin = $user->role === 'admin';
 
     return view('task.index', [
@@ -100,7 +103,7 @@ class TaskController extends Controller
   {
     $user = auth()->user();
     $date = $request->query('date', now()->toDateString());
-    $isAdmin = $user->employee && $user->employee->role->name === 'Project Director';
+    $isAdmin = $user->employee && $user->employee->role->name === 'KEPALA PUSTIK';
     $isToday = trim($date) === now()->toDateString();
 
     $query = Project::query();
@@ -114,7 +117,7 @@ class TaskController extends Controller
         }
       });
 
-      if (! $isAdmin) {
+      if (!$isAdmin) {
         $query->whereHas('assignedProjectEmployee', function ($q) use ($user) {
           $q->where('employee_id', $user->employee->id);
         });
@@ -126,7 +129,7 @@ class TaskController extends Controller
     };
 
     $employeesQuery = function ($query) use ($user, $isAdmin) {
-      if (! $isAdmin) {
+      if (!$isAdmin) {
         $query->where('employee_id', $user->employee->id);
       }
     };
@@ -163,6 +166,8 @@ class TaskController extends Controller
         'name' => 'required|string|max:255',
         'task_status_id' => 'required|exists:task_statuses,id',
         'task_level_id' => 'required|exists:task_levels,id',
+        'start_date' => 'required|date',
+        'end_date' => 'required|date|after_or_equal:start_date',
         'assigned_project_employee_id' => 'required|exists:project_employees,id',
       ]);
 
@@ -186,8 +191,8 @@ class TaskController extends Controller
   {
     $user = auth()->user();
 
-    // Hanya Admin atau Project Director yang bisa akses (tidak terpengaruh custom permission)
-    $isProjectDirector = $user->employee && $user->employee->role->name === 'Project Director';
+    // Hanya Admin atau KEPALA PUSTIK yang bisa akses (tidak terpengaruh custom permission)
+    $isProjectDirector = $user->employee && $user->employee->role->name === 'KEPALA PUSTIK';
     $isAdmin = $user->role === 'admin';
 
     if (!$isAdmin && !$isProjectDirector) {
@@ -325,10 +330,12 @@ class TaskController extends Controller
   private function canUserAccessTask($user, $task)
   {
     // Admin selalu bisa akses
-    if ($user->role === 'admin') return true;
+    if ($user->role === 'admin')
+      return true;
 
-    // Project Director selalu bisa akses
-    if ($user->employee && $user->employee->role->name === 'Project Director') return true;
+    // KEPALA PUSTIK selalu bisa akses
+    if ($user->employee && $user->employee->role->name === 'KEPALA PUSTIK')
+      return true;
 
     // Cek custom permission jika ada
     if ($user->hasCustomPermissions()) {

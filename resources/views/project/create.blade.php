@@ -117,39 +117,39 @@
                 <h1 class="sm:text-2xl xs:text-[16px] font-semibold mb-2">SDM</h1>
                 <div class="space-y-4 mt-6">
                     <div class="flex flex-col space-y-2">
-                        <label class="block sm:text-lg xs:text-[10px] text-primary-white" for="director">Project
-                            Director <span
+                        <label class="block sm:text-lg xs:text-[10px] text-primary-white" for="director">KEPALA PUSTIK
+                            <span
                                 class="bg-red-100 ml-1 text-red-600 px-2 py-1 rounded-full text-[8px] font-semibold"
                                 data-required-label="director">Required</span></label>
-                        <select name="director_id"
+                        <select name="kepala_id"
                             class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                             id="director" required>
-                            <option value="">Select project director</option>
-                            @foreach ($employees->where('role.name', 'Project Director') as $employee)
+                            <option value="">Select KEPALA PUSTIK</option>
+                            @foreach ($employees->where('role.name', 'KEPALA PUSTIK') as $employee)
                                 <option value="{{ $employee->id }}"
-                                    {{ old('director_id') == $employee->id ? 'selected' : '' }}>
+                                    {{ old('kepala_id') == $employee->id ? 'selected' : '' }}>
                                     {{ $employee->user->name }}</option>
                             @endforeach
                         </select>
-                        @error('director_id')
+                        @error('kepala_id')
                             <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
                         @enderror
                     </div>
                     <div class="flex flex-col space-y-2">
                         <label class="block sm:text-lg xs:text-[10px] text-primary-white" for="analyst">Project
-                            Analyst <span
+                            Pelaporan PDDIKTI <span
                                 class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span></label>
-                        <select name="analyst_id"
+                        <select name="pelaporan_pddikti_id"
                             class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                             id="analyst">
-                            <option value="">Select project analyst</option>
-                            @foreach ($employees->where('role.name', 'Analyst') as $employee)
+                            <option value="">Select pelaporan PDDIKTI</option>
+                            @foreach ($employees->where('role.name', 'Pelaporan PDDIKTI') as $employee)
                                 <option value="{{ $employee->id }}"
-                                    {{ old('analyst_id') == $employee->id ? 'selected' : '' }}>
+                                    {{ old('pelaporan_pddikti_id') == $employee->id ? 'selected' : '' }}>
                                     {{ $employee->user->name }}</option>
                             @endforeach
                         </select>
-                        @error('analyst_id')
+                        @error('pelaporan_pddikti_id')
                             <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
                         @enderror
                     </div>
@@ -157,37 +157,37 @@
                         <div class="flex sm:flex-row xs:flex-col sm:space-x-2 w-full sm:space-y-0 xs:space-y-4">
                             <div class="sm:w-[50%] xs:w-full space-y-2">
                                 <label class="block sm:text-lg xs:text-[10px] text-primary-white"
-                                    for="designer">Project Designer <span
+                                    for="designer">Project Asisten Dosen <span
                                         class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span></label>
-                                <select name="designer_id"
+                                <select name="asisten_id"
                                     class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                                     id="designer">
-                                    <option value="">Select project designer</option>
-                                    @foreach ($employees->where('role.name', 'Designer') as $employee)
+                                    <option value="">Select Asisten Dosen</option>
+                                    @foreach ($employees->where('role.name', 'Asisten DOSEN') as $employee)
                                         <option value="{{ $employee->id }}"
-                                            {{ old('designer_id') == $employee->id ? 'selected' : '' }}>
+                                            {{ old('asisten_id') == $employee->id ? 'selected' : '' }}>
                                             {{ $employee->user->name }}</option>
                                     @endforeach
                                 </select>
-                                @error('designer_id')
+                                @error('asisten_id')
                                     <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div class="sm:w-[50%] xs:w-full space-y-2">
                                 <label class="block sm:text-lg xs:text-[10px] text-primary-white"
-                                    for="engineer_web">Engineer Web <span
+                                    for="engineer_web">Jaringan Instalasi <span
                                         class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span></label>
-                                <select name="engineer_web_id"
+                                <select name="jaringan_instalasi_id"
                                     class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                                     id="engineer_web">
-                                    <option value="">Select engineer web</option>
-                                    @foreach ($employees->where('role.name', 'Engineer Web') as $employee)
+                                    <option value="">Select Jaringan Instalasi</option>
+                                    @foreach ($employees->where('role.name', 'Jaringan Dan Instalasi') as $employee)
                                         <option value="{{ $employee->id }}"
-                                            {{ old('engineer_web_id') == $employee->id ? 'selected' : '' }}>
+                                            {{ old('jaringan_instalasi_id') == $employee->id ? 'selected' : '' }}>
                                             {{ $employee->user->name }}</option>
                                     @endforeach
                                 </select>
-                                @error('engineer_web_id')
+                                @error('jaringan_instalasi_id')
                                     <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
                                 @enderror
                             </div>
@@ -197,37 +197,37 @@
                         <div class="flex sm:flex-row xs:flex-col sm:space-x-2 sm:space-y-0 xs:space-y-4">
                             <div class="sm:w-[50%] xs:w-full space-y-2">
                                 <label class="block sm:text-lg xs:text-[10px] text-primary-white"
-                                    for="engineer_mobile">Engineer Mobile <span
+                                    for="engineer_mobile">Teknisi <span
                                         class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span></label>
                                 <select
-                                    name="engineer_mobile_id"class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
+                                    name="teknisi_id" class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                                     id="engineer_mobile">
-                                    <option value="">Select engineer mobile</option>
-                                    @foreach ($employees->where('role.name', 'Engineer Mobile') as $employee)
+                                    <option value="">Select teknisi</option>
+                                    @foreach ($employees->where('role.name', 'TEKNISI') as $employee)
                                         <option value="{{ $employee->id }}"
-                                            {{ old('engineer_mobile_id') == $employee->id ? 'selected' : '' }}>
+                                            {{ old('teknisi_id') == $employee->id ? 'selected' : '' }}>
                                             {{ $employee->user->name }}</option>
                                     @endforeach
                                 </select>
-                                @error('engineer_mobile_id')
+                                @error('teknisi_id')
                                     <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div class="space-y-2 sm:w-[50%] xs:w-full">
                                 <label class="block sm:text-lg xs:text-[10px] text-primary-white"
-                                    for="engineer_tester">Engineer Tester <span
+                                    for="engineer_tester">Pengelola Sosial Media <span
                                         class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span></label>
-                                <select name="engineer_tester_id"
+                                <select name="pengelola_sosmed_id"
                                     class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
                                     id="engineer_tester">
-                                    <option value="">Select engineer tester</option>
-                                    @foreach ($employees->where('role.name', 'Engineer Tester') as $employee)
+                                    <option value="">Select pengelola sosmed</option>
+                                    @foreach ($employees->where('role.name', 'Pengelola Sosial Media') as $employee)
                                         <option value="{{ $employee->id }}"
-                                            {{ old('engineer_tester_id') == $employee->id ? 'selected' : '' }}>
+                                            {{ old('pengelola_sosmed_id') == $employee->id ? 'selected' : '' }}>
                                             {{ $employee->user->name }}</option>
                                     @endforeach
                                 </select>
-                                @error('engineer_tester_id')
+                                @error('pengelola_sosmed_id')
                                     <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
                                 @enderror
                             </div>

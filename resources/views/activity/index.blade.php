@@ -44,7 +44,7 @@
                         <div class="grid mb-4 mr-7 ml-4">
                             <div class="flex sm:space-x-5 xs:space-x-9">
                                 <div class="items-center justify-between">
-                                    <p class="text-gray-600 sm:text-sm xs:text-[10px] xss:text-[12px]">Total</p>
+                                    <p class="text-gray-600 sm:text-sm xs:text-[10px] xss:text-[12px]">Total Project</p>
                                     <input type="text"
                                         class="sm:w-20 xs:w-[65px] xss:w-[75px] sm:text-md xs:text-[13px] xss:text-sm font-semibold rounded border text-center mx-auto"
                                         value="{{ $emp->sumProjects }}" readonly disabled>

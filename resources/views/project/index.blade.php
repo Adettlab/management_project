@@ -16,7 +16,7 @@
                     </select>
                 </div>
 
-                <!-- Filter by Project Director -->
+                <!-- Filter by KEPALA PUSTIK -->
                 @php
                     // PERBAIKAN: Logic untuk menampilkan filter director menggunakan model baru
                     $showDirectorFilter = false;
@@ -31,7 +31,7 @@
                             $permission = $user->permissions()->where('menu_id', $menu->id)->first();
                             $showDirectorFilter = $permission && $permission->allow_view;
                         }
-                    } elseif ($user->employee && $user->employee->role->name === 'Project Director') {
+                    } elseif ($user->employee && $user->employee->role->name === 'KEPALA PUSTIK') {
                         $showDirectorFilter = true;
                     }
                 @endphp
@@ -106,8 +106,7 @@
                             Deadline</th>
                         <th
                             class="sm:w-[6%] xs:w-[10%] sm:py-2 xs:py-5 primary-gray text-center font-medium sm:text-sm xs:text-[12px] text-center">
-                            Project
-                            Director
+                            Kepala Pustik
                         </th>
                         <th class="w-[6%] py-2 primary-gray text-center font-medium hidden sm:table-cell">Project Level
                         </th>
@@ -154,7 +153,7 @@
                             </td>
                             <td class="px-4 py-2 sm:text-sm xs:text-[12px] text-center">
                                 @php
-                                    $directors = $project->employees->where('role.name', 'Project Director');
+                                    $directors = $project->employees->where('role.name', 'KEPALA PUSTIK');
                                 @endphp
                                 @if ($directors->isNotEmpty())
                                     {{ $directors->map(function ($employee) {

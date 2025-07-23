@@ -14,48 +14,35 @@ class EmployeeSeeder extends Seeder
   {
     // Temukan role berdasarkan nama
     $roles = [
-      'Analyst' => Role::where('name', 'Analyst')->first(),
-      'Project Director' => Role::where('name', 'Project Director')->first(),
-      'Designer' => Role::where('name', 'Designer')->first(),
-      'Engineer Web' => Role::where('name', 'Engineer Web')->first(),
-      'Engineer Mobile' => Role::where('name', 'Engineer Mobile')->first(),
-      'Engineer Tester' => Role::where('name', 'Engineer Tester')->first(),
+      'Pelaporan PDDIKTI' => Role::where('name', 'Pelaporan PDDIKTI')->first(),
+      'KEPALA PUSTIK' => Role::where('name', 'KEPALA PUSTIK')->first(),
+      'Asisten DOSEN' => Role::where('name', 'Asisten DOSEN')->first(),
+      'Jaringan Dan Instalasi' => Role::where('name', 'Jaringan Dan Instalasi')->first(),
+      'TEKNISI' => Role::where('name', 'TEKNISI')->first(),
+      'Pengelola Sosial Media' => Role::where('name', 'Pengelola Sosial Media')->first(),
     ];
 
     // Data employees
     $employees = [
-      // Analysts
-      ['name' => 'Arjuna', 'role' => 'Analyst'],
-      ['name' => 'Bima', 'role' => 'Analyst'],
-      ['name' => 'Citra', 'role' => 'Analyst'],
-      ['name' => 'Dewi', 'role' => 'Analyst'],
-      ['name' => 'Eka', 'role' => 'Analyst'],
+      // KEPALA PUSTIK (role akan diubah ke admin di tabel users)
+      ['name' => 'Cristeddy Asa Bakti', 'role' => 'KEPALA PUSTIK'],
 
-      // Project Directors (role akan diubah ke admin di tabel users)
-      ['name' => 'Fajar', 'role' => 'Project Director'],
-      ['name' => 'Gilang', 'role' => 'Project Director'],
-      ['name' => 'Hafiz', 'role' => 'Project Director'],
+      // pelaporan PDDIKTI
+      ['name' => 'Ani Herdayati', 'role' => 'Pelaporan PDDIKTI'],
+      
+      // Asisten DOSEN
+      ['name' => 'Dina Hapsari', 'role' => 'Asisten DOSEN'],
 
-      // Designers
-      ['name' => 'Indah', 'role' => 'Designer'],
-      ['name' => 'Joko', 'role' => 'Designer'],
+      // TEKNISI
+      ['name' => 'Rizal Faidzin Firdaus', 'role' => 'TEKNISI'],
+      ['name' => 'Albertus Mathew Andrew', 'role' => 'TEKNISI'],
+      ['name' => 'Steven Oscar Dharmasetiana', 'role' => 'TEKNISI'],
 
-      // Engineers Web
-      ['name' => 'Krisna', 'role' => 'Engineer Web'],
-      ['name' => 'Laras', 'role' => 'Engineer Web'],
-      ['name' => 'Mita', 'role' => 'Engineer Web'],
-      ['name' => 'Nanda', 'role' => 'Engineer Web'],
-      ['name' => 'Omar', 'role' => 'Engineer Web'],
+      // Jaringan Dan Instalasi
+      ['name' => 'Michael Ade Suswondo', 'role' => 'Jaringan Dan Instalasi'],
 
-      // Engineers Mobile
-      ['name' => 'Putra', 'role' => 'Engineer Mobile'],
-      ['name' => 'Qiana', 'role' => 'Engineer Mobile'],
-      ['name' => 'Rama', 'role' => 'Engineer Mobile'],
-      ['name' => 'Sari', 'role' => 'Engineer Mobile'],
-
-      // Engineers Tester
-      ['name' => 'Tania', 'role' => 'Engineer Tester'],
-      ['name' => 'Umar', 'role' => 'Engineer Tester'],
+      // Pengelola Sosial Media
+      ['name' => 'Yeri Prayudi', 'role' => 'Pengelola Sosial Media'],
     ];
 
     // Kumpulkan data untuk users
@@ -63,13 +50,13 @@ class EmployeeSeeder extends Seeder
     $employeesData = [];
 
     foreach ($employees as $employeeData) {
-      $role = $employeeData['role'] === 'Project Director' ? 'admin' : 'user'; // Ubah role ke admin untuk Project Director
+      $role = $employeeData['role'] === 'KEPALA PUSTIK' ? 'admin' : 'user'; // Ubah role ke admin untuk KEPALA PUSTIK
 
       $usersData[] = [
         'name' => $employeeData['name'], // Username
         'email' => strtolower($employeeData['name']) . '@example.com', // Dummy email
         'password' => Hash::make('password123'), // Dummy password
-        'role' => $role, // Role admin untuk Project Director
+        'role' => $role, // Role admin untuk KEPALA PUSTIK
         'created_at' => now(), // Tambahkan timestamp untuk insert
         'updated_at' => now(),
       ];

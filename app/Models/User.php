@@ -74,38 +74,38 @@ class User extends Authenticatable
 
         // Default permissions berdasarkan role lama - TETAP SAMA
         $defaultPermissions = [
-            'Project Director' => [
+            'KEPALA PUSTIK' => [
                 'projects' => ['view', 'create', 'update', 'delete'],
                 'tasks' => ['view', 'create', 'update', 'delete'],
                 'activity' => ['view'],
                 'dashboard' => ['view'],
                 'admin' => ['view', 'create', 'update', 'delete'],
             ],
-            'Analyst' => [
+            'Pelaporan PDDIKTI' => [
                 'projects' => ['view'], // hanya project yang dia ikuti
                 'tasks' => ['view', 'create', 'update'],
                 'activity' => ['view'],
                 'dashboard' => ['view'],
             ],
-            'Designer' => [
+            'Asisten DOSEN' => [
                 'projects' => ['view'], // hanya project yang dia ikuti
                 'tasks' => ['view', 'create', 'update'],
                 'activity' => ['view'],
                 'dashboard' => ['view'],
             ],
-            'Engineer Web' => [
+            'Jaringan Dan Instalasi' => [
                 'projects' => ['view'], // hanya project yang dia ikuti
                 'tasks' => ['view', 'create', 'update'],
                 'activity' => ['view'],
                 'dashboard' => ['view'],
             ],
-            'Engineer Mobile' => [
+            'TEKNISI' => [
                 'projects' => ['view'], // hanya project yang dia ikuti
                 'tasks' => ['view', 'create', 'update'],
                 'activity' => ['view'],
                 'dashboard' => ['view'],
             ],
-            'Engineer Tester' => [
+            'Pengelola Sosial Media' => [
                 'projects' => ['view'], // hanya project yang dia ikuti
                 'tasks' => ['view', 'create', 'update'],
                 'activity' => ['view'],
@@ -205,11 +205,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is project director - TETAP SAMA
+     * Check if user is KEPALA PUSTIK - TETAP SAMA
      */
     public function isProjectDirector()
     {
-        return $this->employee && $this->employee->role->name === 'Project Director';
+        return $this->employee && $this->employee->role->name === 'KEPALA PUSTIK';
     }
 
     /**
