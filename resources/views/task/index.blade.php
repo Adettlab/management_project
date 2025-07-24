@@ -240,17 +240,21 @@
                     </div>
 
                     <!-- Start Date -->
-                    <div class="space-y-1">
-                        <label class="block text-sm text-gray-700">Start Date</label>
-                        <input type="date" name="start_date"
-                            class="w-full bg-primary-white border border-primary-white px-3 py-1 text-sm rounded focus:outline-none">
-                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label class="block text-sm text-gray-700">Start Date</label>
+                            <input type="date" name="start_date"
+                                class="w-full bg-primary-white border border-primary-white px-3 py-1 text-sm rounded focus:outline-none"
+                                id="start_date_create" min="" max="">
+                        </div>
 
-                    <!-- End Date -->
-                    <div class="space-y-1">
-                        <label class="block text-sm text-gray-700">End Date</label>
-                        <input type="date" name="end_date"
-                            class="w-full bg-primary-white border border-primary-white px-3 py-1 text-sm rounded focus:outline-none">
+                        <!-- End Date -->
+                        <div class="space-y-1">
+                            <label class="block text-sm text-gray-700">End Date</label>
+                            <input type="date" name="end_date"
+                                class="w-full bg-primary-white border border-primary-white px-3 py-1 text-sm rounded focus:outline-none"
+                                id="end_date_create" min="" max="">
+                        </div>
                     </div>
                 </div>
                 <div>
@@ -271,114 +275,115 @@
 
 {{-- Modal Transfer - Hidden jika tidak ada permission transfer
 @if ($canTransfer) --}}
-    <div id="modalTransfer"
-        class="fixed inset-0 z-[999] flex items-center justify-center bg-gray-900 bg-opacity-50 hidden">
-        <!-- Modal Content -->
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 h-fit pb-10">
-            <!-- Modal Header -->
-            <div class="flex justify-between items-center border-b px-4">
-                <h2 class="text-md font-semibold">Transfer Task</h2>
-                <button id="closeModalTransferBtn" class="text-gray-500 hover:text-gray-700 text-[32px]">×</button>
-            </div>
-            <form action="{{ route('tasks.store') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <!-- Modal Body -->
-                <div class="py-4 px-8 space-y-3">
-                    <!-- Task Name -->
+<div id="modalTransfer"
+    class="fixed inset-0 z-[999] flex items-center justify-center bg-gray-900 bg-opacity-50 hidden">
+    <!-- Modal Content -->
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 h-fit pb-10">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center border-b px-4">
+            <h2 class="text-md font-semibold">Transfer Task</h2>
+            <button id="closeModalTransferBtn" class="text-gray-500 hover:text-gray-700 text-[32px]">×</button>
+        </div>
+        <form action="{{ route('tasks.store') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <!-- Modal Body -->
+            <div class="py-4 px-8 space-y-3">
+                <!-- Task Name -->
+                <div class="space-y-1">
+                    <label class="block text-sm text-gray-700" for="name">Task</label>
+                    <input type="text" placeholder="Task name..." name="name" id="name"
+                        class="w-full bg-primary-white border border-primary-white px-3 py-1 text-sm rounded focus:outline-none">
+                </div>
+                <!-- Project -->
+                <div class="space-y-1 relative">
+                    <label class="block text-sm text-gray-700" for="project_id">Project</label>
+                    <button id="dropdown-transfer-task"
+                        class="inline-flex items-center w-full px-3 py-1 text-sm bg-primary-white border border-primary-white rounded-md shadow-sm"
+                        onclick="taskManager.toggleDropdown('trasfer-task-dropdown', 'trasfer-task-icon', event)">
+                        <span class="mr-auto" id="trasfer-task-value">Select Projects</span>
+                        <svg id="trasfer-task-icon" class="w-5 h-5 ml-2 transform transition-transform duration-500"
+                            viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd"
+                                d="M6.293 9.293a1 1 0 011.414 0L10 11.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <ul id="trasfer-task-dropdown"
+                        class="w-full absolute right-0 mt-2 rounded-md shadow-lg bg-primary-white border p-1 space-y-1 transform opacity-0 scale-95 -translate-y-2 hidden transition-all duration-300 ease-out origin-top z-50">
+                        @foreach ($projects as $project)
+                            <li class="block px-4 py-2 text-black hover:bg-[#C3C3C3] cursor-pointer rounded-md"
+                                data-project-value="{{ $project->id }}"
+                                onclick="taskManager.listOnClick(event, 'trasfer-task-value', 'trasfer-task-dropdown', 'trasfer-task-icon', 'project_id_transfer', {{ $project->id }})">
+                                {{ $project->name }}
+                            </li>
+                        @endforeach
+                    </ul>
+                    @error('project_id_transfer')
+                        <span class="text-red-600 text-sm">{{ $message }}</span>
+                    @enderror
+                    <input type="hidden" name="project_id" id="project_id_transfer">
+                </div>
+                <!-- Send to -->
+
+                <div class="space-y-1 relative">
+                    <label class="block text-sm text-gray-700" for="assigned_project_employee_id">Send
+                        to</label>
+                    <button id="dropdown-transfer-employee"
+                        class="inline-flex items-center w-full px-3 py-1 text-sm bg-primary-white border rounded-md shadow-sm"
+                        onclick="taskManager.toggleDropdown('trasfer-employee-dropdown', 'trasfer-employee-icon', event)"
+                        disabled>
+                        <span class="mr-auto" id="trasfer-employee-value">Select employee</span>
+                        <svg id="trasfer-employee-icon"
+                            class="w-5 h-5 ml-2 transform transition-transform duration-500" viewBox="0 0 20 20"
+                            fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd"
+                                d="M6.293 9.293a1 1 0 011.414 0L10 11.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <ul id="trasfer-employee-dropdown"
+                        class="w-full absolute right-0 border mt-2 rounded-md shadow-lg bg-primary-white p-1 space-y-1 transform opacity-0 scale-95 -translate-y-2 hidden transition-all duration-300 ease-out origin-top z-50">
+                    </ul>
+                    @error('assigned_project_employee_id')
+                        <span class="text-red-600 text-sm">{{ $message }}</span>
+                    @enderror
+                    <input type="hidden" name="assigned_project_employee_id" id="assigned_project_employee_id">
+                </div>
+                <!-- Task Level -->
+                <div class="space-y-1">
+                    <label class="block text-sm text-gray-700">Task Level</label>
+                    <div class="flex space-x-4 items-center">
+                        <label class="flex items-center text-sm">
+                            <input type="radio" name="task_level_id"
+                                class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none"
+                                value="1" /> Low
+                        </label>
+                        <label class="flex items-center text-sm">
+                            <input type="radio" name="task_level_id"
+                                class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none"
+                                value="2" /> Medium
+                        </label>
+                        <label class="flex items-center text-sm">
+                            <input type="radio" name="task_level_id"
+                                class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none"
+                                value="3" /> High
+                        </label>
+                    </div>
+                </div>
+                <!-- Start Date -->
+                <div class="grid grid-cols-2 gap-3">
                     <div class="space-y-1">
-                        <label class="block text-sm text-gray-700" for="name">Task</label>
-                        <input type="text" placeholder="Task name..." name="name" id="name"
-                            class="w-full bg-primary-white border border-primary-white px-3 py-1 text-sm rounded focus:outline-none">
+                        <label class="block text-sm text-gray-700">Start Date</label>
+                        <input type="date" name="start_date"
+                            class="w-full bg-primary-white border border-primary-white px-3 py-1 text-sm rounded focus:outline-none"
+                            id="start_date_transfer" min="" max="">
                     </div>
-                    <!-- Project -->
-                    <div class="space-y-1 relative">
-                        <label class="block text-sm text-gray-700" for="project_id">Project</label>
-                        <button id="dropdown-transfer-task"
-                            class="inline-flex items-center w-full px-3 py-1 text-sm bg-primary-white border border-primary-white rounded-md shadow-sm"
-                            onclick="taskManager.toggleDropdown('trasfer-task-dropdown', 'trasfer-task-icon', event)">
-                            <span class="mr-auto" id="trasfer-task-value">Select Projects</span>
-                            <svg id="trasfer-task-icon"
-                                class="w-5 h-5 ml-2 transform transition-transform duration-500" viewBox="0 0 20 20"
-                                fill="currentColor" aria-hidden="true">
-                                <path fill-rule="evenodd"
-                                    d="M6.293 9.293a1 1 0 011.414 0L10 11.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                        </button>
-                        <ul id="trasfer-task-dropdown"
-                            class="w-full absolute right-0 mt-2 rounded-md shadow-lg bg-primary-white border p-1 space-y-1 transform opacity-0 scale-95 -translate-y-2 hidden transition-all duration-300 ease-out origin-top z-50">
-                            @foreach ($projects as $project)
-                                <li class="block px-4 py-2 text-black hover:bg-[#C3C3C3] cursor-pointer rounded-md"
-                                    onclick="taskManager.listOnClick(event, 'trasfer-task-value', 'trasfer-task-dropdown', 'trasfer-task-icon', 'project_id_transfer', {{ $project->id }})">
-                                    {{ $project->name }}
-                                </li>
-                            @endforeach
-                        </ul>
-                        @error('project_id_transfer')
-                            <span class="text-red-600 text-sm">{{ $message }}</span>
-                        @enderror
-                        <input type="hidden" name="project_id" id="project_id_transfer">
-                    </div>
-                    <!-- Send to -->
-                 
-                        <div class="space-y-1 relative">
-                            <label class="block text-sm text-gray-700" for="assigned_project_employee_id">Send
-                                to</label>
-                            <button id="dropdown-transfer-employee"
-                                class="inline-flex items-center w-full px-3 py-1 text-sm bg-primary-white border rounded-md shadow-sm"
-                                onclick="taskManager.toggleDropdown('trasfer-employee-dropdown', 'trasfer-employee-icon', event)"
-                                disabled>
-                                <span class="mr-auto" id="trasfer-employee-value">Select employee</span>
-                                <svg id="trasfer-employee-icon"
-                                    class="w-5 h-5 ml-2 transform transition-transform duration-500"
-                                    viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fill-rule="evenodd"
-                                        d="M6.293 9.293a1 1 0 011.414 0L10 11.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                            </button>
-                            <ul id="trasfer-employee-dropdown"
-                                class="w-full absolute right-0 border mt-2 rounded-md shadow-lg bg-primary-white p-1 space-y-1 transform opacity-0 scale-95 -translate-y-2 hidden transition-all duration-300 ease-out origin-top z-50">
-                            </ul>
-                            @error('assigned_project_employee_id')
-                                <span class="text-red-600 text-sm">{{ $message }}</span>
-                            @enderror
-                            <input type="hidden" name="assigned_project_employee_id"
-                                id="assigned_project_employee_id">
-                        </div>
-                    <!-- Task Level -->
+                    <!-- End Date -->
                     <div class="space-y-1">
-                        <label class="block text-sm text-gray-700">Task Level</label>
-                        <div class="flex space-x-4 items-center">
-                            <label class="flex items-center text-sm">
-                                <input type="radio" name="task_level_id"
-                                    class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none"
-                                    value="1" /> Low
-                            </label>
-                            <label class="flex items-center text-sm">
-                                <input type="radio" name="task_level_id"
-                                    class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none"
-                                    value="2" /> Medium
-                            </label>
-                            <label class="flex items-center text-sm">
-                                <input type="radio" name="task_level_id"
-                                    class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none"
-                                    value="3" /> High
-                            </label>
-                        </div>
-                    </div>
-                    <!-- Start Date & End Date -->
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="space-y-1">
-                            <label class="block text-sm text-gray-700">Start Date</label>
-                            <input type="date" name="start_date"
-                                class="w-full bg-primary-white border border-primary-white px-3 py-1 text-sm rounded focus:outline-none">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="block text-sm text-gray-700">End Date</label>
-                            <input type="date" name="end_date"
-                                class="w-full bg-primary-white border border-primary-white px-3 py-1 text-sm rounded focus:outline-none">
-                        </div>
+                        <label class="block text-sm text-gray-700">End Date</label>
+                        <input type="date" name="end_date"
+                            class="w-full bg-primary-white border border-primary-white px-3 py-1 text-sm rounded focus:outline-none"
+                            id="end_date_transfer" min="2023-02-02" max="">
                     </div>
                 </div>
                 {{-- Task status default --}}
@@ -392,9 +397,9 @@
                         Submit
                     </button>
                 </div>
-            </form>
-        </div>
+        </form>
     </div>
+</div>
 {{-- @endif --}}
 
 {{-- Modal Show/Edit - Permissions ditangani di JavaScript berdasarkan canUpdate dan canDelete --}}
@@ -457,5 +462,40 @@
         canTransfer: {{ $canTransfer ? 'true' : 'false' }},
         canSeeAllTask: {{ $canSeeAllTask ? 'true' : 'false' }}
     };
+    // Example: projects data with start/end date
+    window.projectsDateRange = @json(
+        $projects->mapWithKeys(function ($p) {
+            return [
+                $p->id => [
+                    'start_date' => $p->start_date ?? '',
+                    'end_date' => $p->end_date ?? '',
+                ]
+            ];
+        }));
+    // Function to set date range for a specific modal
+    function setDateRange(projectId, startInputId = 'start_date_create', endInputId = 'end_date_create') {
+        const range = window.projectsDateRange[projectId] || {};
+        document.getElementById(startInputId).min = range.start_date || '';
+        document.getElementById(startInputId).max = range.end_date || '';
+        document.getElementById(endInputId).min = range.start_date || '';
+        document.getElementById(endInputId).max = range.end_date || '';
+    }
+
+    // Call setDateRange when project selected in create modal
+    document.querySelectorAll('#create-task-dropdown li').forEach(li => {
+        li.addEventListener('click', function() {
+            const projectId = this.dataset.projectValue;
+            setDateRange(projectId, 'start_date_create', 'end_date_create');
+        });
+    });
+
+    // Call setDateRange for the transfer modal when project selected
+    document.querySelectorAll('#trasfer-task-dropdown li').forEach(li => {
+        li.addEventListener('click', function() {
+            const projectId = this.dataset.projectValue;
+            setDateRange(projectId, 'start_date_transfer', 'end_date_transfer');
+        });
+
+    });
 </script>
 @vite('resources/js/task.js')
