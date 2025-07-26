@@ -118,8 +118,7 @@
                 <div class="space-y-4 mt-6">
                     <div class="flex flex-col space-y-2">
                         <label class="block sm:text-lg xs:text-[10px] text-primary-white" for="director">KEPALA PUSTIK
-                            <span
-                                class="bg-red-100 ml-1 text-red-600 px-2 py-1 rounded-full text-[8px] font-semibold"
+                            <span class="bg-red-100 ml-1 text-red-600 px-2 py-1 rounded-full text-[8px] font-semibold"
                                 data-required-label="director">Required</span></label>
                         <select name="kepala_id"
                             class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
@@ -135,7 +134,34 @@
                             <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
                         @enderror
                     </div>
+
                     <div class="flex flex-col space-y-2">
+                        <label class="block sm:text-lg xs:text-[10px] text-primary-white">Tambah SDM
+                            <span
+                                class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span></label>
+
+                        <!-- Container untuk input SDM yang akan ditambahkan dinamis -->
+                        <div id="sdm-inputs-container" class="">
+                            <!-- Input SDM akan ditambahkan di sini secara dinamis -->
+                        </div>
+
+                        <!-- Tombol untuk menambah input SDM -->
+                        <div class="pt-2">
+                            <button type="button" onclick="addInput()"
+                                class="bg-black hover:bg-gray-800 text-white sm:text-xs xs:text-[11px] sm:px-4 sm:py-2 xs:px-3 xs:py-1 rounded-md transition-colors">
+                                Tambah SDM
+                            </button>
+                        </div>
+
+                        @error('sdm_ids')
+                            <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
+                        @enderror
+                        @error('sdm_ids.*')
+                            <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    {{-- <div class="flex flex-col space-y-2">
                         <label class="block sm:text-lg xs:text-[10px] text-primary-white" for="analyst">Project
                             Pelaporan PDDIKTI <span
                                 class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span></label>
@@ -232,7 +258,7 @@
                                 @enderror
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                 </div>
                 {{-- mobile --}}
                 <div
@@ -328,5 +354,177 @@
 
             // — Kamu bisa lanjutkan juga untuk field lain seperti sebelumnya —
         });
+        // Variabel untuk menghitung input
+        let inputCounter = 0;
+
+        // Data employees dari backend (dibuat sebagai JavaScript object)
+        const availableEmployees = [
+            @foreach ($employees->where('role.name', '!=', 'KEPALA PUSTIK') as $employee)
+                {
+                    id: {{ $employee->id }},
+                    name: "{{ $employee->user->name }}",
+                    role: "{{ $employee->role->name }}"
+                },
+            @endforeach
+        ];
+
+        function addInput() {
+            inputCounter++;
+            const container = document.getElementById('sdm-inputs-container');
+
+            // Buat div wrapper untuk input baru
+            const inputWrapper = document.createElement('div');
+            inputWrapper.className = 'flex space-x-2 sm:space-x-3 mb-3';
+            inputWrapper.id = `sdm-input-${inputCounter}`;
+
+            // Buat select element
+            const select = document.createElement('select');
+            select.name = 'sdm_ids[]';
+            select.className =
+                'flex-1 bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none';
+
+            // Tambahkan option default
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Pilih SDM';
+            select.appendChild(defaultOption);
+
+            // Dapatkan SDM yang sudah dipilih
+            const selectedSDMs = getSelectedSDM();
+
+            // Tambahkan option untuk SDM yang belum dipilih
+            availableEmployees.forEach(employee => {
+                if (!selectedSDMs.includes(employee.id.toString())) {
+                    const option = document.createElement('option');
+                    option.value = employee.id;
+                    option.textContent = `${employee.name} - ${employee.role}`;
+                    select.appendChild(option);
+                }
+            });
+
+            // Buat tombol remove dengan closure untuk capture inputCounter
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className =
+                'bg-red-500 hover:bg-red-600 text-white w-10 h-10 flex items-center justify-center rounded-md transition-colors';
+            removeButton.innerHTML = `
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+        </svg>
+    `;
+
+            // Gunakan closure untuk capture inputCounter yang benar
+            (function(currentInputId) {
+                removeButton.addEventListener('click', function() {
+                    removeInput(currentInputId);
+                });
+            })(inputCounter);
+
+            // Tambahkan event listener untuk update options ketika ada perubahan
+            select.addEventListener('change', function() {
+                updateAllSelectOptions();
+            });
+
+            // Tambahkan elemen ke wrapper
+            inputWrapper.appendChild(select);
+            inputWrapper.appendChild(removeButton);
+
+            // Tambahkan ke container
+            container.appendChild(inputWrapper);
+
+            // Update status tombol tambah
+            updateAddButtonStatus();
+
+            // Cek apakah masih ada SDM yang tersedia
+            if (selectedSDMs.length >= availableEmployees.length) {
+                const addButton = document.querySelector('button[onclick="addInput()"]');
+                addButton.disabled = true;
+                addButton.textContent = 'Semua SDM sudah dipilih';
+                addButton.classList.remove('bg-black', 'hover:bg-gray-800');
+                addButton.classList.add('bg-gray-400', 'cursor-not-allowed');
+            }
+        }
+
+        function removeInput(inputId) {
+            const inputElement = document.getElementById(`sdm-input-${inputId}`);
+            if (inputElement) {
+                inputElement.remove();
+                updateAddButtonStatus();
+                // Update semua select options setelah menghapus
+                updateAllSelectOptions();
+            }
+        }
+
+        // Fungsi baru untuk update semua select options
+        function updateAllSelectOptions() {
+            const selects = document.querySelectorAll('select[name="sdm_ids[]"]');
+            const selectedSDMs = getSelectedSDM();
+
+            selects.forEach(currentSelect => {
+                const currentValue = currentSelect.value;
+
+                // Hapus semua option kecuali yang pertama (default)
+                while (currentSelect.children.length > 1) {
+                    currentSelect.removeChild(currentSelect.lastChild);
+                }
+
+                // Tambahkan option untuk SDM yang belum dipilih
+                availableEmployees.forEach(employee => {
+                    // Tampilkan option jika belum dipilih ATAU sedang dipilih di select ini
+                    if (!selectedSDMs.includes(employee.id.toString()) || currentValue === employee.id
+                        .toString()) {
+                        const option = document.createElement('option');
+                        option.value = employee.id;
+                        option.textContent = `${employee.name} - ${employee.role}`;
+                        if (currentValue === employee.id.toString()) {
+                            option.selected = true;
+                        }
+                        currentSelect.appendChild(option);
+                    }
+                });
+            });
+        }
+
+        function updateAddButtonStatus() {
+            const container = document.getElementById('sdm-inputs-container');
+            const inputCount = container.children.length;
+            const selectedSDMs = getSelectedSDM();
+
+            // Batasi maksimal berdasarkan jumlah SDM yang tersedia
+            const maxInputs = Math.min(10, availableEmployees.length);
+            const addButton = document.querySelector('button[onclick="addInput()"]');
+
+            // Disable tombol jika sudah mencapai maksimal atau semua SDM sudah dipilih
+            if (inputCount >= maxInputs || selectedSDMs.length >= availableEmployees.length) {
+                addButton.disabled = true;
+                if (selectedSDMs.length >= availableEmployees.length) {
+                    addButton.textContent = 'Semua SDM sudah dipilih';
+                } else {
+                    addButton.textContent = `Maksimal ${maxInputs} SDM`;
+                }
+                addButton.classList.remove('bg-black', 'hover:bg-gray-800');
+                addButton.classList.add('bg-gray-400', 'cursor-not-allowed');
+            } else {
+                addButton.disabled = false;
+                addButton.textContent = 'Tambah SDM';
+                addButton.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                addButton.classList.add('bg-black', 'hover:bg-gray-800');
+            }
+        }
+
+        // Fungsi untuk mengembalikan nilai yang dipilih (untuk debugging atau validasi)
+        function getSelectedSDM() {
+            const selects = document.querySelectorAll('select[name="sdm_ids[]"]');
+            const selectedValues = [];
+
+            selects.forEach(select => {
+                if (select.value) {
+                    selectedValues.push(select.value);
+                }
+            });
+
+            return selectedValues;
+        }
     </script>
 </x-layouts.layout>
