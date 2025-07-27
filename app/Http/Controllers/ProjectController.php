@@ -242,11 +242,8 @@ class ProjectController extends Controller
       'project_level_id' => 'required|exists:project_levels,id',
       'project_status_id' => 'required|exists:project_statuses,id',
       'kepala_id' => 'nullable|exists:employees,id',
-      'pelaporan_pddikti_id' => 'nullable|exists:employees,id',
-      'asisten_id' => 'nullable|exists:employees,id',
-      'jaringan_instalasi_id' => 'nullable|exists:employees,id',
-      'teknisi_id' => 'nullable|exists:employees,id',
-      'pengelola_sosmed_id' => 'nullable|exists:employees,id',
+      'sdm_ids' => 'nullable|array',
+      'sdm_ids.*' => 'exists:employees,id',
     ]);
 
     DB::beginTransaction();
@@ -255,13 +252,17 @@ class ProjectController extends Controller
       // Create the project
       $project = Project::create($validated);
 
-      // Gather employee IDs
-      $employeeIds = [];
-      foreach (['kepala_id', 'pelaporan_pddikti_id', 'asisten_id', 'jaringan_instalasi_id', 'teknisi_id', 'pengelola_sosmed_id'] as $role) {
-        if ($request->$role) {
-          $employeeIds[] = $request->$role;
-        }
+      // Ambil semua SDM (tambahkan juga kepala jika mau)
+      $employeeIds = $validated['sdm_ids'] ?? [];
+
+      if (!empty($validated['kepala_id'])) {
+        $employeeIds[] = $validated['kepala_id'];
       }
+
+      $employeeIds = array_unique($employeeIds);
+
+      Employee::whereIn('id', $employeeIds)->update(['status_employee' => 'Stand By']);
+
 
       // Remove duplicates
       $employeeIds = array_unique($employeeIds);
