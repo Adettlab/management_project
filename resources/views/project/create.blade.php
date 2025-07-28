@@ -138,10 +138,11 @@
                     <div class="flex flex-col space-y-2">
                         <label class="block sm:text-lg xs:text-[10px] text-primary-white">Tambah SDM
                             <span
-                                class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span></label>
+                                class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span>
+                        </label>
 
                         <!-- Container untuk input SDM yang akan ditambahkan dinamis -->
-                        <div id="sdm-inputs-container" class="">
+                        <div id="sdm-inputs-container" class="space-y-3">
                             <!-- Input SDM akan ditambahkan di sini secara dinamis -->
                         </div>
 
@@ -278,6 +279,9 @@
         </form>
     </main>
 
+    <style>
+
+    </style>
     <script>
         const form = document.getElementById('create_project');
 
@@ -354,177 +358,302 @@
 
             // — Kamu bisa lanjutkan juga untuk field lain seperti sebelumnya —
         });
-        // Variabel untuk menghitung input
-        let inputCounter = 0;
 
-        // Data employees dari backend (dibuat sebagai JavaScript object)
-        const availableEmployees = [
-            @foreach ($employees->where('role.name', '!=', 'KEPALA PUSTIK') as $employee)
-                {
-                    id: {{ $employee->id }},
-                    name: "{{ $employee->user->name }}",
-                    role: "{{ $employee->role->name }}"
-                },
-            @endforeach
-        ];
+        let inputCounter = 0;
+        let selectedSDM = [];
+        let searchTimeout;
+
+
+
+        // CSRF Token untuk Laravel
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
         function addInput() {
             inputCounter++;
             const container = document.getElementById('sdm-inputs-container');
 
-            // Buat div wrapper untuk input baru
-            const inputWrapper = document.createElement('div');
-            inputWrapper.className = 'flex space-x-2 sm:space-x-3 mb-3';
-            inputWrapper.id = `sdm-input-${inputCounter}`;
+            const inputGroup = document.createElement('div');
+            inputGroup.className = 'relative';
+            inputGroup.id = `input-group-${inputCounter}`;
 
-            // Buat select element
-            const select = document.createElement('select');
-            select.name = 'sdm_ids[]';
-            select.className =
-                'flex-1 bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none';
-
-            // Tambahkan option default
-            const defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.textContent = 'Pilih SDM';
-            select.appendChild(defaultOption);
-
-            // Dapatkan SDM yang sudah dipilih
-            const selectedSDMs = getSelectedSDM();
-
-            // Tambahkan option untuk SDM yang belum dipilih
-            availableEmployees.forEach(employee => {
-                if (!selectedSDMs.includes(employee.id.toString())) {
-                    const option = document.createElement('option');
-                    option.value = employee.id;
-                    option.textContent = `${employee.name} - ${employee.role}`;
-                    select.appendChild(option);
-                }
-            });
-
-            // Buat tombol remove dengan closure untuk capture inputCounter
-            const removeButton = document.createElement('button');
-            removeButton.type = 'button';
-            removeButton.className =
-                'bg-red-500 hover:bg-red-600 text-white w-10 h-10 flex items-center justify-center rounded-md transition-colors';
-            removeButton.innerHTML = `
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-        </svg>
+            inputGroup.innerHTML = `
+        <div class="flex items-center space-x-2">
+            <div class="flex-1 relative">
+                <input 
+                    type="text" 
+                    id="sdm-input-${inputCounter}"
+                    name="sdm_search[]"
+                    placeholder="Ketik nama SDM..." 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm xs:text-[12px]"
+                    oninput="handleSearch(${inputCounter}, this.value)"
+                    onfocus="showDropdown(${inputCounter})"
+                    onblur="hideDropdown(${inputCounter})"
+                    onkeydown="handleKeydown(${inputCounter}, event)"
+                    autocomplete="off"
+                >
+                <input type="hidden" name="sdm_ids[]" id="sdm-id-${inputCounter}" value="">
+                
+                <!-- Loading indicator -->
+                <div id="loading-${inputCounter}" class="absolute right-3 top-3 hidden">
+                    <div class="loading-spinner"></div>
+                </div>
+                
+                <!-- Dropdown untuk hasil autocomplete -->
+                <div id="dropdown-${inputCounter}" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 hidden autocomplete-dropdown">
+                    <div id="dropdown-content-${inputCounter}" class="py-1">
+                        <!-- Results will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <button 
+                type="button" 
+                onclick="removeInput(${inputCounter})"
+                class="bg-red-500 hover:bg-red-600 text-white sm:px-3 sm:py-2 xs:px-2 xs:py-2 rounded-md transition-colors sm:text-sm xs:text-[10px] flex-shrink-0"
+            >
+                Hapus
+            </button>
+        </div>
     `;
 
-            // Gunakan closure untuk capture inputCounter yang benar
-            (function(currentInputId) {
-                removeButton.addEventListener('click', function() {
-                    removeInput(currentInputId);
-                });
-            })(inputCounter);
-
-            // Tambahkan event listener untuk update options ketika ada perubahan
-            select.addEventListener('change', function() {
-                updateAllSelectOptions();
-            });
-
-            // Tambahkan elemen ke wrapper
-            inputWrapper.appendChild(select);
-            inputWrapper.appendChild(removeButton);
-
-            // Tambahkan ke container
-            container.appendChild(inputWrapper);
-
-            // Update status tombol tambah
-            updateAddButtonStatus();
-
-            // Cek apakah masih ada SDM yang tersedia
-            if (selectedSDMs.length >= availableEmployees.length) {
-                const addButton = document.querySelector('button[onclick="addInput()"]');
-                addButton.disabled = true;
-                addButton.textContent = 'Semua SDM sudah dipilih';
-                addButton.classList.remove('bg-black', 'hover:bg-gray-800');
-                addButton.classList.add('bg-gray-400', 'cursor-not-allowed');
-            }
+            container.appendChild(inputGroup);
+            document.getElementById(`sdm-input-${inputCounter}`).focus();
         }
 
-        function removeInput(inputId) {
-            const inputElement = document.getElementById(`sdm-input-${inputId}`);
-            if (inputElement) {
-                inputElement.remove();
-                updateAddButtonStatus();
-                // Update semua select options setelah menghapus
-                updateAllSelectOptions();
-            }
-        }
-
-        // Fungsi baru untuk update semua select options
-        function updateAllSelectOptions() {
-            const selects = document.querySelectorAll('select[name="sdm_ids[]"]');
-            const selectedSDMs = getSelectedSDM();
-
-            selects.forEach(currentSelect => {
-                const currentValue = currentSelect.value;
-
-                // Hapus semua option kecuali yang pertama (default)
-                while (currentSelect.children.length > 1) {
-                    currentSelect.removeChild(currentSelect.lastChild);
+        function removeInput(id) {
+            const inputGroup = document.getElementById(`input-group-${id}`);
+            if (inputGroup) {
+                const hiddenInput = document.getElementById(`sdm-id-${id}`);
+                if (hiddenInput && hiddenInput.value) {
+                    selectedSDM = selectedSDM.filter(sdm => sdm.id != hiddenInput.value);
                 }
+                inputGroup.remove();
+            }
+        }
 
-                // Tambahkan option untuk SDM yang belum dipilih
-                availableEmployees.forEach(employee => {
-                    // Tampilkan option jika belum dipilih ATAU sedang dipilih di select ini
-                    if (!selectedSDMs.includes(employee.id.toString()) || currentValue === employee.id
-                        .toString()) {
-                        const option = document.createElement('option');
-                        option.value = employee.id;
-                        option.textContent = `${employee.name} - ${employee.role}`;
-                        if (currentValue === employee.id.toString()) {
-                            option.selected = true;
+        console.log(selectedSDM);
+
+        function handleSearch(inputId, query) {
+            const dropdown = document.getElementById(`dropdown-${inputId}`);
+            const dropdownContent = document.getElementById(`dropdown-content-${inputId}`);
+            const loading = document.getElementById(`loading-${inputId}`);
+
+            // Clear previous timeout
+            clearTimeout(searchTimeout);
+
+            if (query.length < 1) {
+                dropdown.classList.add('hidden');
+                loading.classList.add('hidden');
+                return;
+            }
+
+            // Show loading
+            loading.classList.remove('hidden');
+
+            // Debounce search
+            searchTimeout = setTimeout(() => {
+                const searchUrl = '/projects/search-sdm'; // Make sure this matches your route
+
+                fetch(searchUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            query: query
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
                         }
-                        currentSelect.appendChild(option);
-                    }
-                });
-            });
+                        return response.json();
+                    })
+                    .then(data => {
+                        loading.classList.add('hidden');
+
+                        // Filter out already selected SDM
+                        const availableSDM = data.filter(sdm =>
+                            !selectedSDM.some(selected => selected.id === sdm.id)
+                        );
+
+                        if (availableSDM.length > 0) {
+                            dropdownContent.innerHTML = availableSDM.map((sdm, index) => `
+                        <div 
+                            class="autocomplete-item px-4 py-2 cursor-pointer border-b border-gray-100 last:border-b-0 hover:bg-gray-50" 
+                            data-index="${index}"
+                            onmousedown="selectSDM(${inputId}, '${sdm.id}', '${sdm.name.replace(/'/g, "\\'")}', '${sdm.role.replace(/'/g, "\\'")}')"
+                        >
+                            <div class="font-medium text-gray-900 sm:text-sm xs:text-[12px]">${sdm.name}</div>
+                            <div class="text-sm text-gray-600 xs:text-[11px]">${sdm.role} • ${sdm.email}</div>
+                        </div>
+                    `).join('');
+                            dropdown.classList.remove('hidden');
+                        } else {
+                            dropdownContent.innerHTML = `
+                        <div class="px-4 py-2 text-gray-500 sm:text-sm xs:text-[12px]">
+                            ${query.length > 0 ? 'Tidak ada SDM dengan nama tersebut atau sudah dipilih' : 'Ketik nama untuk mencari SDM'}
+                        </div>
+                    `;
+                            dropdown.classList.remove('hidden');
+                        }
+                    })
+                    .catch(error => {
+                        loading.classList.add('hidden');
+                        console.error('Error fetching SDM:', error);
+                        dropdownContent.innerHTML = `
+                    <div class="px-4 py-2 text-red-500 sm:text-sm xs:text-[12px]">
+                        Terjadi kesalahan saat mencari SDM. Silakan coba lagi.
+                    </div>
+                `;
+                        dropdown.classList.remove('hidden');
+                    });
+            }, 300); // 300ms debounce
         }
 
-        function updateAddButtonStatus() {
-            const container = document.getElementById('sdm-inputs-container');
-            const inputCount = container.children.length;
-            const selectedSDMs = getSelectedSDM();
+        function selectSDM(inputId, sdmId, sdmName, sdmRole) {
+            const input = document.getElementById(`sdm-input-${inputId}`);
+            const hiddenInput = document.getElementById(`sdm-id-${inputId}`);
+            const dropdown = document.getElementById(`dropdown-${inputId}`);
 
-            // Batasi maksimal berdasarkan jumlah SDM yang tersedia
-            const maxInputs = Math.min(10, availableEmployees.length);
-            const addButton = document.querySelector('button[onclick="addInput()"]');
+            // Set input values
+            input.value = `${sdmName} (${sdmRole})`;
+            hiddenInput.value = sdmId;
 
-            // Disable tombol jika sudah mencapai maksimal atau semua SDM sudah dipilih
-            if (inputCount >= maxInputs || selectedSDMs.length >= availableEmployees.length) {
-                addButton.disabled = true;
-                if (selectedSDMs.length >= availableEmployees.length) {
-                    addButton.textContent = 'Semua SDM sudah dipilih';
-                } else {
-                    addButton.textContent = `Maksimal ${maxInputs} SDM`;
-                }
-                addButton.classList.remove('bg-black', 'hover:bg-gray-800');
-                addButton.classList.add('bg-gray-400', 'cursor-not-allowed');
-            } else {
-                addButton.disabled = false;
-                addButton.textContent = 'Tambah SDM';
-                addButton.classList.remove('bg-gray-400', 'cursor-not-allowed');
-                addButton.classList.add('bg-black', 'hover:bg-gray-800');
+            // Add to selected SDM
+            if (!selectedSDM.some(selected => selected.id === parseInt(sdmId))) {
+                selectedSDM.push({
+                    id: parseInt(sdmId),
+                    name: sdmName,
+                    role: sdmRole
+                });
+            }
+
+            // Hide dropdown and make input readonly
+            dropdown.classList.add('hidden');
+            input.classList.add('bg-gray-100', 'cursor-not-allowed');
+            input.readOnly = true;
+
+            // Add a reset button functionality
+            const inputGroup = document.getElementById(`input-group-${inputId}`);
+            const existingResetBtn = inputGroup.querySelector('.reset-btn');
+            if (!existingResetBtn) {
+                const resetBtn = document.createElement('button');
+                resetBtn.type = 'button';
+                resetBtn.className = 'reset-btn absolute right-3 top-2 text-gray-500 hover:text-gray-700 p-1';
+                resetBtn.innerHTML = `
+            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
+            </svg>
+        `;
+                resetBtn.onclick = () => resetInput(inputId);
+                resetBtn.title = 'Hapus pilihan SDM';
+
+                const inputContainer = inputGroup.querySelector('.flex-1.relative');
+                inputContainer.appendChild(resetBtn);
             }
         }
 
-        // Fungsi untuk mengembalikan nilai yang dipilih (untuk debugging atau validasi)
-        function getSelectedSDM() {
-            const selects = document.querySelectorAll('select[name="sdm_ids[]"]');
-            const selectedValues = [];
+        function resetInput(inputId) {
+            const input = document.getElementById(`sdm-input-${inputId}`);
+            const hiddenInput = document.getElementById(`sdm-id-${inputId}`);
+            const inputGroup = document.getElementById(`input-group-${inputId}`);
+            const resetBtn = inputGroup.querySelector('.reset-btn');
 
-            selects.forEach(select => {
-                if (select.value) {
-                    selectedValues.push(select.value);
+            // Remove from selected SDM
+            if (hiddenInput.value) {
+                selectedSDM = selectedSDM.filter(sdm => sdm.id != parseInt(hiddenInput.value));
+            }
+
+            // Reset input
+            input.value = '';
+            input.readOnly = false;
+            input.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            hiddenInput.value = '';
+
+            // Remove reset button
+            if (resetBtn) {
+                resetBtn.remove();
+            }
+
+            // Focus input
+            input.focus();
+        }
+
+        function showDropdown(inputId) {
+            const input = document.getElementById(`sdm-input-${inputId}`);
+            const dropdown = document.getElementById(`dropdown-${inputId}`);
+
+            if (!input.readOnly && input.value.length > 0) {
+                handleSearch(inputId, input.value);
+            }
+        }
+
+        function hideDropdown(inputId) {
+            setTimeout(() => {
+                const dropdown = document.getElementById(`dropdown-${inputId}`);
+                if (dropdown) {
+                    dropdown.classList.add('hidden');
+                }
+            }, 150);
+        }
+
+        function handleKeydown(inputId, event) {
+            const input = document.getElementById(`sdm-input-${inputId}`);
+
+            // Don't handle keydown if input is readonly
+            if (input.readOnly) {
+                return;
+            }
+
+            const dropdown = document.getElementById(`dropdown-${inputId}`);
+            const items = dropdown.querySelectorAll('.autocomplete-item');
+
+            if (items.length === 0) return;
+
+            let selectedIndex = -1;
+            items.forEach((item, index) => {
+                if (item.classList.contains('selected')) {
+                    selectedIndex = index;
                 }
             });
 
-            return selectedValues;
+            switch (event.key) {
+                case 'ArrowDown':
+                    event.preventDefault();
+                    selectedIndex = selectedIndex < items.length - 1 ? selectedIndex + 1 : 0;
+                    updateSelection(items, selectedIndex);
+                    break;
+
+                case 'ArrowUp':
+                    event.preventDefault();
+                    selectedIndex = selectedIndex > 0 ? selectedIndex - 1 : items.length - 1;
+                    updateSelection(items, selectedIndex);
+                    break;
+
+                case 'Enter':
+                    event.preventDefault();
+                    if (selectedIndex >= 0) {
+                        items[selectedIndex].click();
+                    }
+                    break;
+
+                case 'Escape':
+                    dropdown.classList.add('hidden');
+                    break;
+            }
+        }
+
+        function updateSelection(items, selectedIndex) {
+            items.forEach((item, index) => {
+                if (index === selectedIndex) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
         }
     </script>
 </x-layouts.layout>

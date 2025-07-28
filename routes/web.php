@@ -49,4 +49,5 @@ Route::middleware('auth')->group(function () {
   Route::resource('users', ProfileController::class);
   Route::get('/users/profile', [ProfileController::class, 'show'])->name('users.profile');
   Route::resource('administration', AdministrationController::class);
+  Route::post('/projects/search-sdm', [ProjectController::class, 'searchSDM'])->name('projects.search-sdm');
 });

@@ -232,6 +232,71 @@ class ProjectController extends Controller
     return $this->commonData;
   }
 
+  // public function store(Request $request)
+  // {
+  //   $validated = $request->validate([
+  //     'name' => 'required|string|max:255',
+  //     'description' => 'nullable',
+  //     'start_date' => 'required|date',
+  //     'end_date' => 'required|date|after_or_equal:start_date',
+  //     'project_level_id' => 'required|exists:project_levels,id',
+  //     'project_status_id' => 'required|exists:project_statuses,id',
+  //     'kepala_id' => 'nullable|exists:employees,id',
+  //     'sdm_ids' => 'nullable|array',
+  //     'sdm_ids.*' => 'exists:employees,id',
+  //   ]);
+
+  //   DB::beginTransaction();
+
+  //   try {
+  //     // Create the project
+  //     $project = Project::create($validated);
+
+  //     // Ambil semua SDM (tambahkan juga kepala jika mau)
+  //     $employeeIds = $validated['sdm_ids'] ?? [];
+
+  //     if (!empty($validated['kepala_id'])) {
+  //       $employeeIds[] = $validated['kepala_id'];
+  //     }
+
+  //     $employeeIds = array_unique($employeeIds);
+
+  //     Employee::whereIn('id', $employeeIds)->update(['status_employee' => 'Stand By']);
+
+
+  //     // Remove duplicates
+  //     $employeeIds = array_unique($employeeIds);
+
+  //     // Update status employee menjadi "Stand By"
+  //     Employee::whereIn('id', $employeeIds)->update(['status_employee' => 'Stand By']);
+
+  //     // Associate employees with the project
+  //     $project->employees()->sync($employeeIds);
+
+  //     // Send email notification to each assigned employee
+  //     if (!empty($employeeIds)) {
+  //       $employees = Employee::whereIn('id', $employeeIds)->get();
+  //       $jobs = $employees->map(function ($employee) use ($project) {
+  //         return new BroadcastEmailJob($project, $employee);
+  //       });
+
+  //       Bus::batch($jobs)
+  //         ->allowFailures()
+  //         ->onQueue('emails')
+  //         ->dispatch();
+  //     }
+
+  //     DB::commit();
+
+  //     return redirect()->route('projects.index')->with('success', 'Project created successfully.');
+  //   } catch (\Exception $e) {
+  //     DB::rollBack();
+  //     Log::error('Error creating project: ' . $e->getMessage());
+  //     return back()->withInput()->withErrors(['error' => 'Something went wrong. Please try again or contact support']);
+  //   }
+  // }
+
+
   public function store(Request $request)
   {
     $validated = $request->validate([
@@ -242,6 +307,12 @@ class ProjectController extends Controller
       'project_level_id' => 'required|exists:project_levels,id',
       'project_status_id' => 'required|exists:project_statuses,id',
       'kepala_id' => 'nullable|exists:employees,id',
+      'pelaporan_pddikti_id' => 'nullable|exists:employees,id',
+      'asisten_id' => 'nullable|exists:employees,id',
+      'jaringan_instalasi_id' => 'nullable|exists:employees,id',
+      'teknisi_id' => 'nullable|exists:employees,id',
+      'pengelola_sosmed_id' => 'nullable|exists:employees,id',
+      // Add validation for new SDM system
       'sdm_ids' => 'nullable|array',
       'sdm_ids.*' => 'exists:employees,id',
     ]);
@@ -252,29 +323,30 @@ class ProjectController extends Controller
       // Create the project
       $project = Project::create($validated);
 
-      // Ambil semua SDM (tambahkan juga kepala jika mau)
-      $employeeIds = $validated['sdm_ids'] ?? [];
-
-      if (!empty($validated['kepala_id'])) {
-        $employeeIds[] = $validated['kepala_id'];
+      // Gather employee IDs from individual role fields (original system)
+      $employeeIds = [];
+      foreach (['kepala_id', 'pelaporan_pddikti_id', 'asisten_id', 'jaringan_instalasi_id', 'teknisi_id', 'pengelola_sosmed_id'] as $role) {
+        if ($request->$role) {
+          $employeeIds[] = $request->$role;
+        }
       }
 
-      $employeeIds = array_unique($employeeIds);
+      // Add SDM IDs from new autocomplete system
+      if ($request->has('sdm_ids') && is_array($request->sdm_ids)) {
+        $employeeIds = array_merge($employeeIds, $request->sdm_ids);
+      }
 
-      Employee::whereIn('id', $employeeIds)->update(['status_employee' => 'Stand By']);
+      // Remove duplicates and filter out empty values
+      $employeeIds = array_filter(array_unique($employeeIds));
 
-
-      // Remove duplicates
-      $employeeIds = array_unique($employeeIds);
-
-      // Update status employee menjadi "Stand By"
-      Employee::whereIn('id', $employeeIds)->update(['status_employee' => 'Stand By']);
-
-      // Associate employees with the project
-      $project->employees()->sync($employeeIds);
-
-      // Send email notification to each assigned employee
       if (!empty($employeeIds)) {
+        // Update status employee menjadi "Stand By"
+        Employee::whereIn('id', $employeeIds)->update(['status_employee' => 'Stand By']);
+
+        // Associate employees with the project
+        $project->employees()->sync($employeeIds);
+
+        // Send email notification to each assigned employee
         $employees = Employee::whereIn('id', $employeeIds)->get();
         $jobs = $employees->map(function ($employee) use ($project) {
           return new BroadcastEmailJob($project, $employee);
@@ -417,5 +489,62 @@ class ProjectController extends Controller
         'message' => 'Something went wrong. Please try again or contact support.'
       ], 500);
     }
+  }
+
+  // public function searchSDM(Request $request)
+  // {
+  //   $query = $request->get('query', '');
+
+  //   if (strlen($query) < 1) {
+  //     return response()->json([]);
+  //   }
+
+  //   // Search employees based on user name, email, or role
+  //   $employees = Employee::with(['user', 'role'])
+  //     ->whereHas('user', function ($q) use ($query) {
+  //       $q->where('name', 'LIKE', '%' . $query . '%')
+  //         ->orWhere('email', 'LIKE', '%' . $query . '%');
+  //     })
+  //     ->orWhereHas('role', function ($q) use ($query) {
+  //       $q->where('name', 'LIKE', '%' . $query . '%');
+  //     })
+  //     ->limit(10)
+  //     ->get()
+  //     ->map(function ($employee) {
+  //       return [
+  //         'id' => $employee->id, // This should be employee ID, not user ID
+  //         'name' => $employee->user->name,
+  //         'email' => $employee->user->email,
+  //         'role' => $employee->role->name ?? 'No Role'
+  //       ];
+  //     });
+
+  //   return response()->json($employees);
+  // }
+  public function searchSDM(Request $request)
+  {
+    $query = $request->get('query', '');
+
+    if (strlen($query) < 1) {
+      return response()->json([]);
+    }
+
+    // Search employees based on user name only
+    $employees = Employee::with(['user', 'role'])
+      ->whereHas('user', function ($q) use ($query) {
+        $q->where('name', 'LIKE', '%' . $query . '%');
+      })
+      ->limit(10)
+      ->get()
+      ->map(function ($employee) {
+        return [
+          'id' => $employee->id,
+          'name' => $employee->user->name,
+          'email' => $employee->user->email,
+          'role' => $employee->role->name ?? 'No Role'
+        ];
+      });
+
+    return response()->json($employees);
   }
 }

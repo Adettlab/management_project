@@ -110,3 +110,149 @@
         }
     }
 }
+
+.autocomplete-dropdown {
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e5e7eb;
+    z-index: 1000;
+}
+
+.autocomplete-item {
+    transition: background-color 0.15s ease-in-out;
+}
+
+.autocomplete-item:hover {
+    background-color: #f9fafb;
+}
+
+.autocomplete-item.selected {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.autocomplete-item.selected .text-gray-600 {
+    color: #e5e7eb !important;
+}
+
+.loading-spinner {
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3b82f6;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Cursor and styling improvements */
+.cursor-not-allowed {
+    cursor: not-allowed !important;
+}
+
+/* Reset button styling */
+.reset-btn {
+    transition: all 0.2s ease-in-out;
+    border-radius: 4px;
+}
+
+.reset-btn:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #dc2626 !important;
+}
+
+.reset-btn:hover svg {
+    color: #dc2626;
+}
+
+/* Responsive improvements - Mobile First Approach */
+.autocomplete-dropdown {
+    max-height: 150px;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e5e7eb;
+    z-index: 1000;
+}
+
+.autocomplete-item {
+    padding: 8px 12px;
+    transition: background-color 0.15s ease-in-out;
+}
+
+/* Mobile styles (default) */
+#sdm-inputs-container .flex.items-center.space-x-2 {
+    gap: 8px;
+}
+
+#sdm-inputs-container button {
+    min-width: 50px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    padding: 6px 8px;
+}
+
+#sdm-inputs-container input[type="text"] {
+    height: 36px;
+    font-size: 12px;
+    padding-right: 40px; /* Make room for reset button */
+}
+
+/* Reset button positioning for mobile */
+.reset-btn {
+    right: 8px !important;
+    top: 0px !important;
+    padding: 2px !important;
+}
+
+.reset-btn svg {
+    width: 14px !important;
+    height: 14px !important;
+}
+
+/* Desktop styles */
+@media (min-width: 640px) {
+    .autocomplete-dropdown {
+        max-height: 200px;
+    }
+    
+    .autocomplete-item {
+        padding: 10px 16px;
+    }
+    
+    #sdm-inputs-container button {
+        min-width: auto;
+        height: auto;
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+    
+    #sdm-inputs-container input[type="text"] {
+        height: auto;
+        font-size: 14px;
+        padding-right: 50px;
+    }
+    
+    .reset-btn {
+        right: 12px !important;
+        top: 8px !important;
+        padding: 4px !important;
+    }
+    
+    .reset-btn svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+}
