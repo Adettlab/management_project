@@ -491,36 +491,6 @@ class ProjectController extends Controller
     }
   }
 
-  // public function searchSDM(Request $request)
-  // {
-  //   $query = $request->get('query', '');
-
-  //   if (strlen($query) < 1) {
-  //     return response()->json([]);
-  //   }
-
-  //   // Search employees based on user name, email, or role
-  //   $employees = Employee::with(['user', 'role'])
-  //     ->whereHas('user', function ($q) use ($query) {
-  //       $q->where('name', 'LIKE', '%' . $query . '%')
-  //         ->orWhere('email', 'LIKE', '%' . $query . '%');
-  //     })
-  //     ->orWhereHas('role', function ($q) use ($query) {
-  //       $q->where('name', 'LIKE', '%' . $query . '%');
-  //     })
-  //     ->limit(10)
-  //     ->get()
-  //     ->map(function ($employee) {
-  //       return [
-  //         'id' => $employee->id, // This should be employee ID, not user ID
-  //         'name' => $employee->user->name,
-  //         'email' => $employee->user->email,
-  //         'role' => $employee->role->name ?? 'No Role'
-  //       ];
-  //     });
-
-  //   return response()->json($employees);
-  // }
   public function searchSDM(Request $request)
   {
     $query = $request->get('query', '');
@@ -529,10 +499,13 @@ class ProjectController extends Controller
       return response()->json([]);
     }
 
-    // Search employees based on user name only
+    // Search employees excluding those with role "KEPALA PUSTIK"
     $employees = Employee::with(['user', 'role'])
       ->whereHas('user', function ($q) use ($query) {
         $q->where('name', 'LIKE', '%' . $query . '%');
+      })
+      ->whereHas('role', function ($q) {
+        $q->where('name', '!=', 'KEPALA PUSTIK');
       })
       ->limit(10)
       ->get()

@@ -517,18 +517,27 @@ class TaskManager {
                             <div class="flex items-center">
                                 <label class="block text-sm text-gray-700 mr-3">Task Level</label>
                                 <div class="flex space-x-4 items-center">
+                                  <div class="tooltip-container">
                                     <label class="flex items-center text-sm">
                                         <input type="radio" name="task_level_id" class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none" value="1"
                                             ${task.task_level_id === 1 ? 'checked' : ''}/> Low
                                     </label>
+                                    <div class="tooltip">Dibawah 3 jam</div>
+                                  </div>
+                                  <div class="tooltip-container">
                                     <label class="flex items-center text-sm">
                                         <input type="radio" name="task_level_id" class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none" value="2"
                                             ${task.task_level_id === 2 ? 'checked' : ''}/> Medium
                                     </label>
+                                    <div class="tooltip">3 - 5 jam</div>
+                                  </div>
+                                  <div class="tooltip-container">
                                     <label class="flex items-center text-sm">
                                         <input type="radio" name="task_level_id" class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none" value="3"
                                             ${task.task_level_id === 3 ? 'checked' : ''}/> High
                                     </label>
+                                    <div class="tooltip">5 jam keatas</div>
+                                  </div>
                                 </div>
                             </div>
                             <p class="text-xs bg-primary-white py-1 px-3 rounded text-slate-600 mt-2 space-x-6">

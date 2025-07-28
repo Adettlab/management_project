@@ -220,21 +220,32 @@
                         <div class="flex items-center">
                             <label class="block text-sm text-gray-700 mr-3">Task Level</label>
                             <div class="flex space-x-4 items-center">
-                                <label class="flex items-center text-sm">
-                                    <input type="radio" name="task_level_id"
-                                        class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none"
-                                        value="1" /> Low
-                                </label>
-                                <label class="flex items-center text-sm">
-                                    <input type="radio" name="task_level_id"
-                                        class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none"
-                                        value="2" /> Medium
-                                </label>
-                                <label class="flex items-center text-sm">
-                                    <input type="radio" name="task_level_id"
-                                        class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none"
-                                        value="3" /> High
-                                </label>
+                                <div class="tooltip-container">
+                                    <label class="flex items-center text-sm cursor-pointer transition-colors">
+                                        <input type="radio" name="task_level_id"
+                                            class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none cursor-pointer"
+                                            value="1" /> Low
+                                    </label>
+                                    <div class="tooltip">Dibawah 3 jam</div>
+                                </div>
+
+                                <div class="tooltip-container">
+                                    <label class="flex items-center text-sm cursor-pointer transition-colors">
+                                        <input type="radio" name="task_level_id"
+                                            class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none cursor-pointer"
+                                            value="2" /> Medium
+                                    </label>
+                                    <div class="tooltip">3 - 5 jam</div>
+                                </div>
+
+                                <div class="tooltip-container">
+                                    <label class="flex items-center text-sm cursor-pointer transition-colors">
+                                        <input type="radio" name="task_level_id"
+                                            class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none cursor-pointer"
+                                            value="3" /> High
+                                    </label>
+                                    <div class="tooltip">5 jam keatas</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -353,21 +364,32 @@
                 <div class="space-y-1">
                     <label class="block text-sm text-gray-700">Task Level</label>
                     <div class="flex space-x-4 items-center">
-                        <label class="flex items-center text-sm">
-                            <input type="radio" name="task_level_id"
-                                class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none"
-                                value="1" /> Low
-                        </label>
-                        <label class="flex items-center text-sm">
-                            <input type="radio" name="task_level_id"
-                                class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none"
-                                value="2" /> Medium
-                        </label>
-                        <label class="flex items-center text-sm">
-                            <input type="radio" name="task_level_id"
-                                class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none"
-                                value="3" /> High
-                        </label>
+                        <div class="tooltip-container">
+                            <label class="flex items-center text-sm cursor-pointer transition-colors">
+                                <input type="radio" name="task_level_id"
+                                    class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none cursor-pointer"
+                                    value="1" /> Low
+                            </label>
+                            <div class="tooltip">Dibawah 3 jam</div>
+                        </div>
+
+                        <div class="tooltip-container">
+                            <label class="flex items-center text-sm cursor-pointer transition-colors">
+                                <input type="radio" name="task_level_id"
+                                    class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none cursor-pointer"
+                                    value="2" /> Medium
+                            </label>
+                            <div class="tooltip">3 - 5 jam</div>
+                        </div>
+
+                        <div class="tooltip-container">
+                            <label class="flex items-center text-sm cursor-pointer transition-colors">
+                                <input type="radio" name="task_level_id"
+                                    class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none cursor-pointer"
+                                    value="3" /> High
+                            </label>
+                            <div class="tooltip">5 jam keatas</div>
+                        </div>
                     </div>
                 </div>
                 <!-- Start Date -->

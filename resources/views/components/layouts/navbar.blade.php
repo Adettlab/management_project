@@ -24,7 +24,7 @@
             </div>
         </div>
 
-        <div class="flex sm:justify-end xs:justify-center gap-x-5 relative sm:w-1/5 xs:w-[34%]">
+        <div class="flex sm:justify-end xs:justify-center gap-x-5 relative sm:w-2/7 xs:w-[34%]">
             <div class="flex items-center sm:gap-x-3 xs:gap-x-1.5">
                 <div class="flex flex-col items-end hidden sm:flex">
                     <div class="text-lg font-semibold">

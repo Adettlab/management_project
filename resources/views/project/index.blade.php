@@ -119,7 +119,12 @@
                             <th
                                 class="w-[7%] sm:py-2 xs:py-5 primary-gray text-center font-medium text-sm sm:text-sm xs:text-[12px]">
                                 Aksi</th>
+                        @else
+                            <th
+                                class="w-[7%] sm:py-2 xs:py-5 primary-gray text-center font-medium text-sm sm:text-sm xs:text-[12px]">
+                                Aksi</th>
                         @endif
+
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 xs:bg-white sm:bg-none">
