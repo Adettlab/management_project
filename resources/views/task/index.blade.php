@@ -205,7 +205,7 @@
                             </svg>
                         </button>
                         <ul id="create-task-dropdown"
-                            class="w-full absolute right-0 mt-2 rounded-md shadow-lg bg-primary-white border border-primary-white p-1 space-y-1 transform opacity-0 scale-95 -translate-y-2 hidden transition-all duration-300 ease-out origin-top">
+                            class="w-full z-[999] absolute right-0 mt-2 rounded-md shadow-lg bg-primary-white border border-primary-white p-1 space-y-1 transform opacity-0 scale-95 -translate-y-2 hidden transition-all duration-300 ease-out origin-top">
                             @foreach ($projects as $project)
                                 <li class="block px-4 py-2 text-black hover:bg-[#C3C3C3] cursor-pointer rounded-md"
                                     data-project-value="{{ $project->id }}"

@@ -368,6 +368,104 @@ class ProjectController extends Controller
     }
   }
 
+  // public function update(Request $request, Project $project)
+  // {
+  //   // PERBAIKAN: Cek akses individual project
+  //   if (!$this->canUserAccessProject(auth()->user(), $project)) {
+  //     abort(403, 'You do not have permission to update this project.');
+  //   }
+
+  //   try {
+  //     $validated = $request->validate([
+  //       'name' => 'required|string|max:255',
+  //       'description' => 'nullable',
+  //       'start_date' => 'required|date',
+  //       'end_date' => 'required|date|after_or_equal:start_date',
+  //       'project_level_id' => 'required|exists:project_levels,id',
+  //       'project_status_id' => 'required|exists:project_statuses,id',
+  //       'kepala_id' => 'nullable|exists:employees,id',
+  //       'pelaporan_pddikti_id' => 'nullable|exists:employees,id',
+  //       'asisten_id' => 'nullable|exists:employees,id',
+  //       'jaringan_instalasi_id' => 'nullable|exists:employees,id',
+  //       'teknisi_id' => 'nullable|exists:employees,id',
+  //       'pengelola_sosmed_id' => 'nullable|exists:employees,id',
+  //     ]);
+
+  //     DB::beginTransaction();
+  //     $project->update($validated);
+
+  //     $newEmployeeIds = collect([
+  //       $request->kepala_id,
+  //       $request->pelaporan_pddikti_id,
+  //       $request->asisten_id,
+  //       $request->jaringan_instalasi_id,
+  //       $request->teknisi_id,
+  //       $request->pengelola_sosmed_id,
+  //     ])->filter()->unique()->all();
+
+  //     $currentEmployeeIds = $project->employees()
+  //       ->where('isformeremployee', 0)
+  //       ->pluck('employee_id')
+  //       ->toArray();
+
+  //     $employeesToAdd = array_diff($newEmployeeIds, $currentEmployeeIds);
+  //     $employeesToRemove = array_diff($currentEmployeeIds, $newEmployeeIds);
+
+  //     // Add new employees
+  //     foreach ($employeesToAdd as $employeeId) {
+  //       $existingRecord = DB::table('project_employees')
+  //         ->where('project_id', $project->id)
+  //         ->where('employee_id', $employeeId)
+  //         ->first();
+
+  //       if ($existingRecord) {
+  //         DB::table('project_employees')
+  //           ->where('id', $existingRecord->id)
+  //           ->update(['isformeremployee' => 0]);
+  //       } else {
+  //         $project->employees()->attach($employeeId);
+  //       }
+  //     }
+
+  //     // Remove employees
+  //     foreach ($employeesToRemove as $employeeId) {
+  //       $projectEmployee = DB::table('project_employees')
+  //         ->where('project_id', $project->id)
+  //         ->where('employee_id', $employeeId)
+  //         ->where('isformeremployee', 0)
+  //         ->first();
+
+  //       if ($projectEmployee) {
+  //         // Delete unfinished tasks
+  //         DB::table('tasks')
+  //           ->where('assigned_project_employee_id', $projectEmployee->id)
+  //           ->where('task_status_id', 1)
+  //           ->delete();
+
+  //         // Mark as former employee
+  //         DB::table('project_employees')
+  //           ->where('id', $projectEmployee->id)
+  //           ->update(['isformeremployee' => 1]);
+  //       }
+  //     }
+
+  //     $message = 'Project updated successfully.';
+  //     if (!empty($employeesToAdd) || !empty($employeesToRemove)) {
+  //       $message .= ' Employee assignments updated.';
+  //     }
+
+  //     DB::commit();
+
+  //     return redirect()
+  //       ->route('projects.index')
+  //       ->with('success', $message);
+  //   } catch (\Exception $e) {
+  //     DB::rollBack();
+  //     Log::error('Error updating project: ' . $e->getMessage());
+  //     return back()->withInput()->withErrors(['error' => 'Something went wrong. Please try again or contact support']);
+  //   }
+  // }
+
   public function update(Request $request, Project $project)
   {
     // PERBAIKAN: Cek akses individual project
@@ -384,32 +482,59 @@ class ProjectController extends Controller
         'project_level_id' => 'required|exists:project_levels,id',
         'project_status_id' => 'required|exists:project_statuses,id',
         'kepala_id' => 'nullable|exists:employees,id',
-        'pelaporan_pddikti_id' => 'nullable|exists:employees,id',
-        'asisten_id' => 'nullable|exists:employees,id',
-        'jaringan_instalasi_id' => 'nullable|exists:employees,id',
-        'teknisi_id' => 'nullable|exists:employees,id',
-        'pengelola_sosmed_id' => 'nullable|exists:employees,id',
+        // Validation for existing SDM
+        'existing_sdm_ids' => 'nullable|array',
+        'existing_sdm_ids.*' => 'exists:employees,id',
+        // Validation for removed SDM
+        'removed_sdm_ids' => 'nullable|array',
+        'removed_sdm_ids.*' => 'exists:employees,id',
+        // Validation for new SDM
+        'sdm_ids' => 'nullable|array',
+        'sdm_ids.*' => 'exists:employees,id',
       ]);
 
       DB::beginTransaction();
+
+      // Update project basic information
       $project->update($validated);
 
-      $newEmployeeIds = collect([
-        $request->kepala_id,
-        $request->pelaporan_pddikti_id,
-        $request->asisten_id,
-        $request->jaringan_instalasi_id,
-        $request->teknisi_id,
-        $request->pengelola_sosmed_id,
-      ])->filter()->unique()->all();
+      // Handle KEPALA PUSTIK
+      $kepalaId = $validated['kepala_id'] ?? null;
 
+      // Get existing SDM IDs (excluding removed ones)
+      $existingSDMIds = $validated['existing_sdm_ids'] ?? [];
+      $removedSDMIds = $validated['removed_sdm_ids'] ?? [];
+      $newSDMIds = $validated['sdm_ids'] ?? [];
+
+      // Remove the removed SDM IDs from existing ones
+      $activeExistingSDMIds = array_diff($existingSDMIds, $removedSDMIds);
+
+      // Combine all active SDM IDs
+      $allActiveSDMIds = [];
+
+      // Add KEPALA PUSTIK if selected
+      if ($kepalaId) {
+        $allActiveSDMIds[] = $kepalaId;
+      }
+
+      // Add existing active SDM
+      $allActiveSDMIds = array_merge($allActiveSDMIds, $activeExistingSDMIds);
+
+      // Add new SDM
+      $allActiveSDMIds = array_merge($allActiveSDMIds, $newSDMIds);
+
+      // Remove duplicates
+      $allActiveSDMIds = array_unique(array_filter($allActiveSDMIds));
+
+      // Get current project employees
       $currentEmployeeIds = $project->employees()
         ->where('isformeremployee', 0)
         ->pluck('employee_id')
         ->toArray();
 
-      $employeesToAdd = array_diff($newEmployeeIds, $currentEmployeeIds);
-      $employeesToRemove = array_diff($currentEmployeeIds, $newEmployeeIds);
+      // Find employees to add and remove
+      $employeesToAdd = array_diff($allActiveSDMIds, $currentEmployeeIds);
+      $employeesToRemove = array_diff($currentEmployeeIds, $allActiveSDMIds);
 
       // Add new employees
       foreach ($employeesToAdd as $employeeId) {
@@ -419,15 +544,20 @@ class ProjectController extends Controller
           ->first();
 
         if ($existingRecord) {
+          // Reactivate former employee
           DB::table('project_employees')
             ->where('id', $existingRecord->id)
             ->update(['isformeremployee' => 0]);
         } else {
+          // Add new employee
           $project->employees()->attach($employeeId);
         }
+
+        // Update employee status
+        Employee::where('id', $employeeId)->update(['status_employee' => 'Stand By']);
       }
 
-      // Remove employees
+      // Remove employees (mark as former)
       foreach ($employeesToRemove as $employeeId) {
         $projectEmployee = DB::table('project_employees')
           ->where('project_id', $project->id)
@@ -446,12 +576,40 @@ class ProjectController extends Controller
           DB::table('project_employees')
             ->where('id', $projectEmployee->id)
             ->update(['isformeremployee' => 1]);
+
+          // Update employee status back to available if not in other active projects
+          $otherActiveProjects = DB::table('project_employees')
+            ->join('projects', 'project_employees.project_id', '=', 'projects.id')
+            ->where('project_employees.employee_id', $employeeId)
+            ->where('project_employees.isformeremployee', 0)
+            ->where('projects.id', '!=', $project->id)
+            ->exists();
+
+          if (!$otherActiveProjects) {
+            Employee::where('id', $employeeId)->update(['status_employee' => 'Available']);
+          }
         }
       }
 
+      // Create success message
       $message = 'Project updated successfully.';
       if (!empty($employeesToAdd) || !empty($employeesToRemove)) {
-        $message .= ' Employee assignments updated.';
+        $addedCount = count($employeesToAdd);
+        $removedCount = count($employeesToRemove);
+        $message .= ' SDM updated: ';
+
+        if ($addedCount > 0) {
+          $message .= "{$addedCount} added";
+        }
+
+        if ($removedCount > 0) {
+          if ($addedCount > 0) {
+            $message .= ', ';
+          }
+          $message .= "{$removedCount} removed";
+        }
+
+        $message .= '.';
       }
 
       DB::commit();

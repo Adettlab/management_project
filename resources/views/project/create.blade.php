@@ -161,105 +161,6 @@
                             <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
                         @enderror
                     </div>
-
-                    {{-- <div class="flex flex-col space-y-2">
-                        <label class="block sm:text-lg xs:text-[10px] text-primary-white" for="analyst">Project
-                            Pelaporan PDDIKTI <span
-                                class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span></label>
-                        <select name="pelaporan_pddikti_id"
-                            class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
-                            id="analyst">
-                            <option value="">Select pelaporan PDDIKTI</option>
-                            @foreach ($employees->where('role.name', 'Pelaporan PDDIKTI') as $employee)
-                                <option value="{{ $employee->id }}"
-                                    {{ old('pelaporan_pddikti_id') == $employee->id ? 'selected' : '' }}>
-                                    {{ $employee->user->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('pelaporan_pddikti_id')
-                            <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
-                        @enderror
-                    </div>
-                    <div class="">
-                        <div class="flex sm:flex-row xs:flex-col sm:space-x-2 w-full sm:space-y-0 xs:space-y-4">
-                            <div class="sm:w-[50%] xs:w-full space-y-2">
-                                <label class="block sm:text-lg xs:text-[10px] text-primary-white"
-                                    for="designer">Project Asisten Dosen <span
-                                        class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span></label>
-                                <select name="asisten_id"
-                                    class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
-                                    id="designer">
-                                    <option value="">Select Asisten Dosen</option>
-                                    @foreach ($employees->where('role.name', 'Asisten DOSEN') as $employee)
-                                        <option value="{{ $employee->id }}"
-                                            {{ old('asisten_id') == $employee->id ? 'selected' : '' }}>
-                                            {{ $employee->user->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('asisten_id')
-                                    <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
-                                @enderror
-                            </div>
-                            <div class="sm:w-[50%] xs:w-full space-y-2">
-                                <label class="block sm:text-lg xs:text-[10px] text-primary-white"
-                                    for="engineer_web">Jaringan Instalasi <span
-                                        class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span></label>
-                                <select name="jaringan_instalasi_id"
-                                    class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
-                                    id="engineer_web">
-                                    <option value="">Select Jaringan Instalasi</option>
-                                    @foreach ($employees->where('role.name', 'Jaringan Dan Instalasi') as $employee)
-                                        <option value="{{ $employee->id }}"
-                                            {{ old('jaringan_instalasi_id') == $employee->id ? 'selected' : '' }}>
-                                            {{ $employee->user->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('jaringan_instalasi_id')
-                                    <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-                    <div class="">
-                        <div class="flex sm:flex-row xs:flex-col sm:space-x-2 sm:space-y-0 xs:space-y-4">
-                            <div class="sm:w-[50%] xs:w-full space-y-2">
-                                <label class="block sm:text-lg xs:text-[10px] text-primary-white"
-                                    for="engineer_mobile">Teknisi <span
-                                        class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span></label>
-                                <select
-                                    name="teknisi_id" class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
-                                    id="engineer_mobile">
-                                    <option value="">Select teknisi</option>
-                                    @foreach ($employees->where('role.name', 'TEKNISI') as $employee)
-                                        <option value="{{ $employee->id }}"
-                                            {{ old('teknisi_id') == $employee->id ? 'selected' : '' }}>
-                                            {{ $employee->user->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('teknisi_id')
-                                    <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
-                                @enderror
-                            </div>
-                            <div class="space-y-2 sm:w-[50%] xs:w-full">
-                                <label class="block sm:text-lg xs:text-[10px] text-primary-white"
-                                    for="engineer_tester">Pengelola Sosial Media <span
-                                        class="bg-blue-100 ml-1 text-blue-600 px-2 py-1 rounded-full text-[8px] font-semibold">Optional</span></label>
-                                <select name="pengelola_sosmed_id"
-                                    class="w-full bg-primary-white border border-primary-white px-3 py-2 sm:text-sm xs:text-[12px] rounded focus:outline-none"
-                                    id="engineer_tester">
-                                    <option value="">Select pengelola sosmed</option>
-                                    @foreach ($employees->where('role.name', 'Pengelola Sosial Media') as $employee)
-                                        <option value="{{ $employee->id }}"
-                                            {{ old('pengelola_sosmed_id') == $employee->id ? 'selected' : '' }}>
-                                            {{ $employee->user->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('pengelola_sosmed_id')
-                                    <span class="text-red-600 sm:text-sm xs:text-[12px]">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-                    </div> --}}
                 </div>
                 {{-- mobile --}}
                 <div
@@ -362,8 +263,6 @@
         let inputCounter = 0;
         let selectedSDM = [];
         let searchTimeout;
-
-
 
         // CSRF Token untuk Laravel
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
