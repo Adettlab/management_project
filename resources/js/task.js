@@ -170,7 +170,7 @@ class TaskManager {
     async fetchTasks(date = '') {
         this.destroyElement();
         this.isLoading = true;
-        this.toggleLoading
+        this.toggleLoading();
         await fetch(`/tasks/get-tasks?date=${date}`)
             .then(response => response.json())
             .then(data => {
@@ -540,11 +540,6 @@ class TaskManager {
                                   </div>
                                 </div>
                             </div>
-                            <p class="text-xs bg-primary-white py-1 px-3 rounded text-slate-600 mt-2 space-x-6">
-                                <span class="task-level">Low</span> : &lt; 2 hours
-                                <span class="task-level">Medium</span> : &lt; 6 hours
-                                <span class="task-level">High</span> : &gt; 6 hours
-                            </p>
                         </div>
                     </div>
                     <div class="flex w-full px-8 pt-3">

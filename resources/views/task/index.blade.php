@@ -205,7 +205,7 @@
                             </svg>
                         </button>
                         <ul id="create-task-dropdown"
-                            class="w-full absolute right-0 mt-2 rounded-md shadow-lg bg-primary-white border border-primary-white p-1 space-y-1 transform opacity-0 scale-95 -translate-y-2 hidden transition-all duration-300 ease-out origin-top">
+                            class="w-full z-[999] absolute right-0 mt-2 rounded-md shadow-lg bg-primary-white border border-primary-white p-1 space-y-1 transform opacity-0 scale-95 -translate-y-2 hidden transition-all duration-300 ease-out origin-top">
                             @foreach ($projects as $project)
                                 <li class="block px-4 py-2 text-black hover:bg-[#C3C3C3] cursor-pointer rounded-md"
                                     data-project-value="{{ $project->id }}"
@@ -217,7 +217,7 @@
                     </div>
                     <!-- Task Level -->
                     <div>
-                        <div class="flex items-center">
+                        <div class="flex items-center ">
                             <label class="block text-sm text-gray-700 mr-3">Task Level</label>
                             <div class="flex space-x-4 items-center">
                                 <div class="tooltip-container">
@@ -425,18 +425,18 @@
 {{-- @endif --}}
 
 {{-- Modal Show/Edit - Permissions ditangani di JavaScript berdasarkan canUpdate dan canDelete --}}
-@if ($canUpdate)
-    <div id="modalShow"
-        class="fixed inset-0 z-[999] flex items-center justify-center bg-gray-900 bg-opacity-50 hidden">
-        <!-- Modal Content -->
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-xl mx-4 h-fit pb-10">
-            <!-- Modal Header -->
-            <div class="flex justify-between items-center border-b px-4">
-                <h2 class="text-md font-semibold">Task</h2>
-                <div class="flex mr-1 space-x-2">
-
-                    <button class="text-white hover:stroke-slate-400 text-[32px]" id="editTaskBtn">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 21 22" fill="none"
+{{-- Modal Show/Edit - Permissions ditangani di JavaScript berdasarkan canUpdate dan canDelete --}}
+<div id="modalShow"
+    class="fixed inset-0 z-[999] flex items-center justify-center bg-gray-900 bg-opacity-50 hidden">
+    <!-- Modal Content -->
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-xl mx-4 h-fit pb-10">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center border-b px-4 py-3">
+            <h2 class="text-md font-semibold">Task</h2>
+            <div class="flex mr-1 space-x-2">
+                @if ($canUpdate)
+                    <button class="text-gray-500 hover:stroke-slate-400 text-[32px]" id="editTaskBtn">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 21 22" 
                             xmlns="http://www.w3.org/2000/svg">
                             <path
                                 d="M10 2.5H3C2.46957 2.5 1.96086 2.71071 1.58579 3.08579C1.21071 3.46086 1 3.96957 1 4.5V18.5C1 19.0304 1.21071 19.5391 1.58579 19.9142C1.96086 20.2893 2.46957 20.5 3 20.5H17C17.5304 20.5 18.0391 20.2893 18.4142 19.9142C18.7893 19.5391 19 19.0304 19 18.5V11.5"
@@ -448,28 +448,31 @@
                                 stroke-linejoin="round" />
                         </svg>
                     </button>
+                @endif
 
-                    <button id="closeModalShowBtn" class="text-gray-500 hover:text-gray-700 text-[32px]"
-                        onclick="taskManager.closeModalShow('modalShow')">×</button>
-                </div>
-            </div>
-            <div id="modalShowBody" class="py-5 px-8 space-y-3 mx-auto items-center justify-center flex flex-col">
+                <button class="text-gray-500 hover:text-gray-700 text-[32px]"
+                    onclick="taskManager.closeModalShow('modalShow')">&times;</button>
             </div>
         </div>
+        <div id="modalShowBody" class="py-5 px-8 space-y-3 mx-auto items-center justify-center flex flex-col">
+            <!-- Content will be populated by JavaScript -->
+        </div>
     </div>
-@endif
+</div>
+
 @if ($canUpdate)
     <div id="modalEdit"
         class="fixed inset-0 z-[999] flex items-center justify-center bg-gray-900 bg-opacity-50 hidden">
         <!-- Modal Content -->
         <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 h-fit pb-10">
             <!-- Modal Header -->
-            <div class="flex justify-between items-center border-b px-4">
+            <div class="flex justify-between items-center border-b px-4 py-3">
                 <h2 class="text-md font-semibold">Edit Task</h2>
                 <button class="text-gray-500 hover:text-gray-700 text-[32px]"
                     onclick="taskManager.closeModalShow('modalEdit')">×</button>
             </div>
             <div id="modalEditBody" class="">
+                <!-- Content will be populated by JavaScript -->
             </div>
         </div>
     </div>
