@@ -20,15 +20,16 @@
                         class="status-btn border text-black sm:py-[3px] xss:py-[7px] xs:py-[6px] xs:text-[9px] xss:text-[11px] sm:text-base font-medium rounded-lg sm:w-[100px] xss:w-[78px] xs:w-[65px] text-center hover:bg-black hover:text-white"
                         data-content="Attend" onclick="filterByStatus('Completed')"
                         data-status="Completed">Completed</button>
-                    <button id="absent-btn"
+                    {{-- <button id="absent-btn"
                         class="status-btn border text-black sm:py-[3px] xss:py-[7px] xs:py-[6px] xs:text-[9px] xss:text-[11px] sm:text-base font-medium rounded-lg sm:w-[100px] xss:w-[78px] xs:w-[65px] text-center hover:bg-black hover:text-white"
-                        data-content="Absent" onclick="filterByStatus('absent')" data-status="absent">Absent</button>
+                        data-content="Absent" onclick="filterByStatus('absent')" data-status="absent">Absent</button> --}}
                 </div>
                 <div class="h-[calc(100vh-200px)] overflow-y-auto mt-2">
                     <div class="grid sm:grid-cols-3 gap-3 mt-5">
                         @forelse ($employees as $index => $employee)
                             @if (strtolower($filter) == 'ready' || strtolower($filter) == 'completed')
                                 @php
+                                    // PERBAIKAN: Menggunakan logika yang sama dengan kode kedua
                                     $firstTask = $employee->projects
                                         ->flatMap(function ($project) use ($employee) {
                                             return $project->tasks->filter(function ($task) use ($employee) {
@@ -58,13 +59,13 @@
                                                 {{ $employee->role->name }}</p>
                                         </div>
                                     </div>
-                                    <p
-                                        class="sm:text-sm xs:text-[12px] font-black mt-2 sm:static xs:absolute xs:bottom-7 xs:left-[18px]">
-                                        Working on
-                                        {{ $employee->projects->firstWhere('id', $firstTask->project_id)->name }} :
-                                    </p>
-                                    <div>
-                                        @if ($firstTask)
+                                    @if($firstTask)
+                                        <p
+                                            class="sm:text-sm xs:text-[12px] font-black mt-2 sm:static xs:absolute xs:bottom-7 xs:left-[18px]">
+                                            Working on
+                                            {{ $employee->projects->firstWhere('id', $firstTask->project_id)->name }} :
+                                        </p>
+                                        <div>
                                             <div
                                                 class="sm:text-xs xs:text-[11px] primary-gray font-medium mb-8 mt-2 sm:static xs:absolute xs:-bottom-5 xs:left-5">
                                                 {{ $firstTask->name }}
@@ -80,8 +81,13 @@
                                                     {{ $firstTask->taskLevel->name }}
                                                 </p>
                                             </div>
-                                        @endif
-                                    </div>
+                                        </div>
+                                    @else
+                                        {{-- PERBAIKAN: Tambahkan handling jika tidak ada task --}}
+                                        <p class="sm:text-sm xs:text-[12px] font-black mt-2 text-gray-500">
+                                            No active tasks
+                                        </p>
+                                    @endif
                                 </div>
                             @elseif (strtolower($filter) == 'absent')
                                 <div
@@ -187,7 +193,7 @@
                     </div>
                     <div
                         class="flex-row sm:space-y-2 xs:space-y-1 mt-2 items-center justify-center h-full max-h-full pb-10 overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                        <p>There’s no project</p>
+                        <p>There's no project</p>
                     </div>
                 </div>
                 {{-- Project end --}}
@@ -207,7 +213,7 @@
                         Activity
                     </div>
                     <div class="flex items-center justify-center h-full pb-8">
-                        <p>There’s no project</p>
+                        <p>There's no project</p>
                     </div>
                 </div>
                 {{-- Activity end --}}
@@ -223,7 +229,7 @@
         window.location.href = url.toString();
     }
 
-    // Fungsi untuk mengatur status aktif berdasarkan tombol
+    // PERBAIKAN: Mengadopsi JavaScript yang lebih baik dari kode kedua
     function setActiveStatus(button) {
         const content = document.getElementById('status-content');
         if (content) {
@@ -243,7 +249,8 @@
     window.addEventListener('DOMContentLoaded', () => {
         const params = new URLSearchParams(window.location.search);
         const status = params.get('status') || 'ready';
-        const activeButton = document.querySelector(`[onclick="filterByStatus('${status}')"]`);
+        // PERBAIKAN: Menggunakan data-status untuk matching yang lebih akurat
+        const activeButton = document.querySelector(`[data-status="${status}"]`);
         if (activeButton) {
             setActiveStatus(activeButton);
         }

@@ -205,7 +205,7 @@
                             </svg>
                         </button>
                         <ul id="create-task-dropdown"
-                            class="w-full z-[999] absolute right-0 mt-2 rounded-md shadow-lg bg-primary-white border border-primary-white p-1 space-y-1 transform opacity-0 scale-95 -translate-y-2 hidden transition-all duration-300 ease-out origin-top">
+                            class="w-full absolute right-0 mt-2 rounded-md shadow-lg bg-primary-white border border-primary-white p-1 space-y-1 transform opacity-0 scale-95 -translate-y-2 hidden transition-all duration-300 ease-out origin-top">
                             @foreach ($projects as $project)
                                 <li class="block px-4 py-2 text-black hover:bg-[#C3C3C3] cursor-pointer rounded-md"
                                     data-project-value="{{ $project->id }}"
@@ -217,7 +217,7 @@
                     </div>
                     <!-- Task Level -->
                     <div>
-                        <div class="flex items-center ">
+                        <div class="flex items-center">
                             <label class="block text-sm text-gray-700 mr-3">Task Level</label>
                             <div class="flex space-x-4 items-center">
                                 <div class="tooltip-container">
@@ -250,7 +250,7 @@
                         </div>
                     </div>
 
-                    <!-- Start Date -->
+                      <!-- Start Date -->
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1">
                             <label class="block text-sm text-gray-700">Start Date</label>
@@ -286,82 +286,83 @@
 
 {{-- Modal Transfer - Hidden jika tidak ada permission transfer
 @if ($canTransfer) --}}
-<div id="modalTransfer"
-    class="fixed inset-0 z-[999] flex items-center justify-center bg-gray-900 bg-opacity-50 hidden">
-    <!-- Modal Content -->
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 h-fit pb-10">
-        <!-- Modal Header -->
-        <div class="flex justify-between items-center border-b px-4">
-            <h2 class="text-md font-semibold">Transfer Task</h2>
-            <button id="closeModalTransferBtn" class="text-gray-500 hover:text-gray-700 text-[32px]">×</button>
-        </div>
-        <form action="{{ route('tasks.store') }}" method="POST" enctype="multipart/form-data">
-            @csrf
-            <!-- Modal Body -->
-            <div class="py-4 px-8 space-y-3">
-                <!-- Task Name -->
-                <div class="space-y-1">
-                    <label class="block text-sm text-gray-700" for="name">Task</label>
-                    <input type="text" placeholder="Task name..." name="name" id="name"
-                        class="w-full bg-primary-white border border-primary-white px-3 py-1 text-sm rounded focus:outline-none">
-                </div>
-                <!-- Project -->
-                <div class="space-y-1 relative">
-                    <label class="block text-sm text-gray-700" for="project_id">Project</label>
-                    <button id="dropdown-transfer-task"
-                        class="inline-flex items-center w-full px-3 py-1 text-sm bg-primary-white border border-primary-white rounded-md shadow-sm"
-                        onclick="taskManager.toggleDropdown('trasfer-task-dropdown', 'trasfer-task-icon', event)">
-                        <span class="mr-auto" id="trasfer-task-value">Select Projects</span>
-                        <svg id="trasfer-task-icon" class="w-5 h-5 ml-2 transform transition-transform duration-500"
-                            viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                            <path fill-rule="evenodd"
-                                d="M6.293 9.293a1 1 0 011.414 0L10 11.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                                clip-rule="evenodd" />
-                        </svg>
-                    </button>
-                    <ul id="trasfer-task-dropdown"
-                        class="w-full absolute right-0 mt-2 rounded-md shadow-lg bg-primary-white border p-1 space-y-1 transform opacity-0 scale-95 -translate-y-2 hidden transition-all duration-300 ease-out origin-top z-50">
-                        @foreach ($projects as $project)
-                            <li class="block px-4 py-2 text-black hover:bg-[#C3C3C3] cursor-pointer rounded-md"
-                                data-project-value="{{ $project->id }}"
-                                onclick="taskManager.listOnClick(event, 'trasfer-task-value', 'trasfer-task-dropdown', 'trasfer-task-icon', 'project_id_transfer', {{ $project->id }})">
-                                {{ $project->name }}
-                            </li>
-                        @endforeach
-                    </ul>
-                    @error('project_id_transfer')
-                        <span class="text-red-600 text-sm">{{ $message }}</span>
-                    @enderror
-                    <input type="hidden" name="project_id" id="project_id_transfer">
-                </div>
-                <!-- Send to -->
-
-                <div class="space-y-1 relative">
-                    <label class="block text-sm text-gray-700" for="assigned_project_employee_id">Send
-                        to</label>
-                    <button id="dropdown-transfer-employee"
-                        class="inline-flex items-center w-full px-3 py-1 text-sm bg-primary-white border rounded-md shadow-sm"
-                        onclick="taskManager.toggleDropdown('trasfer-employee-dropdown', 'trasfer-employee-icon', event)"
-                        disabled>
-                        <span class="mr-auto" id="trasfer-employee-value">Select employee</span>
-                        <svg id="trasfer-employee-icon"
-                            class="w-5 h-5 ml-2 transform transition-transform duration-500" viewBox="0 0 20 20"
-                            fill="currentColor" aria-hidden="true">
-                            <path fill-rule="evenodd"
-                                d="M6.293 9.293a1 1 0 011.414 0L10 11.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                                clip-rule="evenodd" />
-                        </svg>
-                    </button>
-                    <ul id="trasfer-employee-dropdown"
-                        class="w-full absolute right-0 border mt-2 rounded-md shadow-lg bg-primary-white p-1 space-y-1 transform opacity-0 scale-95 -translate-y-2 hidden transition-all duration-300 ease-out origin-top z-50">
-                    </ul>
-                    @error('assigned_project_employee_id')
-                        <span class="text-red-600 text-sm">{{ $message }}</span>
-                    @enderror
-                    <input type="hidden" name="assigned_project_employee_id" id="assigned_project_employee_id">
-                </div>
-                <!-- Task Level -->
-                <div class="space-y-1">
+    <div id="modalTransfer"
+        class="fixed inset-0 z-[999] flex items-center justify-center bg-gray-900 bg-opacity-50 hidden">
+        <!-- Modal Content -->
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 h-fit pb-10">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center border-b px-4">
+                <h2 class="text-md font-semibold">Transfer Task</h2>
+                <button id="closeModalTransferBtn" class="text-gray-500 hover:text-gray-700 text-[32px]">×</button>
+            </div>
+            <form action="{{ route('tasks.store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <!-- Modal Body -->
+                <div class="py-4 px-8 space-y-3">
+                    <!-- Task Name -->
+                    <div class="space-y-1">
+                        <label class="block text-sm text-gray-700" for="name">Task</label>
+                        <input type="text" placeholder="Task name..." name="name" id="name"
+                            class="w-full bg-primary-white border border-primary-white px-3 py-1 text-sm rounded focus:outline-none">
+                    </div>
+                    <!-- Project -->
+                    <div class="space-y-1 relative">
+                        <label class="block text-sm text-gray-700" for="project_id">Project</label>
+                        <button id="dropdown-transfer-task"
+                            class="inline-flex items-center w-full px-3 py-1 text-sm bg-primary-white border border-primary-white rounded-md shadow-sm"
+                            onclick="taskManager.toggleDropdown('trasfer-task-dropdown', 'trasfer-task-icon', event)">
+                            <span class="mr-auto" id="trasfer-task-value">Select Projects</span>
+                            <svg id="trasfer-task-icon"
+                                class="w-5 h-5 ml-2 transform transition-transform duration-500" viewBox="0 0 20 20"
+                                fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd"
+                                    d="M6.293 9.293a1 1 0 011.414 0L10 11.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <ul id="trasfer-task-dropdown"
+                            class="w-full absolute right-0 mt-2 rounded-md shadow-lg bg-primary-white border p-1 space-y-1 transform opacity-0 scale-95 -translate-y-2 hidden transition-all duration-300 ease-out origin-top z-50">
+                            @foreach ($projects as $project)
+                                <li class="block px-4 py-2 text-black hover:bg-[#C3C3C3] cursor-pointer rounded-md"
+                                    onclick="taskManager.listOnClick(event, 'trasfer-task-value', 'trasfer-task-dropdown', 'trasfer-task-icon', 'project_id_transfer', {{ $project->id }})"data-project-value="{{ $project->id }}">
+                                    <span class="project-name">{{ $project->name }}</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                        @error('project_id_transfer')
+                            <span class="text-red-600 text-sm">{{ $message }}</span>
+                        @enderror
+                        <input type="hidden" name="project_id" id="project_id_transfer">
+                    </div>
+                    <!-- Send to -->
+                 
+                        <div class="space-y-1 relative">
+                            <label class="block text-sm text-gray-700" for="assigned_project_employee_id">Send
+                                to</label>
+                            <button id="dropdown-transfer-employee"
+                                class="inline-flex items-center w-full px-3 py-1 text-sm bg-primary-white border rounded-md shadow-sm"
+                                onclick="taskManager.toggleDropdown('trasfer-employee-dropdown', 'trasfer-employee-icon', event)"
+                                disabled>
+                                <span class="mr-auto" id="trasfer-employee-value">Select employee</span>
+                                <svg id="trasfer-employee-icon"
+                                    class="w-5 h-5 ml-2 transform transition-transform duration-500"
+                                    viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd"
+                                        d="M6.293 9.293a1 1 0 011.414 0L10 11.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <ul id="trasfer-employee-dropdown"
+                                class="w-full absolute right-0 border mt-2 rounded-md shadow-lg bg-primary-white p-1 space-y-1 transform opacity-0 scale-95 -translate-y-2 hidden transition-all duration-300 ease-out origin-top z-50">
+                            </ul>
+                            @error('assigned_project_employee_id')
+                                <span class="text-red-600 text-sm">{{ $message }}</span>
+                            @enderror
+                            <input type="hidden" name="assigned_project_employee_id"
+                                id="assigned_project_employee_id">
+                        </div>
+                    <!-- Task Level -->
+                     <div class="space-y-1">
                     <label class="block text-sm text-gray-700">Task Level</label>
                     <div class="flex space-x-4 items-center">
                         <div class="tooltip-container">
@@ -392,8 +393,8 @@
                         </div>
                     </div>
                 </div>
-                <!-- Start Date -->
-                <div class="grid grid-cols-2 gap-3">
+                    <!-- Start Date & End Date -->
+                     <div class="grid grid-cols-2 gap-3">
                     <div class="space-y-1">
                         <label class="block text-sm text-gray-700">Start Date</label>
                         <input type="date" name="start_date"
@@ -408,6 +409,7 @@
                             id="end_date_transfer" min="2023-02-02" max="">
                     </div>
                 </div>
+                </div>
                 {{-- Task status default --}}
                 <div>
                     <input type="hidden" value="1" name="task_status_id">
@@ -419,24 +421,24 @@
                         Submit
                     </button>
                 </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
 {{-- @endif --}}
 
 {{-- Modal Show/Edit - Permissions ditangani di JavaScript berdasarkan canUpdate dan canDelete --}}
-{{-- Modal Show/Edit - Permissions ditangani di JavaScript berdasarkan canUpdate dan canDelete --}}
-<div id="modalShow"
-    class="fixed inset-0 z-[999] flex items-center justify-center bg-gray-900 bg-opacity-50 hidden">
-    <!-- Modal Content -->
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-xl mx-4 h-fit pb-10">
-        <!-- Modal Header -->
-        <div class="flex justify-between items-center border-b px-4 py-3">
-            <h2 class="text-md font-semibold">Task</h2>
-            <div class="flex mr-1 space-x-2">
-                @if ($canUpdate)
-                    <button class="text-gray-500 hover:stroke-slate-400 text-[32px]" id="editTaskBtn">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 21 22" 
+@if ($canUpdate)
+    <div id="modalShow"
+        class="fixed inset-0 z-[999] flex items-center justify-center bg-gray-900 bg-opacity-50 hidden">
+        <!-- Modal Content -->
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-xl mx-4 h-fit pb-10">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center border-b px-4">
+                <h2 class="text-md font-semibold">Task</h2>
+                <div class="flex mr-1 space-x-2">
+
+                    <button class="text-white hover:stroke-slate-400 text-[32px]" id="editTaskBtn">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 21 22" fill="none"
                             xmlns="http://www.w3.org/2000/svg">
                             <path
                                 d="M10 2.5H3C2.46957 2.5 1.96086 2.71071 1.58579 3.08579C1.21071 3.46086 1 3.96957 1 4.5V18.5C1 19.0304 1.21071 19.5391 1.58579 19.9142C1.96086 20.2893 2.46957 20.5 3 20.5H17C17.5304 20.5 18.0391 20.2893 18.4142 19.9142C18.7893 19.5391 19 19.0304 19 18.5V11.5"
@@ -448,31 +450,28 @@
                                 stroke-linejoin="round" />
                         </svg>
                     </button>
-                @endif
 
-                <button class="text-gray-500 hover:text-gray-700 text-[32px]"
-                    onclick="taskManager.closeModalShow('modalShow')">&times;</button>
+                    <button id="closeModalShowBtn" class="text-gray-500 hover:text-gray-700 text-[32px]"
+                        onclick="taskManager.closeModalShow('modalShow')">×</button>
+                </div>
+            </div>
+            <div id="modalShowBody" class="py-5 px-8 space-y-3 mx-auto items-center justify-center flex flex-col">
             </div>
         </div>
-        <div id="modalShowBody" class="py-5 px-8 space-y-3 mx-auto items-center justify-center flex flex-col">
-            <!-- Content will be populated by JavaScript -->
-        </div>
     </div>
-</div>
-
+@endif
 @if ($canUpdate)
     <div id="modalEdit"
         class="fixed inset-0 z-[999] flex items-center justify-center bg-gray-900 bg-opacity-50 hidden">
         <!-- Modal Content -->
         <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 h-fit pb-10">
             <!-- Modal Header -->
-            <div class="flex justify-between items-center border-b px-4 py-3">
+            <div class="flex justify-between items-center border-b px-4">
                 <h2 class="text-md font-semibold">Edit Task</h2>
                 <button class="text-gray-500 hover:text-gray-700 text-[32px]"
                     onclick="taskManager.closeModalShow('modalEdit')">×</button>
             </div>
             <div id="modalEditBody" class="">
-                <!-- Content will be populated by JavaScript -->
             </div>
         </div>
     </div>
@@ -487,7 +486,7 @@
         canTransfer: {{ $canTransfer ? 'true' : 'false' }},
         canSeeAllTask: {{ $canSeeAllTask ? 'true' : 'false' }}
     };
-    // Example: projects data with start/end date
+        // Example: projects data with start/end date
     window.projectsDateRange = @json(
         $projects->mapWithKeys(function ($p) {
             return [
@@ -510,6 +509,7 @@
     document.querySelectorAll('#create-task-dropdown li').forEach(li => {
         li.addEventListener('click', function() {
             const projectId = this.dataset.projectValue;
+            console.log('Project ID:', projectId);  
             setDateRange(projectId, 'start_date_create', 'end_date_create');
         });
     });
@@ -518,9 +518,12 @@
     document.querySelectorAll('#trasfer-task-dropdown li').forEach(li => {
         li.addEventListener('click', function() {
             const projectId = this.dataset.projectValue;
+                        console.log('Project ID:', projectId);  
+
             setDateRange(projectId, 'start_date_transfer', 'end_date_transfer');
         });
 
     });
+
 </script>
 @vite('resources/js/task.js')

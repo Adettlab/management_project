@@ -46,10 +46,10 @@ class TaskManager {
 
         // Window click event for both modals
         window.addEventListener('click', (e) => {
-            if (e.target === this.modalCreate) this.closeModal('create');
-            if (e.target === this.modalTransfer) this.closeModal('transfer');
-            if (e.target === this.modalShowC) this.closeModal('modalShow')
-            if (e.target === this.modalEdit) this.closeModalShow('modalEdit');
+            if (e.target == this.modalCreate) this.closeModal('create');
+            if (e.target == this.modalTransfer) this.closeModal('transfer');
+            if (e.target == this.modalShowC) this.closeModal('modalShow')
+            if (e.target == this.modalEdit) this.closeModalShow('modalEdit');
         });
 
         // Project ID change event
@@ -64,12 +64,12 @@ class TaskManager {
     }
 
     openModal(type) {
-        const modal = type === 'create' ? this.modalCreate : this.modalTransfer;
+        const modal = type == 'create' ? this.modalCreate : this.modalTransfer;
         modal?.classList.remove('hidden');
     }
 
     closeModal(type) {
-        const modal = type === 'create' ? this.modalCreate : this.modalTransfer;
+        const modal = type == 'create' ? this.modalCreate : this.modalTransfer;
         modal?.classList.add('hidden');
         document.querySelectorAll('ul').forEach(ul => ul.classList.add('hidden'));
     }
@@ -127,7 +127,7 @@ class TaskManager {
             return;
         }
 
-        const task = await project.tasks.find(task => task.id === taskData.id);
+        const task = await project.tasks.find(task => task.id == taskData.id);
         if (!task) {
             console.error('Task not found');
             return;
@@ -174,7 +174,7 @@ class TaskManager {
         await fetch(`/tasks/get-tasks?date=${date}`)
             .then(response => response.json())
             .then(data => {
-                if (data.length === 0) {
+                if (data.length == 0) {
                     this.isLoading = false;
                     this.toggleLoading();
                     document.getElementById('no_tasks').classList.remove('hidden');
@@ -215,7 +215,7 @@ class TaskManager {
     }
 
     async listOnClick(event, dropdownValueId, dropdownId, iconId, inputId, data) {
-        if (event.target.tagName === "LI") {
+        if (event.target.tagName == "LI") {
             const selected = event.target.textContent.trim();
 
             if (inputId) {
@@ -254,7 +254,7 @@ class TaskManager {
     }
 
     filterProjects(event, dropdownValueId, dropdownId, data) {
-        if (event.target.tagName === "LI") {
+        if (event.target.tagName == "LI") {
             const selected = event.target.textContent.trim();
             const projectId = event.target.dataset.projectValue;
             const valueSpan = document.getElementById(dropdownValueId);
@@ -350,14 +350,14 @@ class TaskManager {
     }
 
     findProjectAndTask(projectId, taskId) {
-        const project = this.projects.find(proj => proj.id === projectId);
+        const project = this.projects.find(proj => proj.id == projectId);
 
         if (!project) {
             return [null, null];
         }
 
-        const task = project.tasks.find(task => task.id === taskId);
-        const employee = project.employees.find(emp => emp.id === task.assigned_project_employee.employee_id)
+        const task = project.tasks.find(task => task.id == taskId);
+        const employee = project.employees.find(emp => emp.id == task.assigned_project_employee.employee_id)
         return [project, task, employee];
     }
 
@@ -520,21 +520,21 @@ class TaskManager {
                                   <div class="tooltip-container">
                                     <label class="flex items-center text-sm">
                                         <input type="radio" name="task_level_id" class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none" value="1"
-                                            ${task.task_level_id === 1 ? 'checked' : ''}/> Low
+                                            ${task.task_level_id == 1 ? 'checked' : ''}/> Low
                                     </label>
                                     <div class="tooltip">Dibawah 3 jam</div>
                                   </div>
                                   <div class="tooltip-container">
                                     <label class="flex items-center text-sm">
                                         <input type="radio" name="task_level_id" class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none" value="2"
-                                            ${task.task_level_id === 2 ? 'checked' : ''}/> Medium
+                                            ${task.task_level_id == 2 ? 'checked' : ''}/> Medium
                                     </label>
                                     <div class="tooltip">3 - 5 jam</div>
                                   </div>
                                   <div class="tooltip-container">
                                     <label class="flex items-center text-sm">
                                         <input type="radio" name="task_level_id" class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none" value="3"
-                                            ${task.task_level_id === 3 ? 'checked' : ''}/> High
+                                            ${task.task_level_id == 3 ? 'checked' : ''}/> High
                                     </label>
                                     <div class="tooltip">5 jam keatas</div>
                                   </div>

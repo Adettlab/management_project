@@ -553,40 +553,61 @@ class ProjectController extends Controller
           $project->employees()->attach($employeeId);
         }
 
-        // Update employee status
+        // Update employee status to Stand By when added to project
         Employee::where('id', $employeeId)->update(['status_employee' => 'Stand By']);
       }
 
-      // Remove employees (mark as former)
-      foreach ($employeesToRemove as $employeeId) {
-        $projectEmployee = DB::table('project_employees')
+      // Remove employees (mark as former) - IMPROVED LOGIC FROM CODE 2
+      if (!empty($employeesToRemove)) {
+        $projectEmployeeRecords = DB::table('project_employees')
           ->where('project_id', $project->id)
-          ->where('employee_id', $employeeId)
+          ->whereIn('employee_id', $employeesToRemove)
           ->where('isformeremployee', 0)
-          ->first();
+          ->get();
 
-        if ($projectEmployee) {
-          // Delete unfinished tasks
-          DB::table('tasks')
-            ->where('assigned_project_employee_id', $projectEmployee->id)
-            ->where('task_status_id', 1)
-            ->delete();
+        $projectEmployeeIds = $projectEmployeeRecords->pluck('id')->toArray();
 
-          // Mark as former employee
-          DB::table('project_employees')
-            ->where('id', $projectEmployee->id)
-            ->update(['isformeremployee' => 1]);
+        // Delete unfinished tasks (batch operation)
+        DB::table('tasks')
+          ->whereIn('assigned_project_employee_id', $projectEmployeeIds)
+          ->where('task_status_id', 1)
+          ->delete();
 
-          // Update employee status back to available if not in other active projects
-          $otherActiveProjects = DB::table('project_employees')
+        // Mark as former employees (batch operation)
+        DB::table('project_employees')
+          ->whereIn('id', $projectEmployeeIds)
+          ->update(['isformeremployee' => 1]);
+
+        // Update employee status - check for other active projects
+        foreach ($employeesToRemove as $employeeId) {
+          $activeProjectCount = DB::table('project_employees')
             ->join('projects', 'project_employees.project_id', '=', 'projects.id')
             ->where('project_employees.employee_id', $employeeId)
             ->where('project_employees.isformeremployee', 0)
-            ->where('projects.id', '!=', $project->id)
-            ->exists();
+            ->whereIn('projects.project_status_id', [1, 2, 3]) // Active project statuses
+            ->count();
 
-          if (!$otherActiveProjects) {
-            Employee::where('id', $employeeId)->update(['status_employee' => 'Available']);
+          if ($activeProjectCount == 0) {
+            Employee::where('id', $employeeId)->update(['status_employee' => 'Not Ready']);
+          }
+        }
+      }
+
+      // LOGIC FROM CODE 2: Handle project completion status
+      if ($request->project_status_id == 4) { // Assuming 4 = Completed/Finished
+        foreach ($allActiveSDMIds as $employeeId) {
+          // Check if employee has other active projects
+          $activeProjectCount = DB::table('project_employees')
+            ->join('projects', 'project_employees.project_id', '=', 'projects.id')
+            ->where('project_employees.employee_id', $employeeId)
+            ->where('project_employees.isformeremployee', 0)
+            ->whereIn('projects.project_status_id', [1, 2, 3]) // Active project statuses
+            ->where('projects.id', '!=', $project->id) // Exclude current project
+            ->count();
+
+          // If no other active projects, set to Not Ready
+          if ($activeProjectCount == 0) {
+            Employee::where('id', $employeeId)->update(['status_employee' => 'Not Ready']);
           }
         }
       }
@@ -617,6 +638,7 @@ class ProjectController extends Controller
       return redirect()
         ->route('projects.index')
         ->with('success', $message);
+
     } catch (\Exception $e) {
       DB::rollBack();
       Log::error('Error updating project: ' . $e->getMessage());
