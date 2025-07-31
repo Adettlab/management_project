@@ -487,40 +487,40 @@
         canTransfer: {{ $canTransfer ? 'true' : 'false' }},
         canSeeAllTask: {{ $canSeeAllTask ? 'true' : 'false' }}
     };
-    // Example: projects data with start/end date
-    window.projectsDateRange = @json(
-        $projects->mapWithKeys(function ($p) {
-            return [
-                $p->id => [
-                    'start_date' => $p->start_date ?? '',
-                    'end_date' => $p->end_date ?? '',
-                ]
-            ];
-        }));
-    // Function to set date range for a specific modal
-    function setDateRange(projectId, startInputId = 'start_date_create', endInputId = 'end_date_create') {
-        const range = window.projectsDateRange[projectId] || {};
-        document.getElementById(startInputId).min = range.start_date || '';
-        document.getElementById(startInputId).max = range.end_date || '';
-        document.getElementById(endInputId).min = range.start_date || '';
-        document.getElementById(endInputId).max = range.end_date || '';
-    }
+    // // Example: projects data with start/end date
+    // window.projectsDateRange = @json(
+    //     $projects->mapWithKeys(function ($p) {
+    //         return [
+    //             $p->id => [
+    //                 'start_date' => $p->start_date ?? '',
+    //                 'end_date' => $p->end_date ?? '',
+    //             ]
+    //         ];
+    //     }));
+    // // Function to set date range for a specific modal
+    // function setDateRange(projectId, startInputId = 'start_date_create', endInputId = 'end_date_create') {
+    //     const range = window.projectsDateRange[projectId] || {};
+    //     document.getElementById(startInputId).min = range.start_date || '';
+    //     document.getElementById(startInputId).max = range.end_date || '';
+    //     document.getElementById(endInputId).min = range.start_date || '';
+    //     document.getElementById(endInputId).max = range.end_date || '';
+    // }
 
-    // Call setDateRange when project selected in create modal
-    document.querySelectorAll('#create-task-dropdown li').forEach(li => {
-        li.addEventListener('click', function() {
-            const projectId = this.dataset.projectValue;
-            setDateRange(projectId, 'start_date_create', 'end_date_create');
-        });
-    });
+    // // Call setDateRange when project selected in create modal
+    // document.querySelectorAll('#create-task-dropdown li').forEach(li => {
+    //     li.addEventListener('click', function() {
+    //         const projectId = this.dataset.projectValue;
+    //         setDateRange(projectId, 'start_date_create', 'end_date_create');
+    //     });
+    // });
 
-    // Call setDateRange for the transfer modal when project selected
-    document.querySelectorAll('#trasfer-task-dropdown li').forEach(li => {
-        li.addEventListener('click', function() {
-            const projectId = this.dataset.projectValue;
-            setDateRange(projectId, 'start_date_transfer', 'end_date_transfer');
-        });
+    // // Call setDateRange for the transfer modal when project selected
+    // document.querySelectorAll('#trasfer-task-dropdown li').forEach(li => {
+    //     li.addEventListener('click', function() {
+    //         const projectId = this.dataset.projectValue;
+    //         setDateRange(projectId, 'start_date_transfer', 'end_date_transfer');
+    //     });
 
-    });
+    // });
 </script>
 @vite('resources/js/task.js')
