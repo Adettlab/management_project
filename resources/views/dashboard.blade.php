@@ -33,7 +33,7 @@
                                     $firstTask = $employee->projects
                                         ->flatMap(function ($project) use ($employee) {
                                             return $project->tasks->filter(function ($task) use ($employee) {
-                                                return optional($task->assignedProjectEmployee)->employee_id ===
+                                                return optional($task->assignedProjectEmployee)->employee_id ==
                                                     $employee->id;
                                             });
                                         })
@@ -59,7 +59,7 @@
                                                 {{ $employee->role->name }}</p>
                                         </div>
                                     </div>
-                                    @if($firstTask)
+                                    @if ($firstTask)
                                         <p
                                             class="sm:text-sm xs:text-[12px] font-black mt-2 sm:static xs:absolute xs:bottom-7 xs:left-[18px]">
                                             Working on
@@ -73,7 +73,7 @@
                                             <div
                                                 class="flex mt-3 gap-x-2 xs:absolute sm:static xs:right-3 xs:top-[3px]">
                                                 <p
-                                                    class="px-3 py-1 rounded-md font-medium sm:text-xs xs:text-[10px] {{ strtolower($firstTask->taskStatus->name) === 'completed' ? 'bg-primary-green text-white' : 'bg-secondary-white primary-gray' }}">
+                                                    class="px-3 py-1 rounded-md font-medium sm:text-xs xs:text-[10px] {{ strtolower($firstTask->taskStatus->name) == 'completed' ? 'bg-primary-green text-white' : 'bg-secondary-white primary-gray' }}">
                                                     {{ $firstTask->taskStatus->name }}
                                                 </p>
                                                 <p style="background-color: {{ $firstTask->taskLevel->color }}"
@@ -198,10 +198,10 @@
                 </div>
                 {{-- Project end --}}
             </div>
-            <div class="h-2/5 hidden sm:block">
-                {{-- Activity start --}}
-                <div class="bg-white rounded-2xl rounded border px-3 py-3 h-full">
-                    <div class="font-medium text-base items-center flex gap-x-1 primary-gray">
+            {{-- Activity start --}}
+            <div class="bg-white rounded-2xl rounded border px-3 py-3 h-full">
+                <div class="font-medium text-base items-center flex justify-between primary-gray mb-3">
+                    <div class="flex gap-x-1 items-center">
                         <div>
                             <svg class="size-[22px]" viewBox="0 0 35 35" fill="none"
                                 xmlns="http://www.w3.org/2000/svg">
@@ -212,16 +212,89 @@
                         </div>
                         Activity
                     </div>
-                    <div class="flex items-center justify-center h-full pb-8">
-                        <p>There's no project</p>
+                    <!-- Month/Year Filter -->
+                    <div class="flex items-center gap-2">
+                        <select id="monthFilter" class="text-xs border rounded px-2 py-1">
+                            @for ($i = 1; $i <= 12; $i++)
+                                <option value="{{ $i }}"
+                                    {{ $activityData['current_month'] == $i ? 'selected' : '' }}>
+                                    {{ date('M', mktime(0, 0, 0, $i, 1)) }}
+                                </option>
+                            @endfor
+                        </select>
+                        <select id="yearFilter" class="text-xs border rounded px-2 py-1">
+                            @for ($year = date('Y') - 2; $year <= date('Y'); $year++)
+                                <option value="{{ $year }}"
+                                    {{ $activityData['current_year'] == $year ? 'selected' : '' }}>
+                                    {{ $year }}
+                                </option>
+                            @endfor
+                        </select>
                     </div>
                 </div>
-                {{-- Activity end --}}
+
+                @if ($activityData['total_completed'] > 0)
+                    <div class="h-full pb-8 overflow-y-auto">
+                        <!-- Total Tasks Chart -->
+                        <div class="mb-4">
+                            <div class="text-xs text-gray-600 mb-3">Tasks Completed -
+                                {{ $activityData['month_name'] }}</div>
+                            <div class="bg-gray-50 p-3 rounded-lg">
+                                <canvas id="activityChart" width="280" height="100"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Top Performers -->
+                        @if ($activityData['top_performers']->count() > 0)
+                            <div class="mb-3">
+                                <div class="text-xs text-gray-600 mb-2">Top Performers</div>
+                                <div class="space-y-2">
+                                    @foreach ($activityData['top_performers']->take(3) as $performer)
+                                        <div class="flex items-center justify-between text-xs bg-gray-50 p-2 rounded">
+                                            <span class="font-medium">{{ $performer['employee_name'] }}</span>
+                                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                                                {{ $performer['completed_count'] }} tasks
+                                            </span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Recent Completions -->
+                        @if ($activityData['recent_completions']->count() > 0)
+                            <div>
+                                <div class="text-xs text-gray-600 mb-2">Recent Completions</div>
+                                <div class="space-y-1 max-h-20 overflow-y-auto">
+                                    @foreach ($activityData['recent_completions']->take(3) as $task)
+                                        <div class="text-xs text-gray-700 bg-gray-50 p-2 rounded">
+                                            <div class="font-medium truncate">{{ $task->name }}</div>
+                                            <div class="text-gray-500">
+                                                {{ optional($task->assignedProjectEmployee->employee->user ?? null)->name ?? 'Unknown' }}
+                                                •
+                                                {{ \Carbon\Carbon::parse($task->updated_at)->format('M d, H:i') }}
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                @else
+                    <div class="flex items-center justify-center h-full pb-8">
+                        <div class="text-center text-gray-500">
+                            <div class="text-sm">No completed tasks</div>
+                            <div class="text-xs">in {{ $activityData['month_name'] }}</div>
+                        </div>
+                    </div>
+                @endif
             </div>
+            {{-- Activity end --}}
+        </div>
         </div>
     </main>
 </x-layouts.layout>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 <script>
     function filterByStatus(status) {
         const url = new URL(window.location.href);
@@ -262,4 +335,91 @@
             setActiveStatus(this);
         });
     });
+document.addEventListener('DOMContentLoaded', function() {
+    const monthFilter = document.getElementById('monthFilter');
+    const yearFilter = document.getElementById('yearFilter');
+    
+    function updateActivity() {
+        const url = new URL(window.location.href);
+        url.searchParams.set('month', monthFilter.value);
+        url.searchParams.set('year', yearFilter.value);
+        window.location.href = url.toString();
+    }
+    
+    if (monthFilter) monthFilter.addEventListener('change', updateActivity);
+    if (yearFilter) yearFilter.addEventListener('change', updateActivity);
+
+    // Chart.js implementation
+    @if($activityData['total_completed'] > 0)
+        const ctx = document.getElementById('activityChart');
+        if (ctx) {
+            // Prepare chart data
+            const dailyStats = @json($activityData['daily_stats']);
+            const labels = [];
+            const data = [];
+            const daysInMonth = new Date({{ $activityData['current_year'] }}, {{ $activityData['current_month'] }}, 0).getDate();
+            
+            // Generate data for each day of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateKey = `{{ $activityData['current_year'] }}-${String({{ $activityData['current_month'] }}).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                labels.push(day);
+                data.push(dailyStats[dateKey] || 0);
+            }
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Tasks Completed',
+                        data: data,
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                font: {
+                                    size: 10
+                                }
+                            },
+                            grid: {
+                                display: true,
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    elements: {
+                        bar: {
+                            borderSkipped: false,
+                        }
+                    }
+                }
+            });
+        }
+    @endif
+});
 </script>

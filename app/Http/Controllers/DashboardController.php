@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\User;
+use App\Models\Task;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -23,7 +25,10 @@ class DashboardController extends Controller
             $employees = $this->getEmployeesQuery($isCompleted, $status)->get();
         }
 
-        return view('dashboard', $this->buildViewData($status, $employees));
+        // Get activity data for chart
+        $activityData = $this->getActivityData($request);
+
+        return view('dashboard', $this->buildViewData($status, $employees, $activityData));
     }
 
     // Method untuk mendapatkan query karyawan dengan filter yang diterapkan
@@ -95,8 +100,55 @@ class DashboardController extends Controller
         return $employees;
     }
 
+    // New method untuk mendapatkan data activity
+    private function getActivityData(Request $request)
+    {
+        $month = $request->input('month', now()->month);
+        $year = $request->input('year', now()->year);
+        
+        // Get completed tasks for the selected month/year
+        $completedTasks = Task::with(['assignedProjectEmployee.employee.user', 'project'])
+            ->where('task_status_id', self::TASK_STATUS_COMPLETED)
+            ->whereMonth('updated_at', $month)
+            ->whereYear('updated_at', $year)
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        // Group by date and count completed tasks
+        $dailyStats = $completedTasks->groupBy(function($task) {
+            return Carbon::parse($task->updated_at)->format('Y-m-d');
+        })->map(function($tasks) {
+            return $tasks->count();
+        });
+
+        // Get top performers (employees with most completed tasks)
+        $topPerformers = $completedTasks->groupBy(function($task) {
+            return $task->assignedProjectEmployee->employee_id ?? null;
+        })->filter(function($tasks, $employeeId) {
+            return $employeeId !== null;
+        })->map(function($tasks, $employeeId) {
+            $employee = $tasks->first()->assignedProjectEmployee->employee ?? null;
+            return [
+                'employee_id' => $employeeId,
+                'employee_name' => $employee ? $employee->user->name : 'Unknown',
+                'completed_count' => $tasks->count(),
+                'latest_task' => $tasks->first()
+            ];
+        })->sortByDesc('completed_count')->take(5);
+
+        return [
+            'daily_stats' => $dailyStats,
+            'top_performers' => $topPerformers,
+            'recent_completions' => $completedTasks->take(10),
+            'total_completed' => $completedTasks->count(),
+            'current_month' => $month,
+            'current_year' => $year,
+            'month_name' => Carbon::create($year, $month)->format('F Y')
+        ];
+    }
+
     // Method untuk menyiapkan data yang akan ditampilkan pada view
-    private function buildViewData(string $status, $employees): array
+    private function buildViewData(string $status, $employees, $activityData = []): array
     {
         return [
             'title' => 'Dashboard',
@@ -104,6 +156,7 @@ class DashboardController extends Controller
             'filter' => $status, // Status yang dipilih untuk filter
             'employees' => $employees,
             'selectedStatus' => $status, // Status yang sedang aktif
+            'activityData' => $activityData, // Data untuk activity chart
         ];
     }
 }

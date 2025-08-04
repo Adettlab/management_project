@@ -43,9 +43,6 @@ Route::middleware('auth')->group(function () {
   Route::resource('tasks', TaskController::class);
   Route::resource('activity', ActivityController::class);
   Route::resource('admin', AdminController::class);
-  // Route::resource('setting', SettingController::class);
-  // Route::resource('calendar', CalendarController::class);
-  // Route::resource('time-management', TimeManagementController::class);
   Route::resource('users', ProfileController::class);
   Route::get('/users/profile', [ProfileController::class, 'show'])->name('users.profile');
   Route::resource('administration', AdministrationController::class);
