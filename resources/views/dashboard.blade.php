@@ -158,7 +158,7 @@
             {{-- Status SDM end --}}
         </div>
         <div class="sm:w-5/12 xs:w-[100%] sm:ml-3 sm:block xs:flex xs:items-center overflow-x-auto">
-            <div class="flex sm:h-3/5 w-auto xs:h-[23vh] space-x-3 xs:px-3 sm:px-0 pb-2">
+            <div class="flex sm:h-3/5 w-auto xs:h-[50vh] space-x-3 xs:px-3 sm:px-0 pb-2">
                 {{-- Tasks start --}}
                 <div
                     class="bg-primary-green border rounded-2xl rounded px-3 py-3 primary-white sm:w-1/2 xs:w-[65vw] overflow-x-auto overflow-y-hidden">
@@ -172,9 +172,25 @@
                         </div>
                         Tasks
                     </div>
-                    <div
-                        class="flex-row space-y-2 mt-2 items-center justify-center h-full max-h-full pb-10 overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                        <p>you have 0 tasks</p>
+                    <div class="flex-row space-y-2 mt-2 items-center justify-center h-full max-h-full pb-10 overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                        id="taskContainer">
+                        @forelse ($tasksnprojects['tasks'] as $task)
+                            <div class="bg-white h-fit w-full border-0 px-3 py-2 rounded-md sm:space-y-4 xs:space-y-2">
+                                <p class="text-black sm:text-sm xs:text-[12px] font-bold">{{ $task->name }}</p>
+
+                                <p class="text-gray-400 sm:text-xs xs:text-[11px]">
+                                    {{ \Carbon\Carbon::parse($task->created_at)->locale('id')->isoFormat('dddd, D MMMM YYYY') }}
+                                </p>
+                                <div class="flex justify-between items-start">
+                                    <p class="sm:text-[10px] xs:text-[8px] font-medium px-2 py-[2px] rounded-md text-white"
+                                        style="background-color: {{ $task->tasklevel->color }}">
+                                        {{ $task->tasklevel->name }}</p>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="mx-auto h-full flex justify-center items-center" id="notask">you have 0 tasks
+                            </p>
+                        @endforelse
                     </div>
                 </div>
                 {{-- Tasks end --}}
@@ -193,14 +209,32 @@
                     </div>
                     <div
                         class="flex-row sm:space-y-2 xs:space-y-1 mt-2 items-center justify-center h-full max-h-full pb-10 overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                        <p>There's no project</p>
+                        @forelse ($tasksnprojects['projects'] as $project)
+                            <div class="bg-white mb-2 w-full border-0 px-3 py-2 rounded-md">
+                                <p class="text-black sm:text-sm xs:text-[12px] font-bold">{{ $project->name }}</p>
+                                <p class="text-gray-400 sm:text-xs xs:text-[11px] mt-2">
+                                    {{ \Carbon\Carbon::parse($project->start_date)->locale('id')->isoFormat('D MMMM YYYY') }}
+                                    -
+                                    {{ \Carbon\Carbon::parse($project->end_date)->locale('id')->isoFormat('D MMMM YYYY') }}
+                                </p>
+                                <p class="text-gray-400 text-xs mt-2">{{ $project->description }}</p>
+                                <div class="flex justify-between items-start mt-2">
+                                    <p class="sm:text-[10px] xs:text-[8px] font-medium px-2 py-[2px] rounded-md text-white"
+                                        style="background-color: {{ $project->status->color }}">
+                                        {{ $project->status->name }}</p>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="h-full flex justify-center items-center">There's no project</p>
+                        @endforelse
                     </div>
                 </div>
                 {{-- Project end --}}
             </div>
             {{-- Activity start --}}
-            <div class="bg-white rounded-2xl rounded border px-3 py-3 h-full">
-                <div class="font-medium text-base items-center flex justify-between primary-gray mb-3">
+            <div
+                class="bg-white rounded-2xl rounded border px-3 mr-4 sm:mr-0 py-3 flex flex-col sm:h-3/5 w-auto xs:h-[50vh]">
+                <div class="font-medium text-base items-center flex justify-between primary-gray mb-3 ">
                     <div class="flex gap-x-1 items-center">
                         <div>
                             <svg class="size-[22px]" viewBox="0 0 35 35" fill="none"
@@ -213,14 +247,15 @@
                         Activity
                     </div>
                     <!-- Month/Year Filter -->
-                    <div class="flex items-center gap-2">
-                        <select id="monthFilter" class="text-xs border rounded px-2 py-1">
-                            @for ($i = 1; $i <= 12; $i++)
-                                <option value="{{ $i }}"
-                                    {{ $activityData['current_month'] == $i ? 'selected' : '' }}>
-                                    {{ date('M', mktime(0, 0, 0, $i, 1)) }}
-                                </option>
-                            @endfor
+                    <div class="flex items-center gap-2 \">
+                        <select id="monthFilter"
+                        class="text-xs border rounded px-2 py-1">
+                        @for ($i = 1; $i <= 12; $i++)
+                            <option value="{{ $i }}"
+                                {{ $activityData['current_month'] == $i ? 'selected' : '' }}>
+                                {{ date('M', mktime(0, 0, 0, $i, 1)) }}
+                            </option>
+                        @endfor
                         </select>
                         <select id="yearFilter" class="text-xs border rounded px-2 py-1">
                             @for ($year = date('Y') - 2; $year <= date('Y'); $year++)
@@ -335,91 +370,93 @@
             setActiveStatus(this);
         });
     });
-document.addEventListener('DOMContentLoaded', function() {
-    const monthFilter = document.getElementById('monthFilter');
-    const yearFilter = document.getElementById('yearFilter');
-    
-    function updateActivity() {
-        const url = new URL(window.location.href);
-        url.searchParams.set('month', monthFilter.value);
-        url.searchParams.set('year', yearFilter.value);
-        window.location.href = url.toString();
-    }
-    
-    if (monthFilter) monthFilter.addEventListener('change', updateActivity);
-    if (yearFilter) yearFilter.addEventListener('change', updateActivity);
+    document.addEventListener('DOMContentLoaded', function() {
+        const monthFilter = document.getElementById('monthFilter');
+        const yearFilter = document.getElementById('yearFilter');
 
-    // Chart.js implementation
-    @if($activityData['total_completed'] > 0)
-        const ctx = document.getElementById('activityChart');
-        if (ctx) {
-            // Prepare chart data
-            const dailyStats = @json($activityData['daily_stats']);
-            const labels = [];
-            const data = [];
-            const daysInMonth = new Date({{ $activityData['current_year'] }}, {{ $activityData['current_month'] }}, 0).getDate();
-            
-            // Generate data for each day of the month
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateKey = `{{ $activityData['current_year'] }}-${String({{ $activityData['current_month'] }}).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                labels.push(day);
-                data.push(dailyStats[dateKey] || 0);
-            }
+        function updateActivity() {
+            const url = new URL(window.location.href);
+            url.searchParams.set('month', monthFilter.value);
+            url.searchParams.set('year', yearFilter.value);
+            window.location.href = url.toString();
+        }
 
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Tasks Completed',
-                        data: data,
-                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
-                        borderColor: 'rgba(59, 130, 246, 1)',
-                        borderWidth: 1,
-                        borderRadius: 4,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
+        if (monthFilter) monthFilter.addEventListener('change', updateActivity);
+        if (yearFilter) yearFilter.addEventListener('change', updateActivity);
+
+        // Chart.js implementation
+        @if ($activityData['total_completed'] > 0)
+            const ctx = document.getElementById('activityChart');
+            if (ctx) {
+                // Prepare chart data
+                const dailyStats = @json($activityData['daily_stats']);
+                const labels = [];
+                const data = [];
+                const daysInMonth = new Date({{ $activityData['current_year'] }},
+                    {{ $activityData['current_month'] }}, 0).getDate();
+
+                // Generate data for each day of the month
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dateKey =
+                        `{{ $activityData['current_year'] }}-${String({{ $activityData['current_month'] }}).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    labels.push(day);
+                    data.push(dailyStats[dateKey] || 0);
+                }
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Tasks Completed',
+                            data: data,
+                            backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1,
-                                font: {
-                                    size: 10
-                                }
-                            },
-                            grid: {
-                                display: true,
-                                color: 'rgba(0, 0, 0, 0.1)'
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                font: {
-                                    size: 10
-                                }
-                            },
-                            grid: {
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
                                 display: false
                             }
-                        }
-                    },
-                    elements: {
-                        bar: {
-                            borderSkipped: false,
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1,
+                                    font: {
+                                        size: 10
+                                    }
+                                },
+                                grid: {
+                                    display: true,
+                                    color: 'rgba(0, 0, 0, 0.1)'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    font: {
+                                        size: 10
+                                    }
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        },
+                        elements: {
+                            bar: {
+                                borderSkipped: false,
+                            }
                         }
                     }
-                }
-            });
-        }
-    @endif
-});
+                });
+            }
+        @endif
+    });
 </script>
