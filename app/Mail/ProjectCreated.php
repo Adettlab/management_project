@@ -33,6 +33,7 @@ class ProjectCreated extends Mailable
                         'employeeName' => $this->employee->user->name,
                         'startDate' => $this->project->start_date,
                         'endDate' => $this->project->end_date,
+                        'description' => $this->project->description
                     ]);
     }
 

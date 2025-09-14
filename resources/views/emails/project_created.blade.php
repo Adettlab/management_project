@@ -15,6 +15,7 @@
             <h2 class="text-xl font-semibold text-blue-600"><strong>Project:</strong> {{ $projectName }}</h2>
             <p><strong>Start Date:</strong> {{ $startDate }}</p>
             <p><strong>End Date:</strong> {{ $endDate }}</p>
+            <p><strong>Description:</strong> {{ $description }}</p>
         </div>
         <p class="mt-6 text-gray-600">Please check the project management system for more details...Thank you!</p>
     </div>

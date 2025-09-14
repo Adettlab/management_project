@@ -8,7 +8,7 @@
             <img src="{{ asset('logo.png') }}" alt="logo-mobile" class="w-[36px] ml-3 block sm:hidden" loading="lazy">
         </div>
 
-        <div class="sm:w-[33%] xs:w-[45%]">
+        {{-- <div class="sm:w-[33%] xs:w-[45%]">
             <div class="flex items-center relative">
                 <div class="w-full">
                     <input type="text" id="search" name="search" placeholder="Search project"
@@ -22,7 +22,7 @@
                     </svg>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <div class="flex sm:justify-end xs:justify-center gap-x-5 relative sm:w-2/7 xs:w-[34%]">
             <div class="flex items-center sm:gap-x-3 xs:gap-x-1.5">

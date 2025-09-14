@@ -15,7 +15,7 @@ class DashboardController extends Controller
 {
   private const PROJECT_STATUS_IN_PROGRESS = [2, 3]; // Status proyek yang sedang berjalan
   private const TASK_STATUS_COMPLETED = 4; // Status task yang sudah selesai
-  private const TASK_STATUS_ACTIVE = [3, 4]; // Status task yang aktif atau selesai
+  private const TASK_STATUS_ACTIVE = [1, 2, 3, 4]; // Status task yang aktif atau selesai
 
   public function index(Request $request)
   {
@@ -159,16 +159,16 @@ class DashboardController extends Controller
     }
 
     $user = auth()->user()->employee->id;
-    $isToday = now()->toDateString();
+    
 
     $projects = Project::whereHas('employees', function ($query) use ($user) {
       $query->where('project_employees.employee_id', $user);
     })
-      ->with(['tasks' => function ($query) use ($user, $isToday) {
-        $query->whereIn('task_status_id', [1, 2])
+      ->with(['tasks' => function ($query) use ($user) {
+        $query->whereIn('task_status_id', [1, 2,3])
           ->whereHas('assignedProjectEmployee', function ($subQuery) use ($user) {
             $subQuery->where('employee_id', $user);
-          })->whereDate('created_at', $isToday);
+          });
       }, 'status'])
       ->whereIn('project_status_id', [1, 2, 3])
       ->get();

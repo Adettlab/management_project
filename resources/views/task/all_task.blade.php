@@ -58,8 +58,8 @@
                         </th>
                         <th class="w-[5%] px-4 py-5 primary-gray text-left font-medium text-sm hidden sm:table-cell">
                             Task Status</th>
-                        <th class="w-[6%] py-5 primary-gray text-left font-medium text-sm w-24 hidden sm:table-cell">
-                            Created</th>
+                        {{-- <th class="w-[6%] py-5 primary-gray text-left font-medium text-sm w-24 hidden sm:table-cell">
+                            Created</th> --}}
                         <th class="w-[10%] px-4 py-5 primary-gray text-left font-medium sm:text-sm xs:text-[12px]">
                             Start Date</th>
                         <th class="w-[10%] px-4 py-5 primary-gray text-left font-medium sm:text-sm xs:text-[12px]">
@@ -91,9 +91,9 @@
                             <td class="px-4 py-3 text-sm hidden sm:table-cell">
                                 {{ $task->taskStatus->name }}
                             </td>
-                            <td class="py-3 text-sm hidden sm:table-cell">
+                            {{-- <td class="py-3 text-sm hidden sm:table-cell">
                                 {{ $task->created_at->format('M j, Y') }}
-                            </td>
+                            </td> --}}
                             <!-- Start Date -->
                             <td class="px-4 py-3 text-sm">
                                 {{ \Carbon\Carbon::parse($task->start_date)->format('M j, Y') }}

@@ -1,400 +1,44 @@
-class TaskManager {
-    constructor() {
-        //initialize hooks state
-        this.projects = [];
-        this.isLoading = true;
-        this.loadingElement = document.getElementById('loading');
-        // Modal elements
-        this.modalCreate = document.getElementById('modalCreate');
-        this.modalTransfer = document.getElementById('modalTransfer');
-        this.modalShowC = document.getElementById('modalShow');
-        this.modalEdit = document.getElementById('modalEdit');
-
-        // Buttons
-        this.openModalCreateBtn = document.getElementById('openModalCreateBtn');
-        this.closeModalCreateBtn = document.getElementById('closeModalCreateBtn');
-        this.openModalTransferBtn = document.getElementById('openModalTransferBtn');
-        this.closeModalTransferBtn = document.getElementById('closeModalTransferBtn');
-
-        // Status mapping
-        this.statusMap = {
-            'todo': 1,
-            'in_progress': 2,
-            'review': 3,
-            'completed': 4
-        };
-
-        this.initializeEventListeners();
-    }
-
-    toggleLoading() {
-        if (this.isLoading) {
-            this.loadingElement.classList.remove('hidden');
-        } else {
-            this.loadingElement.classList.add('hidden');
-        }
-    }
-
-    initializeEventListeners() {
-        // Modal Create events
-        this.openModalCreateBtn?.addEventListener('click', () => this.openModal('create'));
-        this.closeModalCreateBtn?.addEventListener('click', () => this.closeModal('create'));
-
-        // Modal Transfer events
-        this.openModalTransferBtn?.addEventListener('click', () => this.openModal('transfer'));
-        this.closeModalTransferBtn?.addEventListener('click', () => this.closeModal('transfer'));
-
-        // Window click event for both modals
-        window.addEventListener('click', (e) => {
-            if (e.target == this.modalCreate) this.closeModal('create');
-            if (e.target == this.modalTransfer) this.closeModal('transfer');
-            if (e.target == this.modalShowC) this.closeModal('modalShow')
-            if (e.target == this.modalEdit) this.closeModalShow('modalEdit');
-        });
-
-        // Project ID change event
-        const projectIdInput = document.getElementById('project_id');
-        if (projectIdInput) {
-            projectIdInput.addEventListener('change', () => this.checkProjectId());
-        }
-
-        this.checkProjectId();
-        this.addDisabledButtonStyles();
-        this.fetchTasks();
-    }
-
-    openModal(type) {
-        const modal = type == 'create' ? this.modalCreate : this.modalTransfer;
-        modal?.classList.remove('hidden');
-    }
-
-    closeModal(type) {
-        const modal = type == 'create' ? this.modalCreate : this.modalTransfer;
-        modal?.classList.add('hidden');
-        document.querySelectorAll('ul').forEach(ul => ul.classList.add('hidden'));
-    }
-
-    allowDrop(event) {
-        event.preventDefault();
-    }
-
-    drag(event) {
-        event.dataTransfer.setData("text", event.target.id);
-    }
-
-    drop(event) {
-        event.preventDefault();
-        const targetColumn = event.currentTarget;
-        const taskId = event.dataTransfer.getData("text");
-        const taskElement = document.getElementById(taskId);
-
-        targetColumn.appendChild(taskElement);
-        const taskStatusId = this.statusMap[targetColumn.id];
-        this.updateTaskStatus(taskElement.getAttribute("data-project-id"), taskElement.getAttribute("data-task-id"), taskStatusId);
-    }
-
-    async updateTaskStatus(projectID, taskId, taskStatusId) {
-        const token = document.querySelector('meta[name="csrf-token"]').content;
-        try {
-            const response = await fetch(`/tasks/${taskId}/update-status`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': token
-                },
-                body: JSON.stringify({
-                    task_status_id: taskStatusId,
-                })
-            });
-            const data = await response.json();
-
-            if (data.success) {
-                console.log(`Task ${taskId} status updated successfully.`);
-                console.log(data);
-                this.updateFrontendTask(projectID, data.task);
-            } else {
-                console.error('Failed to update task status');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }
-
-    async updateFrontendTask(projectID, taskData) {
-        const project = await this.projects.find(prj => prj.id == projectID);
-        if (!project) {
-            console.error('Project not found');
-            return;
-        }
-
-        const task = await project.tasks.find(task => task.id == taskData.id);
-        if (!task) {
-            console.error('Task not found');
-            return;
-        }
-
-        task.task_status_id = taskData.task_status_id;
-        task.task_status = taskData.task_status;
-        task.time_log = taskData.time_log;
-        console.log(this.projects);
-    }
-
-    toggleDropdown(dropdownId, iconId, event) {
-        if (event) event.preventDefault();
-        const dropdown = document.getElementById(dropdownId);
-        const icon = document.getElementById(iconId);
-
-        if (dropdown.classList.contains("hidden")) {
-            dropdown.classList.remove("hidden", "opacity-0", "scale-95", "-translate-y-2");
-            icon.style.transform = "rotate(180deg)";
-        } else {
-            dropdown.classList.add("hidden", "opacity-0", "scale-95", "-translate-y-2");
-            icon.style.transform = "rotate(0)";
-        }
-    }
-
-    async checkProjectId() {
-        const projectIdInput = document.getElementById('project_id_transfer');
-        const transferButton = document.getElementById('dropdown-transfer-employee');
-
-        if (transferButton) {
-            if (!projectIdInput?.value) {
-                this.setButtonState(transferButton, true);
-            } else {
-                this.setButtonState(transferButton, false);
-                await this.populateEmployeeDropdown(projectIdInput.value);
-            }
-        }
-    }
-
-    async fetchTasks(date = '') {
-        this.destroyElement();
-        this.isLoading = true;
-        this.toggleLoading();
-        await fetch(`/tasks/get-tasks?date=${date}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.length == 0) {
-                    this.isLoading = false;
-                    this.toggleLoading();
-                    document.getElementById('no_tasks').classList.remove('hidden');
-                    return;
-                }
-                this.projects = data;
-                document.getElementById('no_tasks').classList.add('hidden');
-                this.renderTasks();
-                this.renderProjectsDropdown();
-            })
-            .catch(error => console.error('Error fetching tasks:', error));
-    }
-
-    async populateEmployeeDropdown(projectId) {
-        try {
-            const response = await fetch(`/tasks/${projectId}/employees?type=team`);
-            const employees = await response.json();
-            const employeeDropdown = document.getElementById('trasfer-employee-dropdown');
-
-            employeeDropdown.innerHTML = employees.map(employee => `
+class c{constructor(){this.projects=[],this.isLoading=!0,this.loadingElement=document.getElementById("loading"),this.modalCreate=document.getElementById("modalCreate"),this.modalTransfer=document.getElementById("modalTransfer"),this.modalShowC=document.getElementById("modalShow"),this.modalEdit=document.getElementById("modalEdit"),this.openModalCreateBtn=document.getElementById("openModalCreateBtn"),this.closeModalCreateBtn=document.getElementById("closeModalCreateBtn"),this.openModalTransferBtn=document.getElementById("openModalTransferBtn"),this.closeModalTransferBtn=document.getElementById("closeModalTransferBtn"),this.statusMap={todo:1,in_progress:2,review:3,completed:4},this.initializeEventListeners()}toggleLoading(){this.isLoading?this.loadingElement.classList.remove("hidden"):this.loadingElement.classList.add("hidden")}initializeEventListeners(){var t,o,s,a;(t=this.openModalCreateBtn)==null||t.addEventListener("click",()=>this.openModal("create")),(o=this.closeModalCreateBtn)==null||o.addEventListener("click",()=>this.closeModal("create")),(s=this.openModalTransferBtn)==null||s.addEventListener("click",()=>this.openModal("transfer")),(a=this.closeModalTransferBtn)==null||a.addEventListener("click",()=>this.closeModal("transfer")),window.addEventListener("click",d=>{d.target==this.modalCreate&&this.closeModal("create"),d.target==this.modalTransfer&&this.closeModal("transfer"),d.target==this.modalShowC&&this.closeModal("modalShow"),d.target==this.modalEdit&&this.closeModalShow("modalEdit")});const e=document.getElementById("project_id");e&&e.addEventListener("change",()=>this.checkProjectId()),this.checkProjectId(),this.addDisabledButtonStyles(),this.fetchTasks()}openModal(e){const t=e=="create"?this.modalCreate:this.modalTransfer;t==null||t.classList.remove("hidden")}closeModal(e){const t=e=="create"?this.modalCreate:this.modalTransfer;t==null||t.classList.add("hidden"),document.querySelectorAll("ul").forEach(o=>o.classList.add("hidden"))}allowDrop(e){e.preventDefault()}drag(e){e.dataTransfer.setData("text",e.target.id)}drop(e){e.preventDefault();const t=e.currentTarget,o=e.dataTransfer.getData("text"),s=document.getElementById(o);t.appendChild(s);const a=this.statusMap[t.id];this.updateTaskStatus(s.getAttribute("data-project-id"),s.getAttribute("data-task-id"),a)}async updateTaskStatus(e,t,o){const s=document.querySelector('meta[name="csrf-token"]').content;try{const d=await(await fetch(`/tasks/${t}/update-status`,{method:"POST",headers:{"Content-Type":"application/json","X-CSRF-TOKEN":s},body:JSON.stringify({task_status_id:o})})).json();d.success?(console.log(`Task ${t} status updated successfully.`),console.log(d),this.updateFrontendTask(e,d.task)):console.error("Failed to update task status")}catch(a){console.error("Error:",a)}}async updateFrontendTask(e,t){const o=await this.projects.find(a=>a.id==e);if(!o){console.error("Project not found");return}const s=await o.tasks.find(a=>a.id==t.id);if(!s){console.error("Task not found");return}s.task_status_id=t.task_status_id,s.task_status=t.task_status,s.time_log=t.time_log,console.log(this.projects)}toggleDropdown(e,t,o){o&&o.preventDefault();const s=document.getElementById(e),a=document.getElementById(t);s.classList.contains("hidden")?(s.classList.remove("hidden","opacity-0","scale-95","-translate-y-2"),a.style.transform="rotate(180deg)"):(s.classList.add("hidden","opacity-0","scale-95","-translate-y-2"),a.style.transform="rotate(0)")}async checkProjectId(){const e=document.getElementById("project_id_transfer"),t=document.getElementById("dropdown-transfer-employee");t&&(e!=null&&e.value?(this.setButtonState(t,!1),await this.populateEmployeeDropdown(e.value)):this.setButtonState(t,!0))}async fetchTasks(e=""){this.destroyElement(),this.isLoading=!0,this.toggleLoading(),await fetch(`/tasks/get-tasks?date=${e}`).then(t=>t.json()).then(t=>{if(t.length==0){this.isLoading=!1,this.toggleLoading(),document.getElementById("no_tasks").classList.remove("hidden");return}this.projects=t,document.getElementById("no_tasks").classList.add("hidden"),this.renderTasks(),this.renderProjectsDropdown()}).catch(t=>console.error("Error fetching tasks:",t))}async populateEmployeeDropdown(e){try{const o=await(await fetch(`/tasks/${e}/employees?type=team`)).json(),s=document.getElementById("trasfer-employee-dropdown");s.innerHTML=o.map(a=>`
                 <li class="block px-4 py-2 text-black hover:bg-[#C3C3C3] cursor-pointer rounded-md"
-                    onclick="taskManager.listOnClick(event, 'trasfer-employee-value', 'trasfer-employee-dropdown', 'trasfer-employee-icon', 'assigned_project_employee_id', ${employee.id})">
-                    ${employee.employee.user.name}
+                    onclick="taskManager.listOnClick(event, 'trasfer-employee-value', 'trasfer-employee-dropdown', 'trasfer-employee-icon', 'assigned_project_employee_id', ${a.id})">
+                    ${a.employee.user.name}
                 </li>
-            `).join('');
-        } catch (error) {
-            console.error('Error populating employee dropdown:', error);
-        }
-    }
-
-    setButtonState(button, disabled) {
-        button.disabled = disabled;
-        if (disabled) {
-            button.classList.add('opacity-50', 'cursor-not-allowed');
-        } else {
-            button.classList.remove('opacity-50', 'cursor-not-allowed');
-        }
-    }
-
-    async listOnClick(event, dropdownValueId, dropdownId, iconId, inputId, data) {
-        if (event.target.tagName == "LI") {
-            const selected = event.target.textContent.trim();
-
-            if (inputId) {
-                const input = document.getElementById(inputId);
-                if (input) input.value = data;
-            }
-
-            const valueSpan = document.getElementById(dropdownValueId);
-            if (valueSpan) valueSpan.textContent = selected;
-
-            this.toggleDropdown(dropdownId, iconId);
-
-            if (document.getElementById('modalTransfer').contains(document.getElementById(inputId))) {
-                this.checkProjectId();
-            } else {
-                try {
-                    const response = await fetch(`/tasks/${data}/employees`);
-                    const employee = await response.json();
-                    document.getElementById('employee_create').value = employee[0].id;
-                } catch (error) {
-                    console.error('Error fetching employee data:', error);
-                }
-            }
-        }
-    }
-
-    addDisabledButtonStyles() {
-        const style = document.createElement('style');
-        style.textContent = `
+            `).join("")}catch(t){console.error("Error populating employee dropdown:",t)}}setButtonState(e,t){e.disabled=t,t?e.classList.add("opacity-50","cursor-not-allowed"):e.classList.remove("opacity-50","cursor-not-allowed")}async listOnClick(e,t,o,s,a,d){if(e.target.tagName=="LI"){const n=e.target.textContent.trim();if(a){const r=document.getElementById(a);r&&(r.value=d)}const l=document.getElementById(t);if(l&&(l.textContent=n),this.toggleDropdown(o,s),document.getElementById("modalTransfer").contains(document.getElementById(a)))this.checkProjectId();else try{const i=await(await fetch(`/tasks/${d}/employees`)).json();document.getElementById("employee_create").value=i[0].id}catch(r){console.error("Error fetching employee data:",r)}}}addDisabledButtonStyles(){const e=document.createElement("style");e.textContent=`
             button[disabled] {
                 opacity: 0.5;
                 cursor: not-allowed;
             }
-        `;
-        document.head.appendChild(style);
-    }
-
-    filterProjects(event, dropdownValueId, dropdownId, data) {
-        if (event.target.tagName == "LI") {
-            const selected = event.target.textContent.trim();
-            const projectId = event.target.dataset.projectValue;
-            const valueSpan = document.getElementById(dropdownValueId);
-            if (valueSpan) valueSpan.textContent = selected;
-
-            this.renderTasks(data, projectId);
-            this.toggleDropdown(dropdownId, 'projects-icon');
-        }
-    }
-
-    renderTasks(filterCondition = '0') {
-        this.destroyElement();
-        const projects = filterCondition == '0' ? this.projects : this.projects.filter(project => project.id == filterCondition);
-
-        projects.forEach(project => {
-            project.tasks.forEach(task => {
-                const employee = project.employees.find(emp => emp.id == task.assigned_project_employee.employee_id);
-                const containerMap = {
-                    'To-do': 'todo',
-                    'In Progress': 'in_progress',
-                    'Review': 'review',
-                    'Completed': 'completed'
-                };
-
-                const containerId = containerMap[task.task_status.name];
-                if (containerId) {
-                    const container = document.getElementById(containerId);
-                    if (container) {
-                        this.isLoading = false;
-                        this.toggleLoading();
-                        container.innerHTML += this.templateTasks(task, project, employee);
-                    }
-                }
-            });
-        });
-    }
-
-    renderProjectsDropdown() {
-        const projectDropdown = document.getElementById('projects-dropdown');
-
-        const allProjects = [
-            {
-                id: 0,
-                name: 'Projects'
-            },
-            ...this.projects
-        ];
-        // console.log(allProjects);
-
-        const dropdownHTML = allProjects.map(project => `
+        `,document.head.appendChild(e)}filterProjects(e,t,o,s){if(e.target.tagName=="LI"){const a=e.target.textContent.trim(),d=e.target.dataset.projectValue,n=document.getElementById(t);n&&(n.textContent=a),this.renderTasks(s,d),this.toggleDropdown(o,"projects-icon")}}renderTasks(e="0"){this.destroyElement(),(e=="0"?this.projects:this.projects.filter(o=>o.id==e)).forEach(o=>{o.tasks.forEach(s=>{const a=o.employees.find(l=>l.id==s.assigned_project_employee.employee_id),n={"To-do":"todo","In Progress":"in_progress",Review:"review",Completed:"completed"}[s.task_status.name];if(n){const l=document.getElementById(n);l&&(this.isLoading=!1,this.toggleLoading(),l.innerHTML+=this.templateTasks(s,o,a))}})})}renderProjectsDropdown(){const e=document.getElementById("projects-dropdown"),o=[{id:0,name:"Projects"},...this.projects].map(s=>`
             <li
                 class="block px-4 py-2 text-black hover:bg-[#C3C3C3] cursor-pointer rounded-md w-full"
-                data-project-value="${project.id}"
-                onclick="taskManager.filterProjects(event, 'project-value', 'projects-dropdown', ${project.id})"
+                data-project-value="${s.id}"
+                onclick="taskManager.filterProjects(event, 'project-value', 'projects-dropdown', ${s.id})"
             >
-                ${project.name}
+                ${s.name}
             </li>
-        `).join('');
-
-        projectDropdown.innerHTML = dropdownHTML;
-    }
-
-    templateTasks(task, project, employee) {
-        return `
+        `).join("");e.innerHTML=o}templateTasks(e,t,o){return`
                 <div class="bg-white border border-[#7D7D7D] h-fit px-3 py-4 rounded-md mb-2"
-                    id="task-${task.id}" draggable="true" ondragstart="taskManager.drag(event)"
-                    data-task-id="${task.id}" data-project-id="${project.id}" onclick="taskManager.modalShow(${project.id}, ${task.id})">
+                    id="task-${e.id}" draggable="true" ondragstart="taskManager.drag(event)"
+                    data-task-id="${e.id}" data-project-id="${t.id}" onclick="taskManager.modalShow(${t.id}, ${e.id})">
                     <div class="flex justify-between items-start">
-                        <h4 class="font-semibold text-sm pb-4">${task.name}</h4>
+                        <h4 class="font-semibold text-sm pb-4">${e.name}</h4>
                         <p class="text-[10px] font-medium px-2 py-[2px] rounded-md text-white"
-                            style="background-color: ${task.task_level.color}">${task.task_level.name}</p>
+                            style="background-color: ${e.task_level.color}">${e.task_level.name}</p>
                     </div>
-                    <p class="text-xs mb-3">${project.name}</p>
+                    <p class="text-xs mb-3">${t.name}</p>
                     <div class="flex items-center justify-between">
                         <p class="text-xs text-gray-500 font-medium flex items-center">
                             <svg class="size-4 mr-1" viewBox="0 0 35 35" fill="currentColor"
                                 xmlns="http://www.w3.org/2000/svg">
                                 <path d="M30.625 17.5V27.7083C30.625 28.4819 30.3177 29.2237 29.7707 29.7707C29.2237 30.3177 28.4819 30.625 27.7083 30.625H7.29167C6.51812 30.625 5.77625 30.3177 5.22927 29.7707C4.68229 29.2237 4.375 28.4819 4.375 27.7083V17.5H30.625ZM23.3333 4.375C23.7201 4.375 24.091 4.52865 24.3645 4.80214C24.638 5.07563 24.7917 5.44656 24.7917 5.83333V7.29167H27.7083C28.4819 7.29167 29.2237 7.59896 29.7707 8.14594C30.3177 8.69292 30.625 9.43479 30.625 10.2083V14.5833H4.375V10.2083C4.375 9.43479 4.68229 8.69292 5.22927 8.14594C5.77625 7.59896 6.51812 7.29167 7.29167 7.29167H10.2083V5.83333C10.2083 5.44656 10.362 5.07563 10.6355 4.80214C10.909 4.52865 11.2799 4.375 11.6667 4.375C12.0534 4.375 12.4244 4.52865 12.6979 4.80214C12.9714 5.07563 13.125 5.44656 13.125 5.83333V7.29167H21.875V5.83333C21.875 5.44656 22.0286 5.07563 22.3021 4.80214C22.5756 4.52865 22.9466 4.375 23.3333 4.375Z"/>
                             </svg>
-                            ${new Date(task.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            ${new Date(e.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}
                         </p>
-                        <p class="text-xs text-gray-500">${employee.user.name}</p>
+                        <p class="text-xs text-gray-500">${o.user.name}</p>
                     </div>
                 </div>
-        `;
-    }
-
-    destroyElement() {
-        ['todo', 'in_progress', 'review', 'completed'].forEach(id => {
-            const element = document.getElementById(id);
-            if (element) element.innerHTML = '';
-        });
-    }
-
-    findProjectAndTask(projectId, taskId) {
-        const project = this.projects.find(proj => proj.id == projectId);
-
-        if (!project) {
-            return [null, null];
-        }
-
-        const task = project.tasks.find(task => task.id == taskId);
-        const employee = project.employees.find(emp => emp.id == task.assigned_project_employee.employee_id)
-        return [project, task, employee];
-    }
-
-    modalShow(projectId, taskId) {
-        const modal = document.getElementById('modalShow');
-        const modalContent = document.getElementById('modalShowBody');
-        const editButton = document.getElementById('editTaskBtn');
-
-        const [project, task, employee] = this.findProjectAndTask(projectId, taskId);
-
-        if (!project || !task) {
-            console.error('Project or task not found');
-            return;
-        }
-
-        const newEditButton = editButton.cloneNode(true);
-        editButton.parentNode.replaceChild(newEditButton, editButton);
-
-        newEditButton.addEventListener('click', () => this.renderEditTask(task));
-
-        modalContent.innerHTML = this.renderModalShow(project, task, employee);
-        modal.classList.remove('hidden');
-    }
-
-  renderModalShow(project, task, employee) {
-    const progress = task.persentase_progress_task || 0;
-    
-    // Tentukan warna progress berdasarkan persentase
-    let progressColor = '#ef4444'; // red-500
-    if (progress >= 30 && progress < 70) {
-        progressColor = '#eab308'; // yellow-500
-    } else if (progress >= 70) {
-        progressColor = '#22c55e'; // green-500
-    }
-
-    return `
-        <h1 class="text-3xl font-bold mb-3">${task.name}</h1>
+        `}destroyElement(){["todo","in_progress","review","completed"].forEach(e=>{const t=document.getElementById(e);t&&(t.innerHTML="")})}findProjectAndTask(e,t){const o=this.projects.find(d=>d.id==e);if(!o)return[null,null];const s=o.tasks.find(d=>d.id==t),a=o.employees.find(d=>d.id==s.assigned_project_employee.employee_id);return[o,s,a]}modalShow(e,t){const o=document.getElementById("modalShow"),s=document.getElementById("modalShowBody"),a=document.getElementById("editTaskBtn"),[d,n,l]=this.findProjectAndTask(e,t);if(!d||!n){console.error("Project or task not found");return}const r=a.cloneNode(!0);a.parentNode.replaceChild(r,a),r.addEventListener("click",()=>this.renderEditTask(n)),s.innerHTML=this.renderModalShow(d,n,l),o.classList.remove("hidden")}renderModalShow(e,t,o){const s=t.persentase_progress_task||0;let a="#ef4444";return s>=30&&s<70?a="#eab308":s>=70&&(a="#22c55e"),`
+        <h1 class="text-3xl font-bold mb-3">${t.name}</h1>
 
         <div class="flex flex-col space-y-5 mt-4 w-full">
             <!-- Create a consistent grid layout with fixed widths -->
@@ -409,7 +53,7 @@ class TaskManager {
                     </div>
                     <div>
                         <p class="text-xs font-medium px-4 py-1 rounded-full text-white w-fit"
-                            style="background-color: ${task.task_status.color}">${task.task_status.name}</p>
+                            style="background-color: ${t.task_status.color}">${t.task_status.name}</p>
                     </div>
                 </div>
             </div>
@@ -427,15 +71,13 @@ class TaskManager {
                         <div class="flex items-center space-x-3">
                             <div class="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
                                 <div class="h-3 rounded-full transition-all duration-500 ease-out" 
-                                     style="width: ${progress}%; background-color: ${progressColor}"></div>
+                                     style="width: ${s}%; background-color: ${a}"></div>
                             </div>
                             <span class="text-sm font-semibold min-w-[45px] text-right" 
-                                  style="color: ${progressColor}">${progress}%</span>
+                                  style="color: ${a}">${s}%</span>
                         </div>
                         <p class="text-xs text-gray-500">
-                            ${progress == 0 ? 'Belum dimulai' : 
-                              progress < 70 ? 'Sedang dikerjakan' :
-                              progress < 100 ? 'Hampir selesai' : 'Selesai'}
+                            ${s==0?"Belum dimulai":s<70?"Sedang dikerjakan":s<100?"Hampir selesai":"Selesai"}
                         </p>
                     </div>
                 </div>
@@ -450,7 +92,7 @@ class TaskManager {
                             <span>Project</span>
                         </div>
                         <div>
-                            <p class="text-sm font-medium">${project.name}</p>
+                            <p class="text-sm font-medium">${e.name}</p>
                         </div>
                     </div>
             </div>
@@ -463,7 +105,7 @@ class TaskManager {
                             <span>start date</span>
                         </div>
                         <div>
-                            <p class="text-sm font-medium">${task.start_date}</p>
+                            <p class="text-sm font-medium">${t.start_date}</p>
                         </div>
                     </div>
             </div>
@@ -476,7 +118,7 @@ class TaskManager {
                             <span>start date</span>
                         </div>
                         <div>
-                            <p class="text-sm font-medium">${task.end_date}</p>
+                            <p class="text-sm font-medium">${t.end_date}</p>
                         </div>
                     </div>
             </div>
@@ -494,7 +136,7 @@ class TaskManager {
                         <span>Assignee</span>
                     </div>
                     <div>
-                        <p class="text-sm font-medium">${employee.user.name}</p>
+                        <p class="text-sm font-medium">${o.user.name}</p>
                     </div>
                 </div>
             </div>
@@ -509,32 +151,22 @@ class TaskManager {
                     </div>
                     <div class="ml-9 md:ml-0 mt-1 md:mt-0 flex space-x-2">
                         <p class="text-xs font-medium px-2 py-1 rounded-full text-white"
-                            style="background-color: ${task.task_level.color}">${task.task_level.name}</p>
-                        <p class="text-xs font-medium px-2 py-1 rounded-full text-white bg-[#6FAEC9]">${employee.role.name}</p>
+                            style="background-color: ${t.task_level.color}">${t.task_level.name}</p>
+                        <p class="text-xs font-medium px-2 py-1 rounded-full text-white bg-[#6FAEC9]">${o.role.name}</p>
                     </div>
                 </div>
             </div>
         </div>
-    `
-}
-
-   
-
-renderEditTask(task) {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    console.log(csrfToken);
-    const modal = document.getElementById('modalEdit');
-    const modalContent = document.getElementById('modalEditBody');
-    const content = `
-        <form action="/tasks/${task.id}" method="POST" enctype="multipart/form-data">
+    `}renderEditTask(e){const t=document.querySelector('meta[name="csrf-token"]').getAttribute("content");console.log(t);const o=document.getElementById("modalEdit"),s=document.getElementById("modalEditBody"),a=`
+        <form action="/tasks/${e.id}" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="_method" value="PUT">
-            <input type="hidden" name="_token" id="_token" value="${csrfToken}">
+            <input type="hidden" name="_token" id="_token" value="${t}">
             <!-- Modal Body -->
             <div class="py-2 px-8 space-y-3">
                 <!-- Task Name -->
                 <div class="space-y-1">
                     <label class="block text-sm text-gray-700" for="name">Task</label>
-                    <input type="text" name="name" id="name" value="${task.name}"
+                    <input type="text" name="name" id="name" value="${e.name}"
                         class="w-full border text-black bg-primary-white px-3 py-1 text-sm rounded focus:outline-none">
                 </div>
 
@@ -545,7 +177,7 @@ renderEditTask(task) {
                         <input type="number" 
                                name="persentase_progress_task" 
                                id="persentase_progress_task" 
-                               value="${task.persentase_progress_task || 0}"
+                               value="${e.persentase_progress_task||0}"
                                min="0" 
                                max="100"
                                class="w-20 border text-black bg-primary-white px-3 py-1 text-sm rounded text-center focus:outline-none"
@@ -562,21 +194,21 @@ renderEditTask(task) {
                           <div class="tooltip-container">
                             <label class="flex items-center text-sm">
                                 <input type="radio" name="task_level_id" class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none" value="1"
-                                    ${task.task_level_id == 1 ? 'checked' : ''}/> Low
+                                    ${e.task_level_id==1?"checked":""}/> Low
                             </label>
                             <div class="tooltip">Dibawah 3 jam</div>
                           </div>
                           <div class="tooltip-container">
                             <label class="flex items-center text-sm">
                                 <input type="radio" name="task_level_id" class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none" value="2"
-                                    ${task.task_level_id == 2 ? 'checked' : ''}/> Medium
+                                    ${e.task_level_id==2?"checked":""}/> Medium
                             </label>
                             <div class="tooltip">3 - 5 jam</div>
                           </div>
                           <div class="tooltip-container">
                             <label class="flex items-center text-sm">
                                 <input type="radio" name="task_level_id" class="mr-2 accent-yellow-500 w-3 h-3 rounded-full checked:bg-yellow-500 checked:border-0 checked:appearance-none" value="3"
-                                    ${task.task_level_id == 3 ? 'checked' : ''}/> High
+                                    ${e.task_level_id==3?"checked":""}/> High
                             </label>
                             <div class="tooltip">5 jam keatas</div>
                           </div>
@@ -626,17 +258,5 @@ renderEditTask(task) {
                     return false;
                 }
             });
-        </script>
-    `;
-    modalContent.innerHTML = content;
-    modal.classList.remove('hidden');
-}
-
-    closeModalShow(modalId) {
-        document.getElementById(modalId).classList.add('hidden');
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    window.taskManager = new TaskManager();
-});
+        <\/script>
+    `;s.innerHTML=a,o.classList.remove("hidden")}closeModalShow(e){document.getElementById(e).classList.add("hidden")}}document.addEventListener("DOMContentLoaded",()=>{window.taskManager=new c});

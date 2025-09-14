@@ -38,9 +38,7 @@ class ProfileController extends Controller
     $user = User::with('employee')->find($userId);
     $projects = ProjectEmployee::where('employee_id', $user->employee->id)->get();
 
-    [$sumtask, $workhour] = $this->getTotalTaskandWorkDuration($user->employee->id);
-
-    $user->totalWorkDuration = $workhour;
+    [$sumtask] = $this->getTotalTask($user->employee->id);
 
     return view('profile.show', [
       'title' => 'Profile',
@@ -48,67 +46,23 @@ class ProfileController extends Controller
       'user' => $user,
       'sumProjects' => $projects->count(),
       'sumTasks' => $sumtask,
-      'totalDayOff' => $this->getDayOff($user->employee->id),
+     
     ]);
   }
 
-  private function getTotalTaskandWorkDuration($userID)
+  private function getTotalTask($userID)
   {
     $tasks = Task::with(['taskLevel', 'timeLog'])
       ->where('task_status_id', 4)
-      ->whereMonth('created_at', now()->month)
-      ->whereYear('created_at', now()->year)
       ->whereHas('assignedProjectEmployee', function ($query) use ($userID) {
         $query->where('employee_id', $userID);
       })
       ->get();
-    $totalWorkHour = 0;
-
-    foreach ($tasks as $task) {
-      $isLowMedium = $task->task_level_id != 3;
-
-      if ($task->timelog) {
-        if ($isLowMedium && $task->timeLog->duration > $task->taskLevel->duration) {
-          $duration = $task->taskLevel->duration;
-        } else {
-          $duration = $task->timeLog->duration_seconds;
-        }
-
-        $totalWorkHour += $duration;
-      }
-    }
+    
 
     return [
-      $tasks->count(),
-      number_format(($totalWorkHour / (187 * 3600)) * 100, 2)
+      $tasks->count()
     ];
-  }
-
-  private function getDayOff($userID)
-  {
-    $currentYear = now()->year;
-    $yearStart = Carbon::create($currentYear, 1, 1);
-    $yearEnd = Carbon::create($currentYear, 12, 31);
-
-    $leaves = Administration::where('employee_id', $userID)
-      ->where(function ($query) use ($yearStart, $yearEnd) {
-        $query->whereBetween('start_date', [$yearStart, $yearEnd])  // Starts this yearEnd
-          ->orWhereBetween('end_date', [$yearStart, $yearEnd])  // Ends this yearEnd
-          ->orWhere(function ($q) use ($yearStart, $yearEnd) {
-            $q->where('start_date', '<', $yearStart)
-              ->where('end_date', '>', $yearEnd);  // Spans entire yearEnd
-          });
-      })
-      ->get();
-
-    $totalLeaveDays = 0;
-    foreach ($leaves as $leave) {
-      $startDate = Carbon::parse($leave->start_date)->max($yearStart);
-      $endDate = Carbon::parse($leave->end_date)->min($yearEnd);
-      $totalLeaveDays += $startDate->diffInDays($endDate) + 1; // +1 to include both start and end duration_seconds
-    }
-
-    return $totalLeaveDays;
   }
 
   public function edit($id) {}

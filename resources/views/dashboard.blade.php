@@ -159,7 +159,8 @@
         </div>
         <div class="sm:w-5/12 xs:w-[100%] sm:ml-3 sm:block xs:flex xs:items-center overflow-x-auto">
             <div class="flex sm:h-3/5 w-auto xs:h-[50vh] space-x-3 xs:px-3 sm:px-0 pb-2">
-                {{-- Tasks start --}}
+                {{-- Tasks start - HIDDEN untuk admin dan kepala pustik --}}
+                @if (!(auth()->user()->role === 'admin' || auth()->user()->employee->role->name === 'KEPALA PUSTIK'))
                 <div
                     class="bg-primary-green border rounded-2xl rounded px-3 py-3 primary-white sm:w-1/2 xs:w-[65vw] overflow-x-auto overflow-y-hidden">
                     <div class="font-medium sm:text-base xs:text-[14px] flex gap-x-1 items-center">
@@ -193,10 +194,17 @@
                         @endforelse
                     </div>
                 </div>
+                @endif
                 {{-- Tasks end --}}
-                {{-- Project start --}}
+                  {{-- Project start - Lebar disesuaikan berdasarkan apakah task card tersembunyi --}}
                 <div
-                    class="bg-primary-orange border rounded-2xl rounded px-3 py-3 primary-white sm:w-1/2 xs:w-[65vw] overflow-x-auto overflow-y-hidden">
+                    class="bg-primary-orange border rounded-2xl rounded px-3 py-3 primary-white 
+                    @if (auth()->user()->role === 'admin' || auth()->user()->employee->role->name === 'KEPALA PUSTIK')
+                        sm:w-full xs:w-[65vw]
+                    @else
+                        sm:w-1/2 xs:w-[65vw]
+                    @endif
+                    overflow-x-auto overflow-y-hidden">
                     <div class="font-medium text-base flex gap-x-1 items-center">
                         <div>
                             <svg class="sm:size-[22px] xs:size-[20px]" viewBox="0 0 35 35" fill="#fcfcfc"

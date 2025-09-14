@@ -19,6 +19,7 @@ return new class extends Migration {
             $table->foreignId('task_level_id')->constrained('task_levels');
             $table->foreignId('assigned_project_employee_id')
                 ->constrained('project_employees');
+            $table->integer('progress')->default(0);
             $table->date('start_date');
             $table->date('end_date');
             $table->timestamps();

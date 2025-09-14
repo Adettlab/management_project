@@ -225,33 +225,34 @@ class TaskController extends Controller
     ]);
   }
 
-  public function update(Request $request, task $task)
-  {
+ public function update(Request $request, task $task)
+{
     // Cek permission untuk update
     $user = auth()->user();
     if ($user->hasCustomPermissions() && !$user->hasPermission('tasks', 'update')) {
-      abort(403, 'You do not have permission to update tasks.');
+        abort(403, 'You do not have permission to update tasks.');
     }
 
     // Cek apakah user bisa akses task ini
     if (!$this->canUserAccessTask($user, $task)) {
-      abort(403, 'You do not have permission to update this task.');
+        abort(403, 'You do not have permission to update this task.');
     }
 
     try {
-      $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'task_level_id' => 'required|exists:task_levels,id',
-      ]);
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'task_level_id' => 'required|exists:task_levels,id',
+            'persentase_progress_task' => 'nullable|integer|min:0|max:100',
+        ]);
 
-      $task->update($validated);
+        $task->update($validated);
 
-      return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
+        return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
     } catch (\Throwable $th) {
-      Log::error('Error updating task ' . $th);
-      return back()->withErrors(['error' => 'Something went wrong. Please try again or contact support']);
+        Log::error('Error updating task ' . $th);
+        return back()->withErrors(['error' => 'Something went wrong. Please try again or contact support']);
     }
-  }
+}
 
   public function updateStatus(Request $request, $id)
   {
